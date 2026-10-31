@@ -149,7 +149,9 @@ tr.click:hover td { background: var(--panel-2); }
 .logo-row input { flex: 1 1 200px; }
 
 .check-row { display: flex; gap: 8px; align-items: center; min-height: 44px; cursor: pointer; }
-.check-row input { width: 20px; height: 20px; accent-color: var(--pink); cursor: pointer; }
+.check-row input[type="checkbox"] { flex: none; width: 20px; height: 20px; min-height: 0; padding: 0; margin: 0; accent-color: var(--pink); cursor: pointer; }
+.field .check-row { color: var(--text); font-size: 1rem; justify-self: start; }
+.checks { display: flex; flex-wrap: wrap; gap: 0 24px; }
 
 /* sponsors */
 .sponsors { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
@@ -238,6 +240,10 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
             <div class="field"><label for="poSize">Formaat</label><select id="poSize"><option value="story">Story, 1080 x 1920</option><option value="post">Post, 1080 x 1350</option></select></div>
           </div>
           <div class="field" data-for="uitslag" hidden><label for="poMatch">Wedstrijd</label><select id="poMatch"></select></div>
+          <div class="checks" data-for="uitslag" hidden>
+            <label class="check-row"><input type="checkbox" id="poGoals" checked> Doelpuntenmakers tonen</label>
+            <label class="check-row"><input type="checkbox" id="poAssists"> Assists tonen</label>
+          </div>
           <div class="fields" data-for="matchday">
             <div class="field"><label for="poOpp">Tegenstander</label><input id="poOpp" list="poOpps" maxlength="40" autocomplete="off"><datalist id="poOpps"></datalist></div>
             <div class="field"><label for="poHome">Thuis of uit</label><select id="poHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
@@ -809,7 +815,7 @@ function drawPost() {
   const ctx = cv.getContext('2d'), d = postData(), result = d.type === 'uitslag', cx = W / 2;
   const pink = token('--pink'), text = token('--text'), bg = token('--poster');
   const spons = $('#poSponsors').checked && S.sponsors.length > 0;
-  const scorers = result ? countList(d.goals) : [], assists = result ? countList(d.assists).join(', ') : '';
+  const scorers = result && $('#poGoals').checked ? countList(d.goals) : [], assists = result && $('#poAssists').checked ? countList(d.assists).join(', ') : '';
 
   // Vertical positions, measured from the top of the content block.
   const rule = scorers.length ? 700 + (scorers.length - 1) * 56 + 50 : 690;

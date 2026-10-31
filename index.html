@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FC Flamingo Stats</title>
+<meta name="description" content="Statistieken van FC Flamingo: spelers, wedstrijden, goals en assists.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Hallmark · v2.0.0 · theme: custom, FC Flamingo club colours (by request) · genre: app screen · signature: the pink FCF monogram over a sortable squad table */
+/* critique: one pink on near-black like the matchday poster; condensed display only for numbers and headings, everything else quiet */
+/* Layout: club masthead, season summary strip, then one tabbed working area (Spelers, Wedstrijden, Keepers). Single dark look, on purpose. */
+:root {
+  --bg: #0b090a;
+  --panel: #151113;
+  --panel-2: #1d171a;
+  --line: #2e252a;
+  --text: #f7eef2;
+  --muted: #a99aa1;
+  --pink: #e8679b;
+  --pink-hi: #f384b1;
+  --pink-ink: #1c0611;
+  --yellow: #f2c443;
+  --red: #e5484d;
+  --scrim: rgb(0 0 0 / .65);
+  --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --r-sm: 6px;
+  --r-md: 10px;
+  color-scheme: dark;
+}
+html, body { overflow-x: clip; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 400 16px/1.5 var(--font-body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 24px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 800; line-height: 1; margin: 0; text-wrap: balance; overflow-wrap: break-word; min-width: 0; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+
+/* masthead */
+.mast { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; }
+.mast svg.logo { width: 56px; height: 70px; flex: none; }
+.mast .id { flex: 1 1 220px; min-width: 0; }
+.mast h1 { font-size: clamp(2rem, 6vw, 3rem); text-transform: uppercase; color: var(--pink); }
+.mast p { margin: 4px 0 0; color: var(--muted); font-size: 0.9375rem; }
+.mast .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.btn { min-height: 44px; padding: 0 16px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font-weight: 600; transition: background-color .15s ease, border-color .15s ease, transform .1s ease; touch-action: manipulation; }
+.btn:hover { border-color: var(--pink); }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--pink); border-color: var(--pink); color: var(--pink-ink); }
+.btn.primary:hover { background: var(--pink-hi); border-color: var(--pink-hi); }
+.btn.danger { border-color: var(--red); color: var(--red); background: transparent; }
+.btn.danger.armed { background: var(--red); color: var(--bg); }
+.select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; }
+
+/* summary */
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.tile { background: var(--panel); padding: 16px 20px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.tile .k { color: var(--muted); font-size: 0.875rem; }
+.tile .v { font-family: var(--font-display); font-weight: 800; font-size: 2.25rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.tile .v small { font-size: 1rem; font-weight: 600; color: var(--muted); font-family: var(--font-body); }
+.tile .v.name { font-size: 1.5rem; color: var(--pink); overflow-wrap: anywhere; }
+.form { display: flex; gap: 8px; flex-wrap: wrap; }
+.res { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: var(--r-sm); font: 800 1rem/1 var(--font-display); }
+.res.W { background: var(--pink); color: var(--pink-ink); }
+.res.G { border: 1.5px solid var(--pink); color: var(--pink); }
+.res.V { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
+
+/* tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tab { min-height: 44px; padding: 0 16px; border: 0; background: none; cursor: pointer; color: var(--muted); font: 800 1.25rem/1 var(--font-display); text-transform: uppercase; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: color .15s ease, border-color .15s ease; }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--pink); border-bottom-color: var(--pink); }
+.panel { display: grid; gap: 12px; }
+
+/* table */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+tbody tr:last-child td { border-bottom: 0; }
+th { font-weight: 500; font-size: 0.875rem; color: var(--muted); background: var(--panel-2); }
+th:nth-child(2), td:nth-child(2) { text-align: left; position: sticky; left: 0; background: inherit; }
+td:nth-child(2) { background: var(--panel); font-weight: 600; }
+th button { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; min-height: 28px; }
+th button:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+th[aria-sort] { color: var(--pink); }
+th .arrow { font-size: 0.75rem; width: 0.75em; }
+td.sorted { color: var(--pink); font-weight: 600; }
+td.num { font-family: var(--font-display); font-weight: 800; font-size: 1.125rem; color: var(--muted); width: 1%; }
+tr.idle td { color: var(--muted); }
+.cardglyph { display: inline-block; width: 9px; height: 13px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+.cardglyph.y { background: var(--yellow); }
+.cardglyph.r { background: var(--red); }
+.pos { font-size: 0.8125rem; color: var(--muted); font-weight: 400; margin-left: 8px; }
+tr.click { cursor: pointer; }
+tr.click:hover td { background: var(--panel-2); }
+
+/* matches */
+.matches { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.match { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
+.match.click { cursor: pointer; transition: border-color .15s ease; }
+.match.click:hover { border-color: var(--pink); }
+.match .when { color: var(--muted); font-size: 0.875rem; grid-column: 2; }
+.match .opp { font-weight: 600; grid-column: 2; overflow-wrap: anywhere; }
+.match .score { grid-column: 3; grid-row: 1 / span 2; font: 800 2rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.match .res { grid-row: 1 / span 2; }
+.match .detail { grid-column: 2 / -1; color: var(--muted); font-size: 0.875rem; }
+
+.empty { padding: 40px 20px; text-align: center; color: var(--muted); background: var(--panel); border: 1px dashed var(--line); border-radius: var(--r-md); display: grid; gap: 12px; justify-items: center; }
+.empty h3 { font-size: 1.5rem; color: var(--text); text-transform: uppercase; }
+.note { color: var(--muted); font-size: 0.875rem; margin: 0; }
+
+/* dialogs */
+dialog { width: min(640px, calc(100% - 24px)); max-height: calc(100% - 24px); padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); color: var(--text); }
+dialog::backdrop { background: var(--scrim); }
+dialog form { display: grid; gap: 16px; padding: 20px; }
+dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); gap: 12px; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label, .field .lbl { font-size: 0.875rem; color: var(--muted); }
+.field input, .field select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); width: 100%; box-sizing: border-box; }
+.score-in { display: flex; gap: 8px; align-items: center; }
+.score-in input { text-align: center; font: 800 1.5rem/1 var(--font-display); }
+.lineup { border: 1px solid var(--line); border-radius: var(--r-sm); overflow: auto; max-height: 46vh; }
+.lineup table th, .lineup table td { padding: 8px; text-align: center; }
+.lineup table th:nth-child(2), .lineup table td:nth-child(2) { text-align: left; }
+.lineup input[type="number"] { width: 3.25rem; min-height: 36px; text-align: center; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); }
+.lineup input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--pink); cursor: pointer; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.actions .spacer { flex: 1; }
+.check { font-size: 0.875rem; margin: 0; color: var(--muted); }
+.check.off { color: var(--yellow); }
+
+.toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--pink); padding: 12px 16px; border-radius: var(--r-sm); max-width: calc(100% - 32px); }
+.status { color: var(--muted); font-size: 0.875rem; margin: 0; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="fcf" viewBox="13 13 142 176"><path fill="currentColor" fill-rule="evenodd" d="M24.5 20.9L21.1 23.1L18.9 25.4L17.1 28.0L15.1 34.0L14.9 38.8L15.6 42.4L18.1 46.9L21.5 49.9L26.2 51.9L35.0 51.2L36.1 50.8L41.5 46.2L42.5 44.4L43.2 41.0L43.2 38.0L42.1 35.6L40.4 34.5L37.6 34.5L35.5 35.5L34.2 37.2L34.5 40.6L33.8 42.5L31.9 43.6L30.8 43.6L29.2 42.9L27.2 40.9L26.4 38.6L26.5 34.1L27.8 30.4L32.6 25.8L34.4 25.0L42.4 23.8L45.4 24.8L46.5 26.1L46.9 39.6L46.4 42.5L46.6 51.1L46.1 52.2L44.5 53.4L41.1 52.9L37.2 53.1L32.6 55.0L29.0 58.0L27.0 62.6L26.9 66.6L28.2 70.8L30.8 73.0L33.8 73.8L35.1 73.2L36.2 71.5L36.2 69.4L34.8 66.0L34.6 63.4L35.1 61.8L37.0 59.1L38.8 57.9L42.6 56.9L44.5 57.0L46.4 58.8L46.5 90.6L45.5 92.2L40.9 93.6L40.0 95.1L40.2 96.2L41.8 97.4L44.1 97.9L54.1 97.6L62.5 98.4L63.6 100.5L63.9 108.5L66.2 115.5L70.0 122.0L75.5 127.6L78.8 129.4L86.8 132.1L95.8 132.6L100.6 132.2L102.2 133.2L102.6 140.4L101.5 142.2L100.6 142.6L95.0 142.4L89.5 143.8L86.9 145.4L84.5 148.0L82.8 152.6L83.4 158.4L85.6 161.1L87.6 162.4L91.0 162.1L92.0 161.0L92.4 159.1L90.4 155.2L90.4 152.4L91.0 150.5L92.9 148.5L96.1 147.0L98.8 146.4L101.2 146.6L102.4 148.0L102.9 175.8L102.5 178.9L101.1 181.4L97.1 182.5L96.1 183.2L95.8 184.1L96.1 186.0L98.2 187.0L123.0 187.2L124.1 186.9L125.2 185.2L124.6 183.6L122.9 182.6L119.4 181.9L118.1 180.1L118.1 152.5L119.8 151.2L125.9 152.1L135.2 151.9L143.0 148.6L143.9 147.5L144.2 145.0L144.0 143.6L143.2 142.6L141.2 142.1L137.6 142.6L132.4 145.8L124.6 145.8L119.5 144.9L118.6 144.2L118.0 142.0L118.2 118.8L119.1 117.2L120.4 116.8L128.6 117.5L137.0 116.8L143.1 114.5L146.6 112.4L149.6 108.5L152.1 103.4L152.4 98.6L151.4 93.5L147.6 89.0L142.1 86.2L135.4 85.4L129.8 86.6L125.4 89.4L124.1 91.1L122.5 96.2L122.6 99.8L123.6 101.5L126.0 103.2L127.5 103.4L129.4 102.6L130.8 101.5L131.5 100.1L131.2 95.0L132.0 93.2L134.5 92.0L137.1 92.4L140.0 96.6L140.4 100.5L139.1 105.0L136.6 108.4L133.1 110.6L130.2 111.1L120.2 110.6L116.6 109.5L113.4 109.6L111.0 109.0L105.8 109.1L103.9 110.4L102.8 113.0L102.6 123.8L101.2 125.9L98.5 126.8L91.6 126.5L86.0 124.5L80.5 119.0L77.9 114.2L76.1 109.1L75.9 100.9L76.6 94.0L80.6 83.8L83.8 80.9L85.9 77.8L91.5 74.9L94.9 73.9L100.0 74.0L102.0 74.5L104.5 76.2L107.5 80.1L110.1 80.2L111.4 79.2L112.6 76.1L112.5 73.1L112.0 71.9L111.0 71.0L105.2 70.6L100.2 68.8L92.8 68.6L88.1 69.4L84.6 70.5L78.9 73.1L73.6 77.2L67.8 84.8L64.8 91.0L63.6 92.0L62.8 91.9L62.1 90.8L61.8 86.1L62.2 62.2L63.1 61.6L74.5 62.6L82.0 61.6L84.1 60.8L87.6 58.4L88.8 56.8L88.9 55.5L87.8 53.5L85.1 52.6L82.5 53.1L78.0 55.6L74.9 56.4L71.4 56.5L63.8 55.5L62.9 54.6L61.8 51.6L61.8 30.0L62.5 28.2L64.1 27.2L70.9 27.8L79.0 27.6L85.5 25.9L88.9 24.0L91.5 21.6L92.8 18.9L92.5 16.8L91.5 15.8L89.6 15.1L86.2 15.2L83.8 16.4L78.6 20.5L74.2 21.6L65.1 21.4L60.1 20.1L44.2 18.0L33.2 18.4L28.6 19.2Z"/></symbol></svg>
+
+<div class="wrap">
+  <header class="mast">
+    <svg class="logo" role="img" aria-label="FCF logo" style="color: var(--pink)"><use href="#fcf"/></svg>
+    <div class="id">
+      <h1>FC Flamingo</h1>
+      <p>Futsal, 3e klasse KNVB. Thuisbasis De Kannebuis.</p>
+    </div>
+    <div class="tools">
+      <select id="season" class="select" aria-label="Seizoen"></select>
+      <button id="addMatch" class="btn primary" type="button" hidden>Wedstrijd toevoegen</button>
+      <button id="addPlayer" class="btn" type="button" hidden>Speler toevoegen</button>
+      <button id="addSeason" class="btn" type="button" hidden>Nieuw seizoen</button>
+      <button id="login" class="btn" type="button">Inloggen</button>
+    </div>
+  </header>
+
+  <p id="status" class="status" role="status">Statistieken laden…</p>
+
+  <section class="summary" id="summary" aria-label="Seizoensoverzicht"></section>
+
+  <section>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="t-spelers" aria-controls="p-spelers" aria-selected="true">Spelers</button>
+      <button class="tab" role="tab" id="t-wedstrijden" aria-controls="p-wedstrijden" aria-selected="false">Wedstrijden</button>
+      <button class="tab" role="tab" id="t-keepers" aria-controls="p-keepers" aria-selected="false">Keepers</button>
+      <button class="tab" role="tab" id="t-extra" aria-controls="p-extra" aria-selected="false">Niet geregistreerd</button>
+    </div>
+    <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers"></div>
+    <div class="panel" id="p-wedstrijden" role="tabpanel" aria-labelledby="t-wedstrijden" hidden></div>
+    <div class="panel" id="p-keepers" role="tabpanel" aria-labelledby="t-keepers" hidden></div>
+    <div class="panel" id="p-extra" role="tabpanel" aria-labelledby="t-extra" hidden></div>
+  </section>
+</div>
+
+<dialog id="dlgPlayer" aria-labelledby="dlgPlayerTitle">
+  <form id="formPlayer">
+    <h2 id="dlgPlayerTitle">Speler</h2>
+    <div class="fields">
+      <div class="field"><label for="pName">Naam</label><input id="pName" required maxlength="40" autocomplete="off"></div>
+      <div class="field"><label for="pNum">Rugnummer</label><input id="pNum" type="number" min="0" max="99" inputmode="numeric"></div>
+      <div class="field"><label for="pPos">Positie</label><select id="pPos"><option value="veld">Veldspeler</option><option value="keeper">Keeper</option></select></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn danger" id="pDelete" hidden>Verwijderen</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgSeason" aria-labelledby="dlgSeasonTitle">
+  <form id="formSeason">
+    <h2 id="dlgSeasonTitle">Nieuw seizoen</h2>
+    <div class="field"><label for="sName">Naam</label><input id="sName" required maxlength="20" placeholder="2026/27" autocomplete="off"></div>
+    <div class="actions">
+      <button type="button" class="btn" data-close>Annuleren</button>
+      <button type="submit" class="btn primary">Toevoegen</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgExtra" aria-labelledby="dlgExtraTitle">
+  <form id="formExtra">
+    <h2 id="dlgExtraTitle">Niet geregistreerd</h2>
+    <p class="note">Goals en assists die wel in de stand staan, maar bij geen enkele wedstrijd horen. Ze tellen mee in de spelerstotalen.</p>
+    <div class="fields">
+      <div class="field"><label for="xPlayer">Speler</label><select id="xPlayer" required></select></div>
+      <div class="field"><label for="xGoals">Goals</label><input id="xGoals" type="number" min="0" max="30" inputmode="numeric"></div>
+      <div class="field"><label for="xAssists">Assists</label><input id="xAssists" type="number" min="0" max="30" inputmode="numeric"></div>
+    </div>
+    <div class="field"><label for="xNote">Notitie</label><input id="xNote" maxlength="80" autocomplete="off"></div>
+    <div class="actions">
+      <button type="button" class="btn danger" id="xDelete" hidden>Verwijderen</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgMatch" aria-labelledby="dlgMatchTitle">
+  <form id="formMatch">
+    <h2 id="dlgMatchTitle">Wedstrijd</h2>
+    <div class="fields">
+      <div class="field"><label for="mDate">Datum</label><input id="mDate" type="date" required></div>
+      <div class="field"><label for="mOpp">Tegenstander</label><input id="mOpp" required maxlength="40" autocomplete="off"></div>
+      <div class="field"><label for="mHome">Thuis of uit</label><select id="mHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
+      <div class="field"><span class="lbl" id="mScoreLbl">Uitslag (wij, zij)</span>
+        <div class="score-in" role="group" aria-labelledby="mScoreLbl">
+          <input id="mGF" type="number" min="0" max="99" required inputmode="numeric" aria-label="Doelpunten FC Flamingo">
+          <span aria-hidden="true">-</span>
+          <input id="mGA" type="number" min="0" max="99" required inputmode="numeric" aria-label="Doelpunten tegenstander">
+        </div>
+      </div>
+    </div>
+    <div class="lineup">
+      <table>
+        <thead><tr><th scope="col">Speelde</th><th scope="col">Speler</th><th scope="col">Goals</th><th scope="col">Assists</th><th scope="col"><span class="cardglyph y"></span>Geel</th><th scope="col"><span class="cardglyph r"></span>Rood</th></tr></thead>
+        <tbody id="lineupBody"></tbody>
+      </table>
+    </div>
+    <p class="check" id="mCheck" aria-live="polite"></p>
+    <div class="fields">
+      <div class="field"><label for="mMvp">Man of the match</label><select id="mMvp"></select></div>
+      <div class="field"><label for="mKeeper">Keeper</label><select id="mKeeper"></select></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn danger" id="mDelete" hidden>Verwijderen</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgLogin" aria-labelledby="dlgLoginTitle">
+  <form id="formLogin">
+    <h2 id="dlgLoginTitle">Inloggen</h2>
+    <p class="note">Voor coaches en aanvoerders. Na het inloggen kun je wedstrijden, uitslagen en spelers toevoegen en bewerken.</p>
+    <div class="field"><label for="lEmail">Gebruikersnaam</label><input id="lEmail" type="text" required autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+    <div class="field"><label for="lPass">Wachtwoord</label><input id="lPass" type="password" required autocomplete="current-password"></div>
+    <p class="check off" id="loginError" role="alert" hidden></p>
+    <div class="actions">
+      <button type="button" class="btn" data-close>Annuleren</button>
+      <button type="submit" class="btn primary" id="loginSubmit">Inloggen</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], extras: [], season: store.get('fcf-season'), sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
+
+/* ---------- stats ---------- */
+const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
+const seasonMatches = () => S.matches.filter(m => S.season === 'all' || m.season === S.season).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+const seasonExtras = () => S.extras.filter(x => S.season === 'all' || x.season === S.season);
+
+function playerStats(matches) {
+  const map = new Map(S.players.map(p => [p.id, { p, gp: 0, g: 0, a: 0, y: 0, r: 0, mvp: 0, kgp: 0, conc: 0, cs: 0 }]));
+  for (const m of matches) {
+    for (const id of m.played || []) {
+      const s = map.get(id); if (!s) continue;
+      s.gp++; s.g += +(m.goals?.[id] || 0); s.a += +(m.assists?.[id] || 0);
+      if ((m.yellow || []).includes(id)) s.y++;
+      if ((m.red || []).includes(id)) s.r++;
+    }
+    if (map.has(m.mvp)) map.get(m.mvp).mvp++;
+    const k = map.get(m.keeper);
+    if (k) { k.kgp++; k.conc += +m.ga || 0; if (+m.ga === 0) k.cs++; }
+  }
+  for (const x of seasonExtras()) {
+    const s = map.get(x.player); if (!s) continue;
+    s.g += +x.goals || 0; s.a += +x.assists || 0;
+  }
+  return [...map.values()].map(s => ({ ...s, pts: s.g + s.a, gpg: s.gp ? (s.g + s.a) / s.gp : 0 }));
+}
+
+/* ---------- render ---------- */
+const playerName = id => S.players.find(p => p.id === id)?.name || 'Onbekend';
+const fmtDate = d => d ? new Date(d + 'T12:00').toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) : '';
+
+function renderSeasons() {
+  const sel = $('#season');
+  const seasons = [...S.seasons].sort((a, b) => (b.name || '').localeCompare(a.name || ''));
+  if (!S.season || (S.season !== 'all' && !seasons.some(s => s.id === S.season))) S.season = seasons[0]?.id || 'all';
+  sel.innerHTML = seasons.map(s => `<option value="${esc(s.id)}">Seizoen ${esc(s.name)}</option>`).join('') + '<option value="all">Alle seizoenen</option>';
+  sel.value = S.season;
+}
+
+function renderSummary(matches, stats) {
+  const w = matches.filter(m => result(m) === 'W').length, d = matches.filter(m => result(m) === 'G').length, l = matches.length - w - d;
+  const gf = matches.reduce((t, m) => t + (+m.gf || 0), 0), ga = matches.reduce((t, m) => t + (+m.ga || 0), 0);
+  const diff = gf - ga;
+  const top = key => { const best = [...stats].sort((a, b) => b[key] - a[key])[0]; return best && best[key] > 0 ? best : null; };
+  const ts = top('g'), ta = top('a');
+  const form = matches.slice(0, 5).reverse();
+  $('#summary').innerHTML = `
+    <div class="tile"><span class="k">Wedstrijden</span><span class="v">${matches.length}</span></div>
+    <div class="tile"><span class="k">Winst, gelijk, verlies</span><span class="v">${w}<small> W </small>${d}<small> G </small>${l}<small> V</small></span></div>
+    <div class="tile"><span class="k">Doelsaldo</span><span class="v">${diff > 0 ? '+' : ''}${diff} <small>${gf} voor, ${ga} tegen</small></span></div>
+    <div class="tile"><span class="k">Vorm, laatste 5</span>${form.length ? `<div class="form">${form.map(m => `<span class="res ${result(m)}" title="${esc(m.opponent)} ${m.gf}-${m.ga}">${result(m)}</span>`).join('')}</div>` : '<span class="v"><small>Nog geen wedstrijden</small></span>'}</div>
+    <div class="tile"><span class="k">Topscorer</span>${ts ? `<span class="v name">${esc(ts.p.name)}</span><span class="k">${ts.g} goals</span>` : '<span class="v"><small>Nog niemand</small></span>'}</div>
+    <div class="tile"><span class="k">Meeste assists</span>${ta ? `<span class="v name">${esc(ta.p.name)}</span><span class="k">${ta.a} assists</span>` : '<span class="v"><small>Nog niemand</small></span>'}</div>`;
+}
+
+const COLS = [
+  { key: 'num', label: '#', title: 'Rugnummer' },
+  { key: 'name', label: 'Speler' },
+  { key: 'gp', label: 'Wedstr.', title: 'Gespeelde wedstrijden' },
+  { key: 'g', label: 'Goals' },
+  { key: 'a', label: 'Assists' },
+  { key: 'pts', label: 'G+A', title: 'Goals plus assists' },
+  { key: 'gpg', label: 'G+A per wedstr.' },
+  { key: 'mvp', label: 'MVP', title: 'Man of the match' },
+  { key: 'y', label: '<span class="cardglyph y"></span>Geel' },
+  { key: 'r', label: '<span class="cardglyph r"></span>Rood' },
+];
+const sortVal = (s, k) => k === 'name' ? (s.p.name || '').toLowerCase() : k === 'num' ? (s.p.number ?? 999) : s[k];
+
+function emptyState(title, text, btn) {
+  return `<div class="empty"><h3>${title}</h3><p class="note">${text}</p>${btn && S.canEdit ? btn : ''}</div>`;
+}
+
+function renderPlayers(stats) {
+  const el = $('#p-spelers');
+  if (!S.players.length) { el.innerHTML = emptyState('Nog geen spelers', S.canEdit ? 'Voeg eerst de selectie toe. Daarna kun je wedstrijden invoeren.' : 'De selectie is nog niet ingevoerd.', '<button class="btn primary" type="button" data-act="addPlayer">Speler toevoegen</button>'); return; }
+  const { key, dir } = S.sort, f = dir === 'asc' ? 1 : -1;
+  const rows = [...stats].sort((a, b) => { const x = sortVal(a, key), y = sortVal(b, key); return (x > y ? 1 : x < y ? -1 : 0) * f || b.g - a.g || a.p.name.localeCompare(b.p.name); });
+  el.innerHTML = `<div class="tablewrap"><table>
+    <caption class="note" style="text-align:left;padding:12px">Inclusief niet-geregistreerde goals en assists. Klik op een kolomkop om te sorteren${S.canEdit ? ', op een speler om te bewerken' : ''}.</caption>
+    <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>
+    <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
+      <td class="num">${s.p.number ?? ''}</td>
+      <td>${esc(s.p.name)}${s.p.position === 'keeper' ? '<span class="pos">keeper</span>' : ''}</td>
+      ${['gp', 'g', 'a', 'pts'].map(k => `<td class="${k === key ? 'sorted' : ''}">${s[k]}</td>`).join('')}
+      <td class="${key === 'gpg' ? 'sorted' : ''}">${s.gp ? s.gpg.toFixed(2).replace('.', ',') : '–'}</td>
+      ${['mvp', 'y', 'r'].map(k => `<td class="${k === key ? 'sorted' : ''}">${s[k]}</td>`).join('')}
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderMatches(matches) {
+  const el = $('#p-wedstrijden');
+  if (!matches.length) { el.innerHTML = emptyState('Nog geen wedstrijden', S.canEdit ? (S.players.length ? 'Voer na elke wedstrijd de uitslag, opstelling, goals en assists in.' : 'Voeg eerst spelers toe.') : 'Er zijn nog geen uitslagen ingevoerd.', S.players.length && S.seasons.length ? '<button class="btn primary" type="button" data-act="addMatch">Wedstrijd toevoegen</button>' : ''); return; }
+  const list = (obj) => Object.entries(obj || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => esc(playerName(id)) + (n > 1 ? ' ' + n : '')).join(', ');
+  el.innerHTML = `<ul class="matches">${matches.map(m => {
+    const g = list(m.goals), a = list(m.assists);
+    return `<li class="match${S.canEdit ? ' click' : ''}" data-match="${esc(m.id)}"${S.canEdit ? ' tabindex="0" role="button" aria-label="Bewerk wedstrijd tegen ' + esc(m.opponent) + '"' : ''}>
+      <span class="res ${result(m)}" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(m)]}">${result(m)}</span>
+      <span class="when">${fmtDate(m.date)}, ${m.home ? 'thuis' : 'uit'}</span>
+      <span class="opp">${m.home ? 'FC Flamingo vs ' + esc(m.opponent) : esc(m.opponent) + ' vs FC Flamingo'}</span>
+      <span class="score">${m.home ? `${m.gf}-${m.ga}` : `${m.ga}-${m.gf}`}</span>
+      ${g || a || m.mvp ? `<span class="detail">${g ? 'Goals: ' + g + '. ' : ''}${a ? 'Assists: ' + a + '. ' : ''}${m.mvp ? 'MVP: ' + esc(playerName(m.mvp)) + '.' : ''}</span>` : ''}
+    </li>`; }).join('')}</ul>`;
+}
+
+function renderKeepers(stats) {
+  const el = $('#p-keepers');
+  const ks = stats.filter(s => s.kgp > 0 || s.p.position === 'keeper').sort((a, b) => b.cs - a.cs || b.kgp - a.kgp);
+  if (!ks.length) { el.innerHTML = emptyState('Nog geen keepers', 'Zet een speler op positie keeper, of kies de keeper bij een wedstrijd.'); return; }
+  el.innerHTML = `<div class="tablewrap"><table>
+    <thead><tr><th scope="col">#</th><th scope="col">Keeper</th><th scope="col">In doel</th><th scope="col">Tegengoals</th><th scope="col">Gem. tegen</th><th scope="col">De nul gehouden</th></tr></thead>
+    <tbody>${ks.map(s => `<tr class="${s.kgp ? '' : 'idle'}"><td class="num">${s.p.number ?? ''}</td><td>${esc(s.p.name)}</td><td>${s.kgp}</td><td>${s.conc}</td><td>${s.kgp ? (s.conc / s.kgp).toFixed(1).replace('.', ',') : '–'}</td><td class="sorted">${s.cs}</td></tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderExtras() {
+  const el = $('#p-extra'), xs = seasonExtras().sort((a, b) => playerName(a.player).localeCompare(playerName(b.player)));
+  const add = S.canEdit && S.players.length && S.seasons.length ? '<button class="btn primary" type="button" data-act="addExtra">Toevoegen</button>' : '';
+  if (!xs.length) { el.innerHTML = emptyState('Alles geregistreerd', 'Hier komen goals en assists die wel in de stand staan, maar bij geen enkele wedstrijd horen.', add); return; }
+  const tg = xs.reduce((t, x) => t + (+x.goals || 0), 0), ta = xs.reduce((t, x) => t + (+x.assists || 0), 0);
+  el.innerHTML = `<p class="note">Deze goals en assists staan in de stand, maar zijn niet aan een wedstrijd gekoppeld. Ze tellen mee in de spelerstotalen, niet in de uitslagen.</p>
+    <div class="tablewrap"><table>
+    <thead><tr><th scope="col">#</th><th scope="col">Speler</th><th scope="col">Goals</th><th scope="col">Assists</th><th scope="col" style="text-align:left">Notitie</th></tr></thead>
+    <tbody>${xs.map(x => { const p = S.players.find(p => p.id === x.player); return `<tr${S.canEdit ? ` class="click" tabindex="0" data-extra="${esc(x.id)}"` : ''}><td class="num">${p?.number ?? ''}</td><td>${esc(playerName(x.player))}</td><td>${+x.goals || 0}</td><td>${+x.assists || 0}</td><td style="text-align:left;white-space:normal">${esc(x.note)}</td></tr>`; }).join('')}
+    <tr><td></td><td>Totaal</td><td class="sorted">${tg}</td><td class="sorted">${ta}</td><td></td></tr></tbody>
+  </table></div>${add ? `<div>${add}</div>` : ''}`;
+}
+
+function render() {
+  renderSeasons();
+  const matches = seasonMatches(), stats = playerStats(matches);
+  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderExtras();
+  $('#addMatch').disabled = !S.players.length || !S.seasons.length;
+}
+
+/* ---------- interactions ---------- */
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3500); }
+async function save(fn, okMsg) {
+  try { await fn(); toast(okMsg); return true; }
+  catch (e) { toast(e?.code === '42501' ? 'Opslaan lukte niet. Je hebt geen bewerkrechten; log opnieuw in.' : 'Opslaan lukte niet. Probeer het opnieuw.'); return false; }
+}
+function armDelete(btn, action) {
+  btn.classList.remove('armed'); btn.textContent = 'Verwijderen';
+  btn.onclick = () => {
+    if (!btn.classList.contains('armed')) { btn.classList.add('armed'); btn.textContent = 'Klik nogmaals om te verwijderen'; return; }
+    action();
+  };
+}
+
+document.querySelectorAll('[role="tab"]').forEach(t => t.addEventListener('click', () => selectTab(t.id.slice(2))));
+document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
+  const tabs = [...document.querySelectorAll('[role="tab"]')], i = tabs.indexOf(document.activeElement);
+  if (i < 0 || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); selectTab(n.id.slice(2));
+});
+function selectTab(name) {
+  S.tab = name;
+  document.querySelectorAll('[role="tab"]').forEach(t => { const on = t.id === 't-' + name; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
+  document.querySelectorAll('[role="tabpanel"]').forEach(p => p.hidden = p.id !== 'p-' + name);
+}
+selectTab('spelers');
+
+$('#season').addEventListener('change', e => { S.season = e.target.value; store.set('fcf-season', S.season); render(); });
+document.addEventListener('click', e => {
+  const sort = e.target.closest('[data-sort]');
+  if (sort) { const k = sort.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? (S.sort.dir === 'asc' ? 'desc' : 'asc') : (k === 'name' || k === 'num' ? 'asc' : 'desc') }; render(); return; }
+  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addExtra: openExtra })[act.dataset.act](); return; }
+  if (e.target.closest('[data-close]')) { e.target.closest('dialog').close(); return; }
+  if (!S.canEdit) return;
+  const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
+  const mr = e.target.closest('[data-match]'); if (mr) { openMatch(S.matches.find(m => m.id === mr.dataset.match)); return; }
+  const xr = e.target.closest('[data-extra]'); if (xr) openExtra(S.extras.find(x => x.id === xr.dataset.extra));
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-extra].click')) e.target.click(); });
+
+/* unregistered goals/assists dialog */
+let editExtra = null;
+function openExtra(x) {
+  editExtra = x || null;
+  $('#dlgExtraTitle').textContent = x ? 'Niet geregistreerd bewerken' : 'Niet geregistreerd toevoegen';
+  $('#xPlayer').innerHTML = sortedPlayers().map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  $('#xPlayer').value = x?.player || '';
+  $('#xGoals').value = x?.goals || ''; $('#xAssists').value = x?.assists || ''; $('#xNote').value = x?.note || '';
+  $('#xDelete').hidden = !x;
+  if (x) armDelete($('#xDelete'), async () => { if (await save(() => S.db.doc('extras/' + x.id).delete(), 'Verwijderd')) $('#dlgExtra').close(); });
+  $('#dlgExtra').showModal();
+}
+$('#formExtra').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = {
+    season: editExtra?.season || (S.season === 'all' ? [...S.seasons].sort((a, b) => b.name.localeCompare(a.name))[0].id : S.season),
+    player: $('#xPlayer').value, goals: +$('#xGoals').value || 0, assists: +$('#xAssists').value || 0, note: $('#xNote').value.trim(),
+  };
+  if (!data.player || (!data.goals && !data.assists)) { toast('Vul minstens één goal of assist in.'); return; }
+  const ref = editExtra ? S.db.doc('extras/' + editExtra.id) : S.db.collection('extras').doc();
+  if (await save(() => ref.set(data), 'Opgeslagen voor ' + playerName(data.player))) $('#dlgExtra').close();
+});
+$('#addPlayer').onclick = () => openPlayer();
+$('#addMatch').onclick = () => openMatch();
+$('#addSeason').onclick = () => { $('#formSeason').reset(); $('#dlgSeason').showModal(); };
+
+/* player dialog */
+let editPlayer = null;
+function openPlayer(p) {
+  editPlayer = p || null;
+  $('#dlgPlayerTitle').textContent = p ? 'Speler bewerken' : 'Speler toevoegen';
+  $('#pName').value = p?.name || ''; $('#pNum').value = p?.number ?? ''; $('#pPos').value = p?.position || 'veld';
+  $('#pDelete').hidden = !p;
+  if (p) armDelete($('#pDelete'), async () => { if (await save(() => S.db.doc('players/' + p.id).delete(), p.name + ' verwijderd')) $('#dlgPlayer').close(); });
+  $('#dlgPlayer').showModal();
+}
+$('#formPlayer').addEventListener('submit', async e => {
+  e.preventDefault();
+  const num = $('#pNum').value === '' ? null : +$('#pNum').value;
+  const data = { name: $('#pName').value.trim(), number: num, position: $('#pPos').value };
+  if (!data.name) return;
+  const ref = editPlayer ? S.db.doc('players/' + editPlayer.id) : S.db.collection('players').doc();
+  if (await save(() => ref.set(data), data.name + ' opgeslagen')) $('#dlgPlayer').close();
+});
+
+/* season dialog */
+$('#formSeason').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('#sName').value.trim(); if (!name) return;
+  const ref = S.db.collection('seasons').doc();
+  if (await save(() => ref.set({ name }), 'Seizoen ' + name + ' toegevoegd')) { S.season = ref.id; store.set('fcf-season', ref.id); $('#dlgSeason').close(); }
+});
+
+/* match dialog */
+let editMatch = null;
+const sortedPlayers = () => [...S.players].sort((a, b) => (a.number ?? 999) - (b.number ?? 999) || a.name.localeCompare(b.name));
+function openMatch(m) {
+  editMatch = m || null;
+  $('#dlgMatchTitle').textContent = m ? 'Wedstrijd bewerken' : 'Wedstrijd toevoegen';
+  $('#mDate').value = m?.date || new Date().toISOString().slice(0, 10);
+  $('#mOpp').value = m?.opponent || ''; $('#mHome').value = m ? (m.home ? '1' : '0') : '1';
+  $('#mGF').value = m?.gf ?? ''; $('#mGA').value = m?.ga ?? '';
+  const ps = sortedPlayers();
+  $('#lineupBody').innerHTML = ps.map(p => {
+    const id = esc(p.id), on = m ? (m.played || []).includes(p.id) : false;
+    return `<tr data-id="${id}">
+      <td><input type="checkbox" class="pl" id="pl-${id}" ${on ? 'checked' : ''} aria-label="${esc(p.name)} speelde"></td>
+      <td><label for="pl-${id}">${p.number != null ? p.number + '. ' : ''}${esc(p.name)}</label></td>
+      <td><input type="number" class="g" min="0" max="30" inputmode="numeric" value="${m?.goals?.[p.id] || ''}" aria-label="Goals ${esc(p.name)}"></td>
+      <td><input type="number" class="a" min="0" max="30" inputmode="numeric" value="${m?.assists?.[p.id] || ''}" aria-label="Assists ${esc(p.name)}"></td>
+      <td><input type="checkbox" class="y" ${(m?.yellow || []).includes(p.id) ? 'checked' : ''} aria-label="Gele kaart ${esc(p.name)}"></td>
+      <td><input type="checkbox" class="r" ${(m?.red || []).includes(p.id) ? 'checked' : ''} aria-label="Rode kaart ${esc(p.name)}"></td>
+    </tr>`; }).join('');
+  const opts = '<option value="">Geen</option>' + ps.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  $('#mMvp').innerHTML = opts; $('#mKeeper').innerHTML = opts;
+  $('#mMvp').value = m?.mvp || '';
+  $('#mKeeper').value = m?.keeper || (ps.find(p => p.position === 'keeper')?.id ?? '');
+  $('#mDelete').hidden = !m;
+  if (m) armDelete($('#mDelete'), async () => { if (await save(() => S.db.doc('matches/' + m.id).delete(), 'Wedstrijd verwijderd')) $('#dlgMatch').close(); });
+  checkGoals();
+  $('#dlgMatch').showModal();
+}
+function checkGoals() {
+  const sum = [...document.querySelectorAll('#lineupBody .g')].reduce((t, i) => t + (+i.value || 0), 0), gf = +$('#mGF').value || 0;
+  const c = $('#mCheck');
+  c.textContent = `${sum} van ${gf} doelpunten toegekend aan spelers.` + (sum !== gf ? ' Klopt dit? Eigen goals van de tegenstander tellen niet mee.' : '');
+  c.classList.toggle('off', sum !== gf);
+}
+$('#lineupBody').addEventListener('input', e => {
+  if (e.target.matches('.g, .a, .y, .r') && (e.target.type === 'checkbox' ? e.target.checked : +e.target.value > 0)) e.target.closest('tr').querySelector('.pl').checked = true;
+  checkGoals();
+});
+$('#mGF').addEventListener('input', checkGoals);
+$('#formMatch').addEventListener('submit', async e => {
+  e.preventDefault();
+  const rows = [...document.querySelectorAll('#lineupBody tr')];
+  const played = [], goals = {}, assists = {}, yellow = [], red = [];
+  for (const r of rows) {
+    const id = r.dataset.id, q = s => r.querySelector(s);
+    if (!q('.pl').checked) continue;
+    played.push(id);
+    if (+q('.g').value > 0) goals[id] = +q('.g').value;
+    if (+q('.a').value > 0) assists[id] = +q('.a').value;
+    if (q('.y').checked) yellow.push(id);
+    if (q('.r').checked) red.push(id);
+  }
+  const mvp = $('#mMvp').value, keeper = $('#mKeeper').value;
+  if (keeper && !played.includes(keeper)) played.push(keeper);
+  const data = {
+    season: editMatch?.season || (S.season === 'all' ? [...S.seasons].sort((a, b) => b.name.localeCompare(a.name))[0].id : S.season),
+    date: $('#mDate').value, opponent: $('#mOpp').value.trim(), home: $('#mHome').value === '1',
+    gf: +$('#mGF').value, ga: +$('#mGA').value, played, goals, assists, yellow, red, mvp: mvp || null, keeper: keeper || null,
+  };
+  const ref = editMatch ? S.db.doc('matches/' + editMatch.id) : S.db.collection('matches').doc();
+  if (await save(() => ref.set(data), 'Wedstrijd tegen ' + data.opponent + ' opgeslagen')) $('#dlgMatch').close();
+});
+
+/* ---------- Supabase ---------- */
+// De publishable key is openbaar en mag in de pagina staan; de beveiliging zit in de database-regels (setup.sql).
+const SUPABASE_URL = 'https://yptfjefhouoiiisuyeyt.supabase.co';
+const SUPABASE_KEY = 'PLAK_HIER_DE_PUBLISHABLE_KEY';
+// Een gebruikersnaam zonder @ (zoals "coach") wordt coach@fcflamingo.local in Supabase.
+const USER_DOMAIN = 'fcflamingo.local';
+const toEmail = u => u.includes('@') ? u : u.toLowerCase() + '@' + USER_DOMAIN;
+const shortName = e => (e || '').replace('@' + USER_DOMAIN, '');
+const TABLES = ['seasons', 'players', 'matches', 'extras'];
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function run(req) { const { error } = await req; if (error) throw error; await loadAll(); }
+// Same doc/collection shape the dialogs already use: table/id paths, set = full upsert.
+S.db = {
+  doc(path) {
+    const [table, id] = path.split('/');
+    return { id, set: data => run(sb.from(table).upsert({ id, ...data })), delete: () => run(sb.from(table).delete().eq('id', id)) };
+  },
+  collection(table) { return { doc: id => S.db.doc(table + '/' + (id || crypto.randomUUID())) }; },
+};
+
+async function loadAll() {
+  const res = await Promise.all(TABLES.map(t => sb.from(t).select('*')));
+  if (res.some(r => r.error)) { $('#status').hidden = false; $('#status').textContent = 'De gegevens konden niet worden geladen. Probeer het later opnieuw.'; return; }
+  TABLES.forEach((t, i) => S[t] = res[i].data);
+  $('#status').hidden = true;
+  render();
+}
+
+async function refreshAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  S.user = session?.user || null;
+  S.canEdit = S.user ? !!(await sb.rpc('is_editor')).data : false;
+  ['addMatch', 'addPlayer', 'addSeason'].forEach(id => $('#' + id).hidden = !S.canEdit);
+  $('#login').textContent = S.user ? 'Uitloggen' : 'Inloggen';
+  $('#login').title = S.user ? 'Ingelogd als ' + shortName(S.user.email) : 'Inloggen voor coaches en aanvoerders';
+  render();
+}
+sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
+
+$('#login').onclick = async () => {
+  if (S.user) { await sb.auth.signOut(); toast('Uitgelogd'); return; }
+  $('#formLogin').reset(); $('#loginError').hidden = true; $('#dlgLogin').showModal();
+};
+$('#formLogin').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('#loginSubmit'), err = $('#loginError');
+  btn.disabled = true; btn.textContent = 'Bezig…'; err.hidden = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email: toEmail($('#lEmail').value.trim()), password: $('#lPass').value });
+  btn.disabled = false; btn.textContent = 'Inloggen';
+  if (error) { err.textContent = 'Inloggen lukte niet. Controleer je gebruikersnaam en wachtwoord.'; err.hidden = false; return; }
+  const { data: ok } = await sb.rpc('is_editor');
+  if (!ok) { err.textContent = 'Je bent ingelogd, maar dit account heeft geen bewerkrechten. Vraag de aanvoerder om je toe te voegen.'; err.hidden = false; return; }
+  $('#dlgLogin').close(); toast('Ingelogd als ' + shortName(data.user.email));
+});
+
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') loadAll(); });
+
+render();
+if (SUPABASE_KEY.startsWith('PLAK_')) { $('#status').textContent = 'Nog niet gekoppeld: zet de publishable key van Supabase in index.html.'; }
+else { loadAll(); refreshAuth(); if (location.hash === '#inloggen') $('#login').click(); }
+</script>
+
+</body>
+</html>

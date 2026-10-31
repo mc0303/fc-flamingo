@@ -446,7 +446,7 @@ function renderPlayers(stats) {
 function renderMatches(matches) {
   const el = $('#p-wedstrijden');
   if (!matches.length) { el.innerHTML = emptyState('Nog geen wedstrijden', S.canEdit ? (S.players.length ? 'Voer na elke wedstrijd de uitslag, opstelling, goals en assists in.' : 'Voeg eerst spelers toe.') : 'Er zijn nog geen uitslagen ingevoerd.', S.players.length && S.seasons.length ? '<button class="btn primary" type="button" data-act="addMatch">Wedstrijd toevoegen</button>' : ''); return; }
-  const list = (obj) => Object.entries(obj || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => esc(playerName(id)) + (n > 1 ? ' ' + n : '')).join(', ');
+  const list = (obj) => Object.entries(obj || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => esc(playerName(id)) + (n > 1 ? ' ' + n + 'x' : '')).join(', ');
   el.innerHTML = `<ul class="matches">${matches.map(m => {
     const g = list(m.goals), a = list(m.assists);
     return `<li class="match ${result(m)}${S.canEdit ? ' click' : ''}" data-match="${esc(m.id)}"${S.canEdit ? ' tabindex="0" role="button" aria-label="Bewerk wedstrijd tegen ' + esc(m.opponent) + '"' : ''}>
@@ -737,7 +737,7 @@ function drawInfo(ctx, d, y, W, pink, text, bg) {
 }
 
 function drawScorers(ctx, d, y, W, pink, text) {
-  const list = o => Object.entries(o || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => playerName(id) + (n > 1 ? ' ' + n : '')).join(', ');
+  const list = o => Object.entries(o || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => playerName(id) + (n > 1 ? ' ' + n + 'x' : '')).join(', ');
   [['GOALS', list(d.goals)], ['ASSISTS', list(d.assists)]].filter(r => r[1]).forEach(([label, names], i) => {
     const yy = y + i * 110;
     ctx.fillStyle = pink; ctx.font = `600 38px ${DISPLAY}`; ctx.fillText(label, W / 2, yy);

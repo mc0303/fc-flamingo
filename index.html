@@ -155,6 +155,8 @@ tr.click:hover td { background: var(--panel-2); }
 .sponsors { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
 .sponsor { display: grid; gap: 8px; align-content: start; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; transition: border-color .15s ease; }
 .sponsor:hover { border-color: var(--pink); }
+.sponsor.sp-ghost { opacity: .4; }
+.sponsors.sortable .sponsor { cursor: grab; }
 .sp-logo { aspect-ratio: 16 / 9; max-width: 100%; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; padding: 12px; box-sizing: border-box; overflow: hidden; background: var(--logo-bg); border-radius: var(--r-sm); }
 .sp-logo img { width: 100%; height: 100%; object-fit: contain; }
 .sp-logo span { color: var(--pink-ink); font: 800 1.5rem/1.1 var(--font-display); text-align: center; text-transform: uppercase; }
@@ -314,6 +316,7 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
     <h2 id="dlgSponsorTitle">Sponsor</h2>
     <div class="fields">
       <div class="field"><label for="spName">Naam</label><input id="spName" required maxlength="60" autocomplete="off"></div>
+      <div class="field" id="spPosField"><label for="spPos">Plek in de volgorde</label><select id="spPos"></select></div>
       <div class="field"><label for="spSite">Website</label><input id="spSite" inputmode="url" maxlength="200" placeholder="www.voorbeeld.nl" autocomplete="off"></div>
     </div>
     <div class="field">
@@ -381,6 +384,7 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -565,7 +569,7 @@ document.addEventListener('click', e => {
   const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
   const mr = e.target.closest('[data-match]'); if (mr) { openMatch(S.matches.find(m => m.id === mr.dataset.match)); return; }
   const xr = e.target.closest('[data-extra]'); if (xr) { openExtra(S.extras.find(x => x.id === xr.dataset.extra)); return; }
-  const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a')) openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor));
+  const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a') && Date.now() - justDragged > 400) openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor));
 });
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-extra].click, [data-sponsor].click')) e.target.click(); });
 
@@ -797,22 +801,26 @@ function drawInfo(ctx, d, y, W, pink, text, bg) {
   ctx.textAlign = 'center';
 }
 
-function drawScorers(ctx, d, y, W, pink, text) {
-  const list = o => Object.entries(o || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => playerName(id) + (n > 1 ? ' ' + n + 'x' : '')).join(', ');
-  [['GOALS', list(d.goals)], ['ASSISTS', list(d.assists)]].filter(r => r[1]).forEach(([label, names], i) => {
-    const yy = y + i * 110;
-    ctx.fillStyle = pink; ctx.font = `600 38px ${DISPLAY}`; ctx.fillText(label, W / 2, yy);
-    ctx.fillStyle = text; fitFont(ctx, names, 600, 50, W - 160); ctx.fillText(names, W / 2, yy + 56);
-  });
-}
+const countList = o => Object.entries(o || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => playerName(id) + (n > 1 ? ' ' + n + 'x' : ''));
 
 function drawPost() {
   const cv = $('#poCanvas'), W = 1080, H = $('#poSize').value === 'story' ? 1920 : 1350;
   if (cv.height !== H) cv.height = H;
-  const ctx = cv.getContext('2d'), d = postData(), result = d.type === 'uitslag';
+  const ctx = cv.getContext('2d'), d = postData(), result = d.type === 'uitslag', cx = W / 2;
   const pink = token('--pink'), text = token('--text'), bg = token('--poster');
-  const spons = $('#poSponsors').checked && S.sponsors.length > 0, top = (H - (result ? 1060 : 900) - (spons ? 190 : 0)) / 2, cx = W / 2;
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  const spons = $('#poSponsors').checked && S.sponsors.length > 0;
+  const scorers = result ? countList(d.goals) : [], assists = result ? countList(d.assists).join(', ') : '';
+
+  // Vertical positions, measured from the top of the content block.
+  const rule = scorers.length ? 700 + (scorers.length - 1) * 56 + 50 : 690;
+  const below = result ? rule + 80 : rule + 100;
+  const tag = result ? (assists ? rule + 236 : rule + 100) : rule + 200;
+  const total = spons ? tag + 140 : tag + 20;
+  // Long scorer lists on a feed post: shrink the whole block instead of clipping it.
+  const s = Math.min(1, (H - 80) / total), top = (H / s - total) / 2;
+
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.setTransform(s, 0, 0, s, W * (1 - s) / 2, 0);
   ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
 
   const kicker = result ? (d.date ? new Date(d.date + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }).toUpperCase() : '') : (d.klasse || '').toUpperCase();
@@ -822,33 +830,31 @@ function drawPost() {
   fitFont(ctx, title, 800, 260, W - 120); ctx.fillText(title, cx, top + 290);
 
   // Home team on the left, like the fixture list.
-  const rowY = top + 480, box = 300;
-  const us = x => drawFcf(ctx, x, rowY, box, pink), them = x => drawOpp(ctx, x, rowY, box, d.opponent, text);
-  if (d.home === false) { them(250); us(W - 250); } else { us(250); them(W - 250); }
+  const rowY = top + 480, box = 300, usX = d.home === false ? W - 250 : 250;
+  drawFcf(ctx, usX, rowY, box, pink); drawOpp(ctx, W - usX, rowY, box, d.opponent, text);
   ctx.fillStyle = text; ctx.textAlign = 'center';
   if (result && !d.empty) { const sc = d.home ? `${d.gf} - ${d.ga}` : `${d.ga} - ${d.gf}`; fitFont(ctx, sc, 800, 150, 280); ctx.fillText(sc, cx, rowY + 52); }
   else { ctx.font = `800 120px ${DISPLAY}`; ctx.fillText('VS', cx, rowY + 42); }
+  ctx.fillStyle = text;
+  scorers.forEach((n, k) => { fitFont(ctx, n, 600, 46, 400); ctx.fillText(n, usX, top + 700 + k * 56); });
 
-  ctx.fillStyle = pink; ctx.fillRect(90, top + 690, W - 180, 3);
-  if (result) drawScorers(ctx, d, top + 770, W, pink, text); else drawInfo(ctx, d, top + 790, W, pink, text, bg);
-  if (spons) drawSponsors(ctx, top + (result ? 1000 : 880), W, pink);
-  ctx.fillStyle = pink; ctx.font = `600 46px ${DISPLAY}`; ctx.fillText('#FCFLAMINGO', cx, top + (result ? 1040 : 890) + (spons ? 190 : 0));
-
-  const has = !!oppLogo(d.opponent || '');
-  $('#poCut').checked = !!d.opponent && store.get(cutKey(d.opponent)) === '1';
-  $('#poLogoClear').hidden = !has;
+  ctx.fillStyle = pink; ctx.fillRect(90, top + rule, W - 180, 3);
+  if (!result) drawInfo(ctx, d, top + below, W, pink, text, bg);
+  else if (assists) {
+    ctx.fillStyle = pink; ctx.font = `600 38px ${DISPLAY}`; ctx.fillText('ASSISTS', cx, top + below);
+    ctx.fillStyle = text; fitFont(ctx, assists, 600, 50, W - 160); ctx.fillText(assists, cx, top + below + 56);
+  }
+  ctx.fillStyle = pink; ctx.font = `600 46px ${DISPLAY}`; ctx.fillText('#FCFLAMINGO', cx, top + tag);
+  if (spons) drawSponsors(ctx, top + tag + 80, W, pink);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  $('#poLogoClear').hidden = !oppLogo(d.opponent || '');
 }
 
 function drawSponsors(ctx, y, W, pink) {
-  const names = S.sponsors.map(s => s.name);
+  const line = S.sponsors.map(s => s.name).join(' - ');
   ctx.fillStyle = pink; ctx.textAlign = 'center';
-  ctx.font = `600 40px ${DISPLAY}`; ctx.fillText('Sponsored by:', W / 2, y);
-  let size = 46, lines;
-  do {
-    ctx.font = `600 ${size}px ${DISPLAY}`; lines = [];
-    for (const n of names) { const last = lines[lines.length - 1]; if (last && ctx.measureText(last + ' - ' + n).width <= W - 160) lines[lines.length - 1] = last + ' - ' + n; else lines.push(n); }
-  } while (lines.length > 2 && (size -= 2) >= 30);
-  lines.slice(0, 3).forEach((l, i) => ctx.fillText(l, W / 2, y + 62 + i * (size + 12)));
+  ctx.font = `600 38px ${DISPLAY}`; ctx.fillText('Sponsored by:', W / 2, y);
+  fitFont(ctx, line, 600, 44, W - 120); ctx.fillText(line, W / 2, y + 56);
 }
 
 function renderPostOptions() {
@@ -856,15 +862,17 @@ function renderPostOptions() {
   sel.innerHTML = [...S.matches].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(m => `<option value="${esc(m.id)}">${esc(fmtDate(m.date))}, ${m.home ? 'thuis' : 'uit'} tegen ${esc(m.opponent)}</option>`).join('');
   if ([...sel.options].some(o => o.value === v)) sel.value = v;
   $('#poOpps').innerHTML = [...new Set(S.matches.map(m => m.opponent))].map(o => `<option value="${esc(o)}"></option>`).join('');
-  if (S.tab === 'posts') drawPost();
+  if (S.tab === 'posts') { syncCut(); drawPost(); }
 }
 
 function postBlob() { return new Promise(r => $('#poCanvas').toBlob(r, 'image/png')); }
 function postName() { const d = postData(); return `fcflamingo-${d.type}-${d.date || 'post'}.png`; }
 
-$('#postForm').addEventListener('input', drawPost);
+const syncCut = () => { const n = postData().opponent; $('#poCut').checked = !!n && store.get(cutKey(n)) === '1'; };
+$('#postForm').addEventListener('input', e => { if (e.target.id === 'poOpp') syncCut(); drawPost(); });
 $('#postForm').addEventListener('change', e => {
   if (e.target.id === 'poType') document.querySelectorAll('#postForm [data-for]').forEach(el => el.hidden = el.dataset.for !== e.target.value);
+  if (['poType', 'poMatch'].includes(e.target.id)) syncCut();
   drawPost();
 });
 $('#poLogo').addEventListener('change', async e => {
@@ -911,7 +919,24 @@ function renderSponsors() {
       <div class="sp-logo">${safeLogo(s.logo) ? `<img src="${esc(s.logo)}" alt="Logo ${esc(s.name)}">` : `<span>${esc(s.name)}</span>`}</div>
       <div class="sp-name">${esc(s.name)}</div>
       ${safeSite(s.website) ? `<a href="${esc(s.website)}" target="_blank" rel="noopener">${esc(s.website.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, ''))}</a>` : ''}
-    </li>`).join('')}</ul><div>${S.canEdit ? add : ''}</div>`;
+    </li>`).join('')}</ul><p class="note">Sleep de tegels om de volgorde te veranderen. Deze volgorde staat ook onder de Instagram-posts.</p><div>${S.canEdit ? add : ''}</div>`;
+  if (S.canEdit && window.Sortable) {
+    const ul = el.querySelector('.sponsors'); ul.classList.add('sortable');
+    Sortable.create(ul, { animation: 150, delay: 150, delayOnTouchOnly: true, ghostClass: 'sp-ghost',
+      onStart: () => { justDragged = Date.now(); },
+      onEnd: e => { justDragged = Date.now(); if (e.oldIndex !== e.newIndex) reorderSponsors(e.oldIndex, e.newIndex); } });
+  }
+}
+
+let justDragged = 0;
+async function reorderSponsors(from, to) {
+  const list = [...S.sponsors]; list.splice(to, 0, list.splice(from, 1)[0]); S.sponsors = list;
+  try {
+    const res = await Promise.all(list.map((s, i) => sb.from('sponsors').update({ position: i + 1 }).eq('id', s.id)));
+    const bad = res.find(r => r.error); if (bad) throw bad.error;
+    toast('Volgorde opgeslagen');
+  } catch (e) { toast(e?.code === '42703' ? 'De volgorde kan pas worden opgeslagen na de extra SQL-regel in Supabase.' : 'De volgorde opslaan lukte niet. Probeer het opnieuw.'); }
+  await loadAll();
 }
 
 let editSponsor = null, spLogo = '';
@@ -923,6 +948,9 @@ function openSponsor(s) {
   editSponsor = s || null; spLogo = safeLogo(s?.logo);
   $('#dlgSponsorTitle').textContent = s ? 'Sponsor bewerken' : 'Sponsor toevoegen';
   $('#spName').value = s?.name || ''; $('#spSite').value = s?.website || ''; $('#spLogo').value = ''; showSpLogo();
+  const idx = s ? S.sponsors.indexOf(s) : -1;
+  $('#spPosField').hidden = !s;
+  $('#spPos').innerHTML = S.sponsors.map((_, i) => `<option value="${i}">${i + 1}</option>`).join(''); if (s) $('#spPos').value = idx;
   $('#spDelete').hidden = !s;
   if (s) armDelete($('#spDelete'), async () => { if (await save(() => S.db.doc('sponsors/' + s.id).delete(), s.name + ' verwijderd')) $('#dlgSponsor').close(); });
   $('#dlgSponsor').showModal();
@@ -943,8 +971,10 @@ $('#formSponsor').addEventListener('submit', async e => {
   let site = $('#spSite').value.trim(); if (site && !/^https?:\/\//i.test(site)) site = 'https://' + site;
   const data = { name: $('#spName').value.trim(), website: site, logo: spLogo };
   if (!data.name) return;
+  if (!editSponsor && S.sponsors.some(s => 'position' in s)) data.position = S.sponsors.length + 1;
+  const from = editSponsor ? S.sponsors.findIndex(s => s.id === editSponsor.id) : -1, to = +$('#spPos').value;
   const ref = editSponsor ? S.db.doc('sponsors/' + editSponsor.id) : S.db.collection('sponsors').doc();
-  if (await save(() => ref.set(data), data.name + ' opgeslagen')) $('#dlgSponsor').close();
+  if (await save(() => ref.set(data), data.name + ' opgeslagen')) { $('#dlgSponsor').close(); if (from >= 0 && from !== to) reorderSponsors(from, to); }
 });
 
 /* ---------- Supabase ---------- */
@@ -970,7 +1000,7 @@ S.db = {
 
 async function loadAll() {
   const [sp, ...res] = await Promise.all([sb.from('sponsors').select('*').order('created_at'), ...TABLES.map(t => sb.from(t).select('*'))]);
-  S.sponsors = sp.error ? [] : sp.data;
+  S.sponsors = sp.error ? [] : sp.data.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   if (res.some(r => r.error)) { $('#status').hidden = false; $('#status').textContent = 'De gegevens konden niet worden geladen. Probeer het later opnieuw.'; return; }
   TABLES.forEach((t, i) => S[t] = res[i].data);
   $('#status').hidden = true;

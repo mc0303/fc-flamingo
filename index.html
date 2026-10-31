@@ -28,6 +28,7 @@
   --red: #e5484d;
   --loss: #4a3b42;
   --poster: #000000;
+  --logo-bg: #ffffff;
   --glow: rgb(232 103 155 / .13);
   --scrim: rgb(0 0 0 / .65);
   --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
@@ -147,6 +148,19 @@ tr.click:hover td { background: var(--panel-2); }
 .logo-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .logo-row input { flex: 1 1 200px; }
 
+.check-row { display: flex; gap: 8px; align-items: center; min-height: 44px; cursor: pointer; }
+.check-row input { width: 20px; height: 20px; accent-color: var(--pink); cursor: pointer; }
+
+/* sponsors */
+.sponsors { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
+.sponsor { display: grid; gap: 8px; align-content: start; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; transition: border-color .15s ease; }
+.sponsor:hover { border-color: var(--pink); }
+.sp-logo { aspect-ratio: 16 / 9; max-width: 100%; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; padding: 12px; box-sizing: border-box; overflow: hidden; background: var(--logo-bg); border-radius: var(--r-sm); }
+.sp-logo img { width: 100%; height: 100%; object-fit: contain; }
+.sp-logo span { color: var(--pink-ink); font: 800 1.5rem/1.1 var(--font-display); text-align: center; text-transform: uppercase; }
+.sp-name { font-weight: 600; }
+.sponsor a { color: var(--pink); font-size: 0.875rem; overflow-wrap: anywhere; }
+
 /* dialogs */
 dialog { width: min(640px, calc(100% - 24px)); max-height: calc(100% - 24px); padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); color: var(--text); }
 dialog::backdrop { background: var(--scrim); }
@@ -205,12 +219,14 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
       <button class="tab" role="tab" id="t-wedstrijden" aria-controls="p-wedstrijden" aria-selected="false">Wedstrijden</button>
       <button class="tab" role="tab" id="t-keepers" aria-controls="p-keepers" aria-selected="false">Keepers</button>
       <button class="tab" role="tab" id="t-extra" aria-controls="p-extra" aria-selected="false">Niet geregistreerd</button>
+      <button class="tab" role="tab" id="t-sponsors" aria-controls="p-sponsors" aria-selected="false" hidden>Sponsors</button>
       <button class="tab" role="tab" id="t-posts" aria-controls="p-posts" aria-selected="false" hidden>Instagram</button>
     </div>
     <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers"></div>
     <div class="panel" id="p-wedstrijden" role="tabpanel" aria-labelledby="t-wedstrijden" hidden></div>
     <div class="panel" id="p-keepers" role="tabpanel" aria-labelledby="t-keepers" hidden></div>
     <div class="panel" id="p-extra" role="tabpanel" aria-labelledby="t-extra" hidden></div>
+    <div class="panel" id="p-sponsors" role="tabpanel" aria-labelledby="t-sponsors" hidden></div>
     <div class="panel" id="p-posts" role="tabpanel" aria-labelledby="t-posts" hidden>
       <div class="post-grid">
         <form id="postForm" class="post-form">
@@ -231,8 +247,10 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
           <div class="field">
             <label for="poLogo">Logo tegenstander</label>
             <div class="logo-row"><input id="poLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><button type="button" class="btn danger" id="poLogoClear" hidden>Logo verwijderen</button></div>
+            <label class="check-row"><input type="checkbox" id="poCut"> Witte achtergrond van het logo verwijderen</label>
             <p class="note">Een PNG met transparante achtergrond werkt het mooist. Het logo wordt op dit apparaat onthouden voor deze tegenstander.</p>
           </div>
+          <label class="check-row"><input type="checkbox" id="poSponsors" checked> Sponsors onder de post zetten</label>
           <div class="actions">
             <button type="button" class="btn" id="poShare" hidden>Delen</button>
             <button type="button" class="btn primary" id="poDownload">Afbeelding downloaden</button>
@@ -284,6 +302,27 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
     <div class="field"><label for="xNote">Notitie</label><input id="xNote" maxlength="80" autocomplete="off"></div>
     <div class="actions">
       <button type="button" class="btn danger" id="xDelete" hidden>Verwijderen</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgSponsor" aria-labelledby="dlgSponsorTitle">
+  <form id="formSponsor">
+    <h2 id="dlgSponsorTitle">Sponsor</h2>
+    <div class="fields">
+      <div class="field"><label for="spName">Naam</label><input id="spName" required maxlength="60" autocomplete="off"></div>
+      <div class="field"><label for="spSite">Website</label><input id="spSite" inputmode="url" maxlength="200" placeholder="www.voorbeeld.nl" autocomplete="off"></div>
+    </div>
+    <div class="field">
+      <label for="spLogo">Logo</label>
+      <div class="logo-row"><input id="spLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><button type="button" class="btn danger" id="spLogoClear" hidden>Logo verwijderen</button></div>
+      <div class="sp-logo" id="spPreview" hidden></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn danger" id="spDelete" hidden>Verwijderen</button>
       <span class="spacer"></span>
       <button type="button" class="btn" data-close>Annuleren</button>
       <button type="submit" class="btn primary">Opslaan</button>
@@ -348,7 +387,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
-const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], extras: [], season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
+const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], extras: [], sponsors: [], season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
 
 /* ---------- stats ---------- */
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
@@ -484,7 +523,7 @@ function renderExtras() {
 function render() {
   renderSeasons();
   const matches = seasonMatches(), stats = playerStats(matches);
-  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderExtras(); renderPostOptions();
+  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderExtras(); renderSponsors(); renderPostOptions();
   $('#addMatch').disabled = !S.players.length || !S.seasons.length;
 }
 
@@ -520,14 +559,15 @@ $('#season').addEventListener('change', e => { S.season = e.target.value; render
 document.addEventListener('click', e => {
   const sort = e.target.closest('[data-sort]');
   if (sort) { const k = sort.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? (S.sort.dir === 'asc' ? 'desc' : 'asc') : (k === 'name' || k === 'num' ? 'asc' : 'desc') }; render(); return; }
-  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addExtra: openExtra })[act.dataset.act](); return; }
+  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addExtra: openExtra, addSponsor: () => openSponsor() })[act.dataset.act](); return; }
   if (e.target.closest('[data-close]')) { e.target.closest('dialog').close(); return; }
   if (!S.canEdit) return;
   const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
   const mr = e.target.closest('[data-match]'); if (mr) { openMatch(S.matches.find(m => m.id === mr.dataset.match)); return; }
-  const xr = e.target.closest('[data-extra]'); if (xr) openExtra(S.extras.find(x => x.id === xr.dataset.extra));
+  const xr = e.target.closest('[data-extra]'); if (xr) { openExtra(S.extras.find(x => x.id === xr.dataset.extra)); return; }
+  const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a')) openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor));
 });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-extra].click')) e.target.click(); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-extra].click, [data-sponsor].click')) e.target.click(); });
 
 /* unregistered goals/assists dialog */
 let editExtra = null;
@@ -654,15 +694,36 @@ const logoKey = name => 'fcf-logo:' + name.trim().toLowerCase();
 const logoCache = {};
 
 // Opponent logos live in this browser only, keyed by opponent name.
+const cutKey = name => 'fcf-logo-cut:' + name.trim().toLowerCase();
 function oppLogo(name) {
   if (!name.trim()) return null;
-  const k = logoKey(name);
-  if (!(k in logoCache)) {
-    logoCache[k] = null;
+  const k = logoKey(name), cut = store.get(cutKey(name)) === '1', ck = k + (cut ? '#cut' : '');
+  if (!(ck in logoCache)) {
+    logoCache[ck] = null;
     const src = store.get(k);
-    if (src) { const img = new Image(); img.onload = () => { logoCache[k] = img; drawPost(); }; img.src = src; }
+    if (src) { const img = new Image(); img.onload = () => { logoCache[ck] = cut ? removeWhite(img) : img; drawPost(); }; img.src = src; }
   }
-  return logoCache[k];
+  return logoCache[ck];
+}
+
+// Makes near-white pixels transparent, but only the ones connected to the image edge,
+// so white parts inside the logo (stripes, letters) stay.
+function removeWhite(img) {
+  const c = document.createElement('canvas'), w = c.width = img.naturalWidth || img.width, h = c.height = img.naturalHeight || img.height;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+  const id = x.getImageData(0, 0, w, h), p = id.data, bg = new Uint8Array(w * h), stack = [];
+  const light = i => Math.min(p[i * 4], p[i * 4 + 1], p[i * 4 + 2]);
+  const push = i => { if (!bg[i] && (p[i * 4 + 3] === 0 || light(i) >= 225)) { bg[i] = 1; stack.push(i); } };
+  for (let i = 0; i < w; i++) { push(i); push((h - 1) * w + i); }
+  for (let j = 0; j < h; j++) { push(j * w); push(j * w + w - 1); }
+  while (stack.length) { const i = stack.pop(), col = i % w; if (col > 0) push(i - 1); if (col < w - 1) push(i + 1); if (i >= w) push(i - w); if (i < w * (h - 1)) push(i + w); }
+  for (let i = 0; i < w * h; i++) {
+    if (bg[i]) { p[i * 4 + 3] = 0; continue; }
+    const col = i % w, edge = (col > 0 && bg[i - 1]) || (col < w - 1 && bg[i + 1]) || (i >= w && bg[i - w]) || (i < w * (h - 1) && bg[i + w]);
+    if (edge && light(i) > 160) p[i * 4 + 3] = Math.round(p[i * 4 + 3] * (255 - light(i)) / 95);
+  }
+  x.putImageData(id, 0, 0);
+  return c;
 }
 
 function postData() {
@@ -750,7 +811,7 @@ function drawPost() {
   if (cv.height !== H) cv.height = H;
   const ctx = cv.getContext('2d'), d = postData(), result = d.type === 'uitslag';
   const pink = token('--pink'), text = token('--text'), bg = token('--poster');
-  const top = (H - (result ? 1060 : 900)) / 2, cx = W / 2;
+  const spons = $('#poSponsors').checked && S.sponsors.length > 0, top = (H - (result ? 1060 : 900) - (spons ? 190 : 0)) / 2, cx = W / 2;
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
   ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
 
@@ -770,10 +831,24 @@ function drawPost() {
 
   ctx.fillStyle = pink; ctx.fillRect(90, top + 690, W - 180, 3);
   if (result) drawScorers(ctx, d, top + 770, W, pink, text); else drawInfo(ctx, d, top + 790, W, pink, text, bg);
-  ctx.fillStyle = pink; ctx.font = `600 46px ${DISPLAY}`; ctx.fillText('#FCFLAMINGO', cx, top + (result ? 1040 : 890));
+  if (spons) drawSponsors(ctx, top + (result ? 1000 : 880), W, pink);
+  ctx.fillStyle = pink; ctx.font = `600 46px ${DISPLAY}`; ctx.fillText('#FCFLAMINGO', cx, top + (result ? 1040 : 890) + (spons ? 190 : 0));
 
   const has = !!oppLogo(d.opponent || '');
+  $('#poCut').checked = !!d.opponent && store.get(cutKey(d.opponent)) === '1';
   $('#poLogoClear').hidden = !has;
+}
+
+function drawSponsors(ctx, y, W, pink) {
+  const names = S.sponsors.map(s => s.name);
+  ctx.fillStyle = pink; ctx.textAlign = 'center';
+  ctx.font = `600 40px ${DISPLAY}`; ctx.fillText('Sponsored by:', W / 2, y);
+  let size = 46, lines;
+  do {
+    ctx.font = `600 ${size}px ${DISPLAY}`; lines = [];
+    for (const n of names) { const last = lines[lines.length - 1]; if (last && ctx.measureText(last + ' - ' + n).width <= W - 160) lines[lines.length - 1] = last + ' - ' + n; else lines.push(n); }
+  } while (lines.length > 2 && (size -= 2) >= 30);
+  lines.slice(0, 3).forEach((l, i) => ctx.fillText(l, W / 2, y + 62 + i * (size + 12)));
 }
 
 function renderPostOptions() {
@@ -802,12 +877,14 @@ $('#poLogo').addEventListener('change', async e => {
     c.width = Math.round((img0.naturalWidth || 600) * r); c.height = Math.round((img0.naturalHeight || 600) * r);
     c.getContext('2d').drawImage(img0, 0, 0, c.width, c.height); URL.revokeObjectURL(img0.src);
     const img = new Image(); img.src = c.toDataURL('image/png'); await img.decode();
-    logoCache[logoKey(name)] = img; store.set(logoKey(name), img.src);
+    store.set(logoKey(name), img.src); store.set(cutKey(name), $('#poCut').checked ? '1' : '0');
+    delete logoCache[logoKey(name)]; delete logoCache[logoKey(name) + '#cut'];
     drawPost(); toast('Logo van ' + name + ' toegevoegd');
   } catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
   e.target.value = '';
 });
-$('#poLogoClear').onclick = () => { const k = logoKey(postData().opponent); logoCache[k] = null; try { localStorage.removeItem(k); } catch {} drawPost(); };
+$('#poLogoClear').onclick = () => { const k = logoKey(postData().opponent); delete logoCache[k]; delete logoCache[k + '#cut']; try { localStorage.removeItem(k); } catch {} drawPost(); };
+$('#poCut').addEventListener('change', e => { const name = postData().opponent; if (name) store.set(cutKey(name), e.target.checked ? '1' : '0'); });
 $('#poDownload').onclick = async () => {
   const url = URL.createObjectURL(await postBlob()), a = document.createElement('a');
   a.href = url; a.download = postName(); document.body.append(a); a.click(); a.remove();
@@ -823,6 +900,52 @@ if (navigator.canShare?.({ files: [new File([''], 'x.png', { type: 'image/png' }
 }
 $('#poDate').value = new Date().toISOString().slice(0, 10);
 Promise.all(['600', '800'].map(w => document.fonts.load(`${w} 100px "Barlow Condensed"`))).then(() => { if (S.tab === 'posts') drawPost(); });
+
+/* ---------- Sponsors ---------- */
+const safeLogo = s => /^data:image\//.test(s || '') ? s : '';
+const safeSite = s => /^https?:\/\//i.test(s || '') ? s : '';
+function renderSponsors() {
+  const el = $('#p-sponsors'), add = '<button class="btn primary" type="button" data-act="addSponsor">Sponsor toevoegen</button>';
+  if (!S.sponsors.length) { el.innerHTML = emptyState('Nog geen sponsors', 'Voeg sponsors toe met naam, website en logo. Daarna kun je ze onder je Instagram-posts zetten.', add); return; }
+  el.innerHTML = `<ul class="sponsors">${S.sponsors.map(s => `<li class="sponsor click" tabindex="0" data-sponsor="${esc(s.id)}">
+      <div class="sp-logo">${safeLogo(s.logo) ? `<img src="${esc(s.logo)}" alt="Logo ${esc(s.name)}">` : `<span>${esc(s.name)}</span>`}</div>
+      <div class="sp-name">${esc(s.name)}</div>
+      ${safeSite(s.website) ? `<a href="${esc(s.website)}" target="_blank" rel="noopener">${esc(s.website.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, ''))}</a>` : ''}
+    </li>`).join('')}</ul><div>${S.canEdit ? add : ''}</div>`;
+}
+
+let editSponsor = null, spLogo = '';
+function showSpLogo() {
+  $('#spPreview').hidden = !spLogo; $('#spLogoClear').hidden = !spLogo;
+  $('#spPreview').innerHTML = spLogo ? `<img src="${esc(spLogo)}" alt="Voorbeeld van het logo">` : '';
+}
+function openSponsor(s) {
+  editSponsor = s || null; spLogo = safeLogo(s?.logo);
+  $('#dlgSponsorTitle').textContent = s ? 'Sponsor bewerken' : 'Sponsor toevoegen';
+  $('#spName').value = s?.name || ''; $('#spSite').value = s?.website || ''; $('#spLogo').value = ''; showSpLogo();
+  $('#spDelete').hidden = !s;
+  if (s) armDelete($('#spDelete'), async () => { if (await save(() => S.db.doc('sponsors/' + s.id).delete(), s.name + ' verwijderd')) $('#dlgSponsor').close(); });
+  $('#dlgSponsor').showModal();
+}
+$('#spLogo').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const img = new Image(); img.src = URL.createObjectURL(f); await img.decode();
+    const w0 = img.naturalWidth || 500, h0 = img.naturalHeight || 500, r = Math.min(1, 500 / Math.max(w0, h0)), c = document.createElement('canvas');
+    c.width = Math.round(w0 * r); c.height = Math.round(h0 * r); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(img.src);
+    let url = c.toDataURL('image/png'); if (url.length > 250000) url = c.toDataURL('image/jpeg', 0.85);
+    spLogo = url; showSpLogo();
+  } catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
+});
+$('#spLogoClear').onclick = () => { spLogo = ''; $('#spLogo').value = ''; showSpLogo(); };
+$('#formSponsor').addEventListener('submit', async e => {
+  e.preventDefault();
+  let site = $('#spSite').value.trim(); if (site && !/^https?:\/\//i.test(site)) site = 'https://' + site;
+  const data = { name: $('#spName').value.trim(), website: site, logo: spLogo };
+  if (!data.name) return;
+  const ref = editSponsor ? S.db.doc('sponsors/' + editSponsor.id) : S.db.collection('sponsors').doc();
+  if (await save(() => ref.set(data), data.name + ' opgeslagen')) $('#dlgSponsor').close();
+});
 
 /* ---------- Supabase ---------- */
 // De publishable key is openbaar en mag in de pagina staan; de beveiliging zit in de database-regels (setup.sql).
@@ -846,7 +969,8 @@ S.db = {
 };
 
 async function loadAll() {
-  const res = await Promise.all(TABLES.map(t => sb.from(t).select('*')));
+  const [sp, ...res] = await Promise.all([sb.from('sponsors').select('*').order('created_at'), ...TABLES.map(t => sb.from(t).select('*'))]);
+  S.sponsors = sp.error ? [] : sp.data;
   if (res.some(r => r.error)) { $('#status').hidden = false; $('#status').textContent = 'De gegevens konden niet worden geladen. Probeer het later opnieuw.'; return; }
   TABLES.forEach((t, i) => S[t] = res[i].data);
   $('#status').hidden = true;
@@ -857,8 +981,8 @@ async function refreshAuth() {
   const { data: { session } } = await sb.auth.getSession();
   S.user = session?.user || null;
   S.canEdit = S.user ? !!(await sb.rpc('is_editor')).data : false;
-  ['addMatch', 'addPlayer', 'addSeason', 't-posts'].forEach(id => $('#' + id).hidden = !S.canEdit);
-  if (!S.canEdit && S.tab === 'posts') selectTab('spelers');
+  ['addMatch', 'addPlayer', 'addSeason', 't-posts', 't-sponsors'].forEach(id => $('#' + id).hidden = !S.canEdit);
+  if (!S.canEdit && ['posts', 'sponsors'].includes(S.tab)) selectTab('spelers');
   $('#login').textContent = S.user ? 'Uitloggen' : 'Inloggen';
   $('#login').title = S.user ? 'Ingelogd als ' + shortName(S.user.email) : 'Inloggen voor coaches en aanvoerders';
   render();

@@ -68,6 +68,8 @@ button, input, select { font: inherit; color: inherit; }
 .tile .k { color: var(--muted); font-size: 0.875rem; }
 .tile .v { font-family: var(--font-display); font-weight: 800; font-size: 2.25rem; line-height: 1; font-variant-numeric: tabular-nums; }
 .tile .v small { font-size: 1rem; font-weight: 600; color: var(--muted); font-family: var(--font-body); }
+.tile .v.rec { display: flex; gap: 20px; align-items: baseline; }
+.tile .v.rec small { margin-left: 4px; }
 .tile .v.name { font-size: 1.5rem; color: var(--pink); overflow-wrap: anywhere; }
 .form { display: flex; gap: 4px; flex-wrap: wrap; }
 .tile .form .res { width: 26px; height: 26px; font-size: 0.9375rem; }
@@ -348,11 +350,11 @@ function renderSummary(matches, stats) {
   const none = t => `<span class="v"><small>${t}</small></span>`;
   $('#summary').innerHTML = `
     <div class="tile wide"><span class="k">${n} ${n === 1 ? 'wedstrijd' : 'wedstrijden'}</span>
-      <span class="v">${w}<small> W </small>${d}<small> G </small>${l}<small> V</small></span>
+      <span class="v rec"><span>${w}<small>W</small></span><span>${d}<small>G</small></span><span>${l}<small>V</small></span></span>
       <div class="ratio" role="img" aria-label="${pct(w)}% gewonnen, ${pct(d)}% gelijk, ${pct(l)}% verloren"><span class="W" style="width:${bar(w)}%"></span><span class="G" style="width:${bar(d)}%"></span><span class="V" style="width:${bar(l)}%"></span></div>
-      <span class="k">${pct(w)}% gewonnen, ${pct(d)}% gelijk, ${pct(l)}% verloren. ${ppg} punten per wedstrijd.</span></div>
-    <div class="tile"><span class="k">Doelsaldo</span><span class="v">${diff > 0 ? '+' : ''}${diff}</span><span class="k">${gf} voor, ${ga} tegen</span></div>
-    <div class="tile"><span class="k">Vorm, laatste 5</span>${form.length ? `<div class="form">${form.map(m => `<span class="res ${result(m)}" title="${esc(m.opponent)} ${m.gf}-${m.ga}">${result(m)}</span>`).join('')}</div><span class="k">Oudste links, nieuwste rechts</span>` : none('Nog geen wedstrijden')}</div>
+      <span class="k">${pct(w)}% gewonnen<br>${pct(d)}% gelijk<br>${pct(l)}% verloren<br>${ppg} punten per wedstrijd</span></div>
+    <div class="tile"><span class="k">Doelsaldo</span><span class="v">${diff > 0 ? '+' : ''}${diff}</span><span class="k">${gf} voor<br>${ga} tegen</span></div>
+    <div class="tile"><span class="k">Vorm, laatste 5</span>${form.length ? `<div class="form">${form.map(m => `<span class="res ${result(m)}" title="${esc(m.opponent)} ${m.gf}-${m.ga}">${result(m)}</span>`).join('')}</div>` : none('Nog geen wedstrijden')}</div>
     <div class="tile"><span class="k">Topscorer</span>${ts ? `<span class="v name">${esc(ts.p.name)}</span><span class="k">${ts.g} goals</span>` : none('Nog niemand')}</div>
     <div class="tile"><span class="k">Meeste assists</span>${ta ? `<span class="v name">${esc(ta.p.name)}</span><span class="k">${ta.a} assists</span>` : none('Nog niemand')}</div>`;
 }

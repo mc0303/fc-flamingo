@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FC Flamingo Stats</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0b090a">
 <meta name="description" content="Statistieken van FC Flamingo: spelers, wedstrijden, goals en assists.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=Barlow:wght@400;500;600&display=swap">
@@ -24,6 +27,8 @@
   --yellow: #f2c443;
   --red: #e5484d;
   --loss: #4a3b42;
+  --poster: #000000;
+  --glow: rgb(232 103 155 / .13);
   --scrim: rgb(0 0 0 / .65);
   --font-display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
   --font-body: "Barlow", "Segoe UI", system-ui, sans-serif;
@@ -35,7 +40,7 @@ html, body { overflow-x: clip; }
 [hidden] { display: none !important; }
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body { margin: 0; }
-body { background: var(--bg); color: var(--text); font: 400 16px/1.5 var(--font-body); }
+body { background: radial-gradient(900px 420px at 0% 0%, var(--glow), transparent 70%) no-repeat, var(--bg); color: var(--text); font: 400 16px/1.5 var(--font-body); }
 .wrap { max-width: 1120px; margin: 0 auto; padding-block: 24px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
 .wrap > * { min-width: 0; }
 h1, h2, h3 { font-family: var(--font-display); font-weight: 800; line-height: 1; margin: 0; text-wrap: balance; overflow-wrap: break-word; min-width: 0; }
@@ -43,11 +48,12 @@ button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
 
 /* masthead */
-.mast { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; }
-.mast svg.logo { width: 56px; height: 70px; flex: none; }
+.mast { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding-bottom: 20px; border-bottom: 2px solid var(--pink); }
+.mast svg.logo { width: 72px; height: 90px; flex: none; }
 .mast .id { flex: 1 1 220px; min-width: 0; }
-.mast h1 { font-size: clamp(2rem, 6vw, 3rem); text-transform: uppercase; color: var(--pink); }
+.mast h1 { font-size: clamp(2.25rem, 7vw, 3.75rem); text-transform: uppercase; color: var(--pink); }
 .mast p { margin: 4px 0 0; color: var(--muted); font-size: 0.9375rem; }
+.mast .tag { color: var(--pink); font: 600 1.125rem/1 var(--font-display); margin-top: 8px; }
 .mast .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 
 .btn { min-height: 44px; padding: 0 16px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font-weight: 600; transition: background-color .15s ease, border-color .15s ease, transform .1s ease; touch-action: manipulation; }
@@ -70,7 +76,7 @@ button, input, select { font: inherit; color: inherit; }
 .tile .v small { font-size: 1rem; font-weight: 600; color: var(--muted); font-family: var(--font-body); }
 .tile .v.rec { display: flex; gap: 20px; align-items: baseline; }
 .tile .v.rec small { margin-left: 4px; }
-.tile .v.name { font-size: 1.5rem; color: var(--pink); overflow-wrap: anywhere; }
+.tile .v.name { font-size: 1.75rem; color: var(--pink); overflow-wrap: anywhere; }
 .form { display: flex; gap: 4px; flex-wrap: wrap; }
 .tile .form .res { width: 26px; height: 26px; font-size: 0.9375rem; }
 .tile .form { flex-wrap: nowrap; }
@@ -88,7 +94,7 @@ button, input, select { font: inherit; color: inherit; }
 
 /* tabs */
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
-.tab { min-height: 44px; padding: 0 16px; border: 0; background: none; cursor: pointer; color: var(--muted); font: 800 1.25rem/1 var(--font-display); text-transform: uppercase; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: color .15s ease, border-color .15s ease; }
+.tab { min-height: 44px; padding: 0 16px; border: 0; background: none; cursor: pointer; color: var(--muted); font: 800 1.375rem/1 var(--font-display); text-transform: uppercase; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: color .15s ease, border-color .15s ease; }
 .tab:hover { color: var(--text); }
 .tab[aria-selected="true"] { color: var(--pink); border-bottom-color: var(--pink); }
 .panel { display: grid; gap: 12px; }
@@ -124,11 +130,22 @@ tr.click:hover td { background: var(--panel-2); }
 .match .opp { font-weight: 600; grid-column: 2; overflow-wrap: anywhere; }
 .match .score { grid-column: 3; grid-row: 1 / span 2; font: 800 2rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
 .match .res { grid-row: 1 / span 2; }
+.match.W .score { color: var(--pink); }
 .match .detail { grid-column: 2 / -1; color: var(--muted); font-size: 0.875rem; }
 
 .empty { padding: 40px 20px; text-align: center; color: var(--muted); background: var(--panel); border: 1px dashed var(--line); border-radius: var(--r-md); display: grid; gap: 12px; justify-items: center; }
 .empty h3 { font-size: 1.5rem; color: var(--text); text-transform: uppercase; }
 .note { color: var(--muted); font-size: 0.875rem; margin: 0; }
+
+/* instagram */
+.post-grid { display: grid; gap: 24px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 860px) { .post-grid { grid-template-columns: minmax(0, 1fr) 360px; } }
+.post-form { display: grid; gap: 16px; padding: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
+.post-form h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
+.post-preview canvas { display: block; width: 100%; max-width: 360px; height: auto; margin: 0 auto; border: 1px solid var(--line); border-radius: var(--r-md); }
+.field input[type="file"] { padding: 8px 12px; }
+.logo-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.logo-row input { flex: 1 1 200px; }
 
 /* dialogs */
 dialog { width: min(640px, calc(100% - 24px)); max-height: calc(100% - 24px); padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); color: var(--text); }
@@ -167,6 +184,7 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
     <div class="id">
       <h1>FC Flamingo</h1>
       <p>Futsal, 3e klasse KNVB. Thuisbasis De Kannebuis.</p>
+      <p class="tag">#FCFlamingo</p>
     </div>
     <div class="tools">
       <select id="season" class="select" aria-label="Seizoen"></select>
@@ -187,11 +205,42 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
       <button class="tab" role="tab" id="t-wedstrijden" aria-controls="p-wedstrijden" aria-selected="false">Wedstrijden</button>
       <button class="tab" role="tab" id="t-keepers" aria-controls="p-keepers" aria-selected="false">Keepers</button>
       <button class="tab" role="tab" id="t-extra" aria-controls="p-extra" aria-selected="false">Niet geregistreerd</button>
+      <button class="tab" role="tab" id="t-posts" aria-controls="p-posts" aria-selected="false" hidden>Instagram</button>
     </div>
     <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers"></div>
     <div class="panel" id="p-wedstrijden" role="tabpanel" aria-labelledby="t-wedstrijden" hidden></div>
     <div class="panel" id="p-keepers" role="tabpanel" aria-labelledby="t-keepers" hidden></div>
     <div class="panel" id="p-extra" role="tabpanel" aria-labelledby="t-extra" hidden></div>
+    <div class="panel" id="p-posts" role="tabpanel" aria-labelledby="t-posts" hidden>
+      <div class="post-grid">
+        <form id="postForm" class="post-form">
+          <h2>Post maken</h2>
+          <div class="fields">
+            <div class="field"><label for="poType">Soort post</label><select id="poType"><option value="matchday">Matchday</option><option value="uitslag">Uitslag</option></select></div>
+            <div class="field"><label for="poSize">Formaat</label><select id="poSize"><option value="story">Story, 1080 x 1920</option><option value="post">Post, 1080 x 1350</option></select></div>
+          </div>
+          <div class="field" data-for="uitslag" hidden><label for="poMatch">Wedstrijd</label><select id="poMatch"></select></div>
+          <div class="fields" data-for="matchday">
+            <div class="field"><label for="poOpp">Tegenstander</label><input id="poOpp" list="poOpps" maxlength="40" autocomplete="off"><datalist id="poOpps"></datalist></div>
+            <div class="field"><label for="poHome">Thuis of uit</label><select id="poHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
+            <div class="field"><label for="poDate">Datum</label><input id="poDate" type="date"></div>
+            <div class="field"><label for="poTime">Aftrap</label><input id="poTime" type="time" value="19:00"></div>
+            <div class="field"><label for="poPlace">Locatie</label><input id="poPlace" maxlength="30" value="De Kannebuis"></div>
+            <div class="field"><label for="poKlasse">Klasse</label><input id="poKlasse" maxlength="30" value="3e klasse"></div>
+          </div>
+          <div class="field">
+            <label for="poLogo">Logo tegenstander</label>
+            <div class="logo-row"><input id="poLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><button type="button" class="btn danger" id="poLogoClear" hidden>Logo verwijderen</button></div>
+            <p class="note">Een PNG met transparante achtergrond werkt het mooist. Het logo wordt op dit apparaat onthouden voor deze tegenstander.</p>
+          </div>
+          <div class="actions">
+            <button type="button" class="btn" id="poShare" hidden>Delen</button>
+            <button type="button" class="btn primary" id="poDownload">Afbeelding downloaden</button>
+          </div>
+        </form>
+        <div class="post-preview"><canvas id="poCanvas" width="1080" height="1920" role="img" aria-label="Voorbeeld van de Instagram-post"></canvas></div>
+      </div>
+    </div>
   </section>
 </div>
 
@@ -299,7 +348,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
-const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], extras: [], season: store.get('fcf-season'), sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
+const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], extras: [], season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
 
 /* ---------- stats ---------- */
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
@@ -334,9 +383,9 @@ const fmtDate = d => d ? new Date(d + 'T12:00').toLocaleDateString('nl-NL', { we
 function renderSeasons() {
   const sel = $('#season');
   const seasons = [...S.seasons].sort((a, b) => (b.name || '').localeCompare(a.name || ''));
-  if (!S.season || (S.season !== 'all' && !seasons.some(s => s.id === S.season))) S.season = seasons[0]?.id || 'all';
+  if (seasons.length && (!S.season || (S.season !== 'all' && !seasons.some(s => s.id === S.season)))) S.season = seasons[0].id;
   sel.innerHTML = seasons.map(s => `<option value="${esc(s.id)}">Seizoen ${esc(s.name)}</option>`).join('') + '<option value="all">Alle seizoenen</option>';
-  sel.value = S.season;
+  sel.value = S.season || 'all';
 }
 
 function renderSummary(matches, stats) {
@@ -400,7 +449,7 @@ function renderMatches(matches) {
   const list = (obj) => Object.entries(obj || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => esc(playerName(id)) + (n > 1 ? ' ' + n : '')).join(', ');
   el.innerHTML = `<ul class="matches">${matches.map(m => {
     const g = list(m.goals), a = list(m.assists);
-    return `<li class="match${S.canEdit ? ' click' : ''}" data-match="${esc(m.id)}"${S.canEdit ? ' tabindex="0" role="button" aria-label="Bewerk wedstrijd tegen ' + esc(m.opponent) + '"' : ''}>
+    return `<li class="match ${result(m)}${S.canEdit ? ' click' : ''}" data-match="${esc(m.id)}"${S.canEdit ? ' tabindex="0" role="button" aria-label="Bewerk wedstrijd tegen ' + esc(m.opponent) + '"' : ''}>
       <span class="res ${result(m)}" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(m)]}">${result(m)}</span>
       <span class="when"><span class="venue ${m.home ? 'home' : 'away'}">${m.home ? 'Thuis' : 'Uit'}</span>${fmtDate(m.date)}</span>
       <span class="opp">${m.home ? 'FC Flamingo vs ' + esc(m.opponent) : esc(m.opponent) + ' vs FC Flamingo'}</span>
@@ -435,7 +484,7 @@ function renderExtras() {
 function render() {
   renderSeasons();
   const matches = seasonMatches(), stats = playerStats(matches);
-  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderExtras();
+  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderExtras(); renderPostOptions();
   $('#addMatch').disabled = !S.players.length || !S.seasons.length;
 }
 
@@ -455,18 +504,19 @@ function armDelete(btn, action) {
 
 document.querySelectorAll('[role="tab"]').forEach(t => t.addEventListener('click', () => selectTab(t.id.slice(2))));
 document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
-  const tabs = [...document.querySelectorAll('[role="tab"]')], i = tabs.indexOf(document.activeElement);
+  const tabs = [...document.querySelectorAll('[role="tab"]')].filter(t => !t.hidden), i = tabs.indexOf(document.activeElement);
   if (i < 0 || !['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
   const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length]; n.focus(); selectTab(n.id.slice(2));
 });
 function selectTab(name) {
   S.tab = name;
+  if (name === 'posts') setTimeout(drawPost);
   document.querySelectorAll('[role="tab"]').forEach(t => { const on = t.id === 't-' + name; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
   document.querySelectorAll('[role="tabpanel"]').forEach(p => p.hidden = p.id !== 'p-' + name);
 }
 selectTab('spelers');
 
-$('#season').addEventListener('change', e => { S.season = e.target.value; store.set('fcf-season', S.season); render(); });
+$('#season').addEventListener('change', e => { S.season = e.target.value; render(); });
 document.addEventListener('click', e => {
   const sort = e.target.closest('[data-sort]');
   if (sort) { const k = sort.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? (S.sort.dir === 'asc' ? 'desc' : 'asc') : (k === 'name' || k === 'num' ? 'asc' : 'desc') }; render(); return; }
@@ -529,7 +579,7 @@ $('#formSeason').addEventListener('submit', async e => {
   e.preventDefault();
   const name = $('#sName').value.trim(); if (!name) return;
   const ref = S.db.collection('seasons').doc();
-  if (await save(() => ref.set({ name }), 'Seizoen ' + name + ' toegevoegd')) { S.season = ref.id; store.set('fcf-season', ref.id); $('#dlgSeason').close(); }
+  if (await save(() => ref.set({ name }), 'Seizoen ' + name + ' toegevoegd')) { S.season = ref.id; $('#dlgSeason').close(); }
 });
 
 /* match dialog */
@@ -596,6 +646,184 @@ $('#formMatch').addEventListener('submit', async e => {
   if (await save(() => ref.set(data), 'Wedstrijd tegen ' + data.opponent + ' opgeslagen')) $('#dlgMatch').close();
 });
 
+/* ---------- Instagram ---------- */
+const FCF_PATH = new Path2D(document.querySelector('#fcf path').getAttribute('d'));
+const DISPLAY = '"Barlow Condensed", "Arial Narrow", sans-serif';
+const token = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const logoKey = name => 'fcf-logo:' + name.trim().toLowerCase();
+const logoCache = {};
+
+// Opponent logos live in this browser only, keyed by opponent name.
+function oppLogo(name) {
+  if (!name.trim()) return null;
+  const k = logoKey(name);
+  if (!(k in logoCache)) {
+    logoCache[k] = null;
+    const src = store.get(k);
+    if (src) { const img = new Image(); img.onload = () => { logoCache[k] = img; drawPost(); }; img.src = src; }
+  }
+  return logoCache[k];
+}
+
+function postData() {
+  const type = $('#poType').value;
+  if (type === 'uitslag') {
+    const m = S.matches.find(x => x.id === $('#poMatch').value);
+    return m ? { type, opponent: m.opponent, home: m.home, gf: m.gf, ga: m.ga, date: m.date, goals: m.goals, assists: m.assists } : { type, opponent: '', home: true, empty: true };
+  }
+  return { type, opponent: $('#poOpp').value.trim(), home: $('#poHome').value === '1', date: $('#poDate').value, time: $('#poTime').value, place: $('#poPlace').value.trim(), klasse: $('#poKlasse').value.trim() };
+}
+
+function fitFont(ctx, text, weight, size, maxW) {
+  ctx.font = `${weight} ${size}px ${DISPLAY}`;
+  while (ctx.measureText(text).width > maxW && size > 20) { size -= 4; ctx.font = `${weight} ${size}px ${DISPLAY}`; }
+  return size;
+}
+
+function drawFcf(ctx, cx, cy, h, color) {
+  const s = h / 176;
+  ctx.save(); ctx.translate(cx - 71 * s - 13 * s, cy - h / 2 - 13 * s); ctx.scale(s, s);
+  ctx.fillStyle = color; ctx.fill(FCF_PATH, 'evenodd'); ctx.restore();
+}
+
+function drawOpp(ctx, cx, cy, box, name, color) {
+  const img = oppLogo(name || '');
+  if (img) {
+    const r = Math.min(box / img.width, box / img.height), w = img.width * r, h = img.height * r;
+    ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h); return;
+  }
+  // No logo yet: the opponent's name in its place.
+  const words = (name || 'Tegenstander').toUpperCase().split(/\s+/), lines = [];
+  ctx.font = `800 64px ${DISPLAY}`;
+  for (const w of words) { const last = lines[lines.length - 1]; if (last && ctx.measureText(last + ' ' + w).width <= box) lines[lines.length - 1] = last + ' ' + w; else lines.push(w); }
+  ctx.fillStyle = color; ctx.textAlign = 'center';
+  lines.slice(0, 4).forEach((l, i, a) => { fitFont(ctx, l, 800, 64, box); ctx.fillText(l, cx, cy + 22 + (i - (a.length - 1) / 2) * 68); });
+}
+
+function drawIcon(ctx, kind, x, y, s, color, bg) {
+  ctx.save(); ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = s * 0.1; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  if (kind === 'cal') {
+    ctx.strokeRect(x + s * 0.08, y - s * 0.36, s * 0.84, s * 0.78);
+    ctx.beginPath(); ctx.moveTo(x + s * 0.08, y - s * 0.1); ctx.lineTo(x + s * 0.92, y - s * 0.1);
+    ctx.moveTo(x + s * 0.3, y - s * 0.5); ctx.lineTo(x + s * 0.3, y - s * 0.28); ctx.moveTo(x + s * 0.7, y - s * 0.5); ctx.lineTo(x + s * 0.7, y - s * 0.28); ctx.stroke();
+  } else if (kind === 'clock') {
+    ctx.beginPath(); ctx.arc(x + s / 2, y, s * 0.44, 0, Math.PI * 2);
+    ctx.moveTo(x + s / 2, y - s * 0.24); ctx.lineTo(x + s / 2, y); ctx.lineTo(x + s * 0.66, y + s * 0.12); ctx.stroke();
+  } else {
+    const cx = x + s / 2, cy = y - s * 0.12, r = s * 0.3;
+    ctx.beginPath(); ctx.arc(cx, cy, r, Math.PI * 0.8, Math.PI * 2.2); ctx.lineTo(cx, y + s * 0.48); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.arc(cx, cy, r * 0.4, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawInfo(ctx, d, y, W, pink, text, bg) {
+  const date = d.date ? new Date(d.date + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }).toUpperCase() : '';
+  const items = [['cal', date], ['clock', d.time], ['pin', (d.place || '').toUpperCase()]].filter(i => i[1]);
+  if (!items.length) return;
+  let size = 58, ic, gap, sep, total;
+  const measure = () => {
+    ctx.font = `600 ${size}px ${DISPLAY}`; ic = size * 0.9; gap = size * 0.3; sep = size * 0.6;
+    total = items.reduce((t, [, s]) => t + ic + gap + ctx.measureText(s).width, 0) + sep * 2 * (items.length - 1);
+  };
+  measure(); while (total > W - 140 && size > 30) { size -= 2; measure(); }
+  let x = (W - total) / 2; ctx.textAlign = 'left';
+  items.forEach(([k, s], i) => {
+    if (i) { x += sep; ctx.fillStyle = pink; ctx.fillRect(x - 1, y - size * 0.78, 2, size * 0.98); x += sep; }
+    drawIcon(ctx, k, x, y - size * 0.34, ic, pink, bg); x += ic + gap;
+    ctx.fillStyle = text; ctx.fillText(s, x, y); x += ctx.measureText(s).width;
+  });
+  ctx.textAlign = 'center';
+}
+
+function drawScorers(ctx, d, y, W, pink, text) {
+  const list = o => Object.entries(o || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => playerName(id) + (n > 1 ? ' ' + n : '')).join(', ');
+  [['GOALS', list(d.goals)], ['ASSISTS', list(d.assists)]].filter(r => r[1]).forEach(([label, names], i) => {
+    const yy = y + i * 110;
+    ctx.fillStyle = pink; ctx.font = `600 38px ${DISPLAY}`; ctx.fillText(label, W / 2, yy);
+    ctx.fillStyle = text; fitFont(ctx, names, 600, 50, W - 160); ctx.fillText(names, W / 2, yy + 56);
+  });
+}
+
+function drawPost() {
+  const cv = $('#poCanvas'), W = 1080, H = $('#poSize').value === 'story' ? 1920 : 1350;
+  if (cv.height !== H) cv.height = H;
+  const ctx = cv.getContext('2d'), d = postData(), result = d.type === 'uitslag';
+  const pink = token('--pink'), text = token('--text'), bg = token('--poster');
+  const top = (H - (result ? 1060 : 900)) / 2, cx = W / 2;
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+
+  const kicker = result ? (d.date ? new Date(d.date + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' }).toUpperCase() : '') : (d.klasse || '').toUpperCase();
+  ctx.fillStyle = pink;
+  if (kicker) { fitFont(ctx, kicker, 600, 46, W - 200); ctx.fillText(kicker, cx, top + 40); }
+  const title = result ? 'UITSLAG' : 'MATCHDAY';
+  fitFont(ctx, title, 800, 260, W - 120); ctx.fillText(title, cx, top + 290);
+
+  // Home team on the left, like the fixture list.
+  const rowY = top + 480, box = 300;
+  const us = x => drawFcf(ctx, x, rowY, box, pink), them = x => drawOpp(ctx, x, rowY, box, d.opponent, text);
+  if (d.home === false) { them(250); us(W - 250); } else { us(250); them(W - 250); }
+  ctx.fillStyle = text; ctx.textAlign = 'center';
+  if (result && !d.empty) { const sc = d.home ? `${d.gf} - ${d.ga}` : `${d.ga} - ${d.gf}`; fitFont(ctx, sc, 800, 150, 280); ctx.fillText(sc, cx, rowY + 52); }
+  else { ctx.font = `800 120px ${DISPLAY}`; ctx.fillText('VS', cx, rowY + 42); }
+
+  ctx.fillStyle = pink; ctx.fillRect(90, top + 690, W - 180, 3);
+  if (result) drawScorers(ctx, d, top + 770, W, pink, text); else drawInfo(ctx, d, top + 790, W, pink, text, bg);
+  ctx.fillStyle = pink; ctx.font = `600 46px ${DISPLAY}`; ctx.fillText('#FCFLAMINGO', cx, top + (result ? 1040 : 890));
+
+  const has = !!oppLogo(d.opponent || '');
+  $('#poLogoClear').hidden = !has;
+}
+
+function renderPostOptions() {
+  const sel = $('#poMatch'), v = sel.value;
+  sel.innerHTML = [...S.matches].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(m => `<option value="${esc(m.id)}">${esc(fmtDate(m.date))}, ${m.home ? 'thuis' : 'uit'} tegen ${esc(m.opponent)}</option>`).join('');
+  if ([...sel.options].some(o => o.value === v)) sel.value = v;
+  $('#poOpps').innerHTML = [...new Set(S.matches.map(m => m.opponent))].map(o => `<option value="${esc(o)}"></option>`).join('');
+  if (S.tab === 'posts') drawPost();
+}
+
+function postBlob() { return new Promise(r => $('#poCanvas').toBlob(r, 'image/png')); }
+function postName() { const d = postData(); return `fcflamingo-${d.type}-${d.date || 'post'}.png`; }
+
+$('#postForm').addEventListener('input', drawPost);
+$('#postForm').addEventListener('change', e => {
+  if (e.target.id === 'poType') document.querySelectorAll('#postForm [data-for]').forEach(el => el.hidden = el.dataset.for !== e.target.value);
+  drawPost();
+});
+$('#poLogo').addEventListener('change', async e => {
+  const f = e.target.files[0], name = postData().opponent;
+  if (!f) return;
+  if (!name) { toast('Vul eerst de tegenstander in.'); e.target.value = ''; return; }
+  try {
+    const img0 = new Image(); img0.src = URL.createObjectURL(f); await img0.decode();
+    const r = Math.min(1, 600 / Math.max(img0.naturalWidth, img0.naturalHeight)) || 1, c = document.createElement('canvas');
+    c.width = Math.round((img0.naturalWidth || 600) * r); c.height = Math.round((img0.naturalHeight || 600) * r);
+    c.getContext('2d').drawImage(img0, 0, 0, c.width, c.height); URL.revokeObjectURL(img0.src);
+    const img = new Image(); img.src = c.toDataURL('image/png'); await img.decode();
+    logoCache[logoKey(name)] = img; store.set(logoKey(name), img.src);
+    drawPost(); toast('Logo van ' + name + ' toegevoegd');
+  } catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
+  e.target.value = '';
+});
+$('#poLogoClear').onclick = () => { const k = logoKey(postData().opponent); logoCache[k] = null; try { localStorage.removeItem(k); } catch {} drawPost(); };
+$('#poDownload').onclick = async () => {
+  const url = URL.createObjectURL(await postBlob()), a = document.createElement('a');
+  a.href = url; a.download = postName(); document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+};
+// Phones can hand the image straight to Instagram through the share sheet.
+if (navigator.canShare?.({ files: [new File([''], 'x.png', { type: 'image/png' })] })) {
+  $('#poShare').hidden = false;
+  $('#poShare').onclick = async () => {
+    try { await navigator.share({ files: [new File([await postBlob()], postName(), { type: 'image/png' })] }); }
+    catch (e) { if (e.name !== 'AbortError') toast('Delen lukte niet. Download de afbeelding en plaats hem zelf.'); }
+  };
+}
+$('#poDate').value = new Date().toISOString().slice(0, 10);
+Promise.all(['600', '800'].map(w => document.fonts.load(`${w} 100px "Barlow Condensed"`))).then(() => { if (S.tab === 'posts') drawPost(); });
+
 /* ---------- Supabase ---------- */
 // De publishable key is openbaar en mag in de pagina staan; de beveiliging zit in de database-regels (setup.sql).
 const SUPABASE_URL = 'https://yptfjefhouoiiisuyeyt.supabase.co';
@@ -629,7 +857,8 @@ async function refreshAuth() {
   const { data: { session } } = await sb.auth.getSession();
   S.user = session?.user || null;
   S.canEdit = S.user ? !!(await sb.rpc('is_editor')).data : false;
-  ['addMatch', 'addPlayer', 'addSeason'].forEach(id => $('#' + id).hidden = !S.canEdit);
+  ['addMatch', 'addPlayer', 'addSeason', 't-posts'].forEach(id => $('#' + id).hidden = !S.canEdit);
+  if (!S.canEdit && S.tab === 'posts') selectTab('spelers');
   $('#login').textContent = S.user ? 'Uitloggen' : 'Inloggen';
   $('#login').title = S.user ? 'Ingelogd als ' + shortName(S.user.email) : 'Inloggen voor coaches en aanvoerders';
   render();

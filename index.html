@@ -188,8 +188,14 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
 
 .toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--pink); padding: 12px 16px; border-radius: var(--r-sm); max-width: calc(100% - 32px); }
 .status { color: var(--muted); font-size: 0.875rem; margin: 0; }
+/* skeleton while the first load runs */
+.sk { display: block; height: 0.875rem; width: 70%; border-radius: 4px; background: linear-gradient(90deg, var(--panel-2) 25%, var(--line) 50%, var(--panel-2) 75%); background-size: 200% 100%; animation: sk 1.4s ease-in-out infinite; }
+.sk.big { height: 2.25rem; width: 45%; }
+.sk.short { width: 40%; }
+.sk-rows { display: grid; gap: 16px; padding: 16px; }
+@keyframes sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .sk { animation: none; } }
 </style>
 
 </head>
@@ -215,7 +221,7 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
 
   <p id="status" class="status" role="status">Statistieken laden…</p>
 
-  <section class="summary" id="summary" aria-label="Seizoensoverzicht"></section>
+  <section class="summary" id="summary" aria-label="Seizoensoverzicht"><div class="tile wide" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div></section>
 
   <section>
     <div class="tabs" role="tablist">
@@ -225,7 +231,7 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
       <button class="tab" role="tab" id="t-sponsors" aria-controls="p-sponsors" aria-selected="false" hidden>Sponsors</button>
       <button class="tab" role="tab" id="t-posts" aria-controls="p-posts" aria-selected="false" hidden>Instagram</button>
     </div>
-    <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers"></div>
+    <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers"><div class="tablewrap sk-rows" aria-hidden="true"><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div>
     <div class="panel" id="p-wedstrijden" role="tabpanel" aria-labelledby="t-wedstrijden" hidden></div>
     <div class="panel" id="p-keepers" role="tabpanel" aria-labelledby="t-keepers" hidden></div>
     <div class="panel" id="p-sponsors" role="tabpanel" aria-labelledby="t-sponsors" hidden></div>
@@ -369,14 +375,14 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js" integrity="sha384-xPW3QHswsICVC2mW6BFNwMbhpLkbZ133fKOhxNx3QGGgAOJfL3O9t8r2aWn1aez6" crossorigin="anonymous"></script>
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
-const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], sponsors: [], season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
+const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], sponsors: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
 
 /* ---------- stats ---------- */
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
@@ -491,6 +497,7 @@ function renderKeepers(stats) {
 }
 
 function render() {
+  if (!S.ready) return;
   renderSeasons();
   const matches = seasonMatches(), stats = playerStats(matches);
   renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderSponsors(); renderPostOptions();
@@ -584,8 +591,8 @@ function openMatch(m) {
     return `<tr data-id="${id}">
       <td><input type="checkbox" class="pl" id="pl-${id}" ${on ? 'checked' : ''} aria-label="${esc(p.name)} speelde"></td>
       <td><label for="pl-${id}">${p.number != null ? p.number + '. ' : ''}${esc(p.name)}</label></td>
-      <td><input type="number" class="g" min="0" max="30" inputmode="numeric" value="${m?.goals?.[p.id] || ''}" aria-label="Goals ${esc(p.name)}"></td>
-      <td><input type="number" class="a" min="0" max="30" inputmode="numeric" value="${m?.assists?.[p.id] || ''}" aria-label="Assists ${esc(p.name)}"></td>
+      <td><input type="number" class="g" min="0" max="30" inputmode="numeric" value="${+m?.goals?.[p.id] || ''}" aria-label="Goals ${esc(p.name)}"></td>
+      <td><input type="number" class="a" min="0" max="30" inputmode="numeric" value="${+m?.assists?.[p.id] || ''}" aria-label="Assists ${esc(p.name)}"></td>
       <td><input type="checkbox" class="y" ${(m?.yellow || []).includes(p.id) ? 'checked' : ''} aria-label="Gele kaart ${esc(p.name)}"></td>
       <td><input type="checkbox" class="r" ${(m?.red || []).includes(p.id) ? 'checked' : ''} aria-label="Rode kaart ${esc(p.name)}"></td>
     </tr>`; }).join('');
@@ -944,9 +951,9 @@ S.db = {
 async function loadAll() {
   const [sp, ...res] = await Promise.all([sb.from('sponsors').select('*').order('created_at'), ...TABLES.map(t => sb.from(t).select('*'))]);
   S.sponsors = sp.error ? [] : sp.data.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-  if (res.some(r => r.error)) { $('#status').hidden = false; $('#status').textContent = 'De gegevens konden niet worden geladen. Probeer het later opnieuw.'; return; }
+  if (res.some(r => r.error)) { if (!S.ready) $('#summary').innerHTML = $('#p-spelers').innerHTML = ''; $('#status').hidden = false; $('#status').textContent = 'De gegevens konden niet worden geladen. Probeer het later opnieuw.'; return; }
   TABLES.forEach((t, i) => S[t] = res[i].data);
-  $('#status').hidden = true;
+  $('#status').hidden = true; S.ready = true;
   render();
 }
 

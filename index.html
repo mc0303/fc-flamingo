@@ -222,14 +222,12 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
       <button class="tab" role="tab" id="t-spelers" aria-controls="p-spelers" aria-selected="true">Spelers</button>
       <button class="tab" role="tab" id="t-wedstrijden" aria-controls="p-wedstrijden" aria-selected="false">Wedstrijden</button>
       <button class="tab" role="tab" id="t-keepers" aria-controls="p-keepers" aria-selected="false">Keepers</button>
-      <button class="tab" role="tab" id="t-extra" aria-controls="p-extra" aria-selected="false">Niet geregistreerd</button>
       <button class="tab" role="tab" id="t-sponsors" aria-controls="p-sponsors" aria-selected="false" hidden>Sponsors</button>
       <button class="tab" role="tab" id="t-posts" aria-controls="p-posts" aria-selected="false" hidden>Instagram</button>
     </div>
     <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers"></div>
     <div class="panel" id="p-wedstrijden" role="tabpanel" aria-labelledby="t-wedstrijden" hidden></div>
     <div class="panel" id="p-keepers" role="tabpanel" aria-labelledby="t-keepers" hidden></div>
-    <div class="panel" id="p-extra" role="tabpanel" aria-labelledby="t-extra" hidden></div>
     <div class="panel" id="p-sponsors" role="tabpanel" aria-labelledby="t-sponsors" hidden></div>
     <div class="panel" id="p-posts" role="tabpanel" aria-labelledby="t-posts" hidden>
       <div class="post-grid">
@@ -294,25 +292,6 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
     <div class="actions">
       <button type="button" class="btn" data-close>Annuleren</button>
       <button type="submit" class="btn primary">Toevoegen</button>
-    </div>
-  </form>
-</dialog>
-
-<dialog id="dlgExtra" aria-labelledby="dlgExtraTitle">
-  <form id="formExtra">
-    <h2 id="dlgExtraTitle">Niet geregistreerd</h2>
-    <p class="note">Goals en assists die wel in de stand staan, maar bij geen enkele wedstrijd horen. Ze tellen mee in de spelerstotalen.</p>
-    <div class="fields">
-      <div class="field"><label for="xPlayer">Speler</label><select id="xPlayer" required></select></div>
-      <div class="field"><label for="xGoals">Goals</label><input id="xGoals" type="number" min="0" max="30" inputmode="numeric"></div>
-      <div class="field"><label for="xAssists">Assists</label><input id="xAssists" type="number" min="0" max="30" inputmode="numeric"></div>
-    </div>
-    <div class="field"><label for="xNote">Notitie</label><input id="xNote" maxlength="80" autocomplete="off"></div>
-    <div class="actions">
-      <button type="button" class="btn danger" id="xDelete" hidden>Verwijderen</button>
-      <span class="spacer"></span>
-      <button type="button" class="btn" data-close>Annuleren</button>
-      <button type="submit" class="btn primary">Opslaan</button>
     </div>
   </form>
 </dialog>
@@ -397,13 +376,11 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
-const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], extras: [], sponsors: [], season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
+const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], sponsors: [], season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
 
 /* ---------- stats ---------- */
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
 const seasonMatches = () => S.matches.filter(m => S.season === 'all' || m.season === S.season).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
-const seasonExtras = () => S.extras.filter(x => S.season === 'all' || x.season === S.season);
 
 function playerStats(matches) {
   const map = new Map(S.players.map(p => [p.id, { p, gp: 0, g: 0, a: 0, y: 0, r: 0, mvp: 0, kgp: 0, conc: 0, cs: 0 }]));
@@ -417,10 +394,6 @@ function playerStats(matches) {
     if (map.has(m.mvp)) map.get(m.mvp).mvp++;
     const k = map.get(m.keeper);
     if (k) { k.kgp++; k.conc += +m.ga || 0; if (+m.ga === 0) k.cs++; }
-  }
-  for (const x of seasonExtras()) {
-    const s = map.get(x.player); if (!s) continue;
-    s.g += +x.goals || 0; s.a += +x.assists || 0;
   }
   return [...map.values()].map(s => ({ ...s, pts: s.g + s.a, gpg: s.gp ? (s.g + s.a) / s.gp : 0 }));
 }
@@ -481,7 +454,7 @@ function renderPlayers(stats) {
   const { key, dir } = S.sort, f = dir === 'asc' ? 1 : -1;
   const rows = [...stats].sort((a, b) => { const x = sortVal(a, key), y = sortVal(b, key); return (x > y ? 1 : x < y ? -1 : 0) * f || b.g - a.g || a.p.name.localeCompare(b.p.name); });
   el.innerHTML = `<div class="tablewrap"><table>
-    <caption class="note" style="text-align:left;padding:12px">Inclusief niet-geregistreerde goals en assists. Klik op een kolomkop om te sorteren${S.canEdit ? ', op een speler om te bewerken' : ''}.</caption>
+    <caption class="note" style="text-align:left;padding:12px">Klik op een kolomkop om te sorteren${S.canEdit ? ', op een speler om te bewerken' : ''}.</caption>
     <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>
     <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
       <td class="num">${s.p.number ?? ''}</td>
@@ -517,23 +490,10 @@ function renderKeepers(stats) {
   </table></div>`;
 }
 
-function renderExtras() {
-  const el = $('#p-extra'), xs = seasonExtras().sort((a, b) => playerName(a.player).localeCompare(playerName(b.player)));
-  const add = S.canEdit && S.players.length && S.seasons.length ? '<button class="btn primary" type="button" data-act="addExtra">Toevoegen</button>' : '';
-  if (!xs.length) { el.innerHTML = emptyState('Alles geregistreerd', 'Hier komen goals en assists die wel in de stand staan, maar bij geen enkele wedstrijd horen.', add); return; }
-  const tg = xs.reduce((t, x) => t + (+x.goals || 0), 0), ta = xs.reduce((t, x) => t + (+x.assists || 0), 0);
-  el.innerHTML = `<p class="note">Deze goals en assists staan in de stand, maar zijn niet aan een wedstrijd gekoppeld. Ze tellen mee in de spelerstotalen, niet in de uitslagen.</p>
-    <div class="tablewrap"><table>
-    <thead><tr><th scope="col">#</th><th scope="col">Speler</th><th scope="col">Goals</th><th scope="col">Assists</th><th scope="col" style="text-align:left">Notitie</th></tr></thead>
-    <tbody>${xs.map(x => { const p = S.players.find(p => p.id === x.player); return `<tr${S.canEdit ? ` class="click" tabindex="0" data-extra="${esc(x.id)}"` : ''}><td class="num">${p?.number ?? ''}</td><td>${esc(playerName(x.player))}</td><td>${+x.goals || 0}</td><td>${+x.assists || 0}</td><td style="text-align:left;white-space:normal">${esc(x.note)}</td></tr>`; }).join('')}
-    <tr><td></td><td>Totaal</td><td class="sorted">${tg}</td><td class="sorted">${ta}</td><td></td></tr></tbody>
-  </table></div>${add ? `<div>${add}</div>` : ''}`;
-}
-
 function render() {
   renderSeasons();
   const matches = seasonMatches(), stats = playerStats(matches);
-  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderExtras(); renderSponsors(); renderPostOptions();
+  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderSponsors(); renderPostOptions();
   $('#addMatch').disabled = !S.players.length || !S.seasons.length;
 }
 
@@ -569,38 +529,15 @@ $('#season').addEventListener('change', e => { S.season = e.target.value; render
 document.addEventListener('click', e => {
   const sort = e.target.closest('[data-sort]');
   if (sort) { const k = sort.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? (S.sort.dir === 'asc' ? 'desc' : 'asc') : (k === 'name' || k === 'num' ? 'asc' : 'desc') }; render(); return; }
-  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addExtra: openExtra, addSponsor: () => openSponsor() })[act.dataset.act](); return; }
+  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addSponsor: () => openSponsor() })[act.dataset.act](); return; }
   if (e.target.closest('[data-close]')) { e.target.closest('dialog').close(); return; }
   if (!S.canEdit) return;
   const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
   const mr = e.target.closest('[data-match]'); if (mr) { openMatch(S.matches.find(m => m.id === mr.dataset.match)); return; }
-  const xr = e.target.closest('[data-extra]'); if (xr) { openExtra(S.extras.find(x => x.id === xr.dataset.extra)); return; }
   const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a') && Date.now() - justDragged > 400) openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor));
 });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-extra].click, [data-sponsor].click')) e.target.click(); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-sponsor].click')) e.target.click(); });
 
-/* unregistered goals/assists dialog */
-let editExtra = null;
-function openExtra(x) {
-  editExtra = x || null;
-  $('#dlgExtraTitle').textContent = x ? 'Niet geregistreerd bewerken' : 'Niet geregistreerd toevoegen';
-  $('#xPlayer').innerHTML = sortedPlayers().map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
-  $('#xPlayer').value = x?.player || '';
-  $('#xGoals').value = x?.goals || ''; $('#xAssists').value = x?.assists || ''; $('#xNote').value = x?.note || '';
-  $('#xDelete').hidden = !x;
-  if (x) armDelete($('#xDelete'), async () => { if (await save(() => S.db.doc('extras/' + x.id).delete(), 'Verwijderd')) $('#dlgExtra').close(); });
-  $('#dlgExtra').showModal();
-}
-$('#formExtra').addEventListener('submit', async e => {
-  e.preventDefault();
-  const data = {
-    season: editExtra?.season || (S.season === 'all' ? [...S.seasons].sort((a, b) => b.name.localeCompare(a.name))[0].id : S.season),
-    player: $('#xPlayer').value, goals: +$('#xGoals').value || 0, assists: +$('#xAssists').value || 0, note: $('#xNote').value.trim(),
-  };
-  if (!data.player || (!data.goals && !data.assists)) { toast('Vul minstens één goal of assist in.'); return; }
-  const ref = editExtra ? S.db.doc('extras/' + editExtra.id) : S.db.collection('extras').doc();
-  if (await save(() => ref.set(data), 'Opgeslagen voor ' + playerName(data.player))) $('#dlgExtra').close();
-});
 $('#addPlayer').onclick = () => openPlayer();
 $('#addMatch').onclick = () => openMatch();
 $('#addSeason').onclick = () => { $('#formSeason').reset(); $('#dlgSeason').showModal(); };
@@ -991,7 +928,7 @@ const SUPABASE_KEY = 'sb_publishable_bm6BQo3hXPHil_MIWlgW9Q_X930lcER';
 const USER_DOMAIN = 'fcflamingo.local';
 const toEmail = u => u.includes('@') ? u : u.toLowerCase() + '@' + USER_DOMAIN;
 const shortName = e => (e || '').replace('@' + USER_DOMAIN, '');
-const TABLES = ['seasons', 'players', 'matches', 'extras'];
+const TABLES = ['seasons', 'players', 'matches'];
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function run(req) { const { error } = await req; if (error) throw error; await loadAll(); }

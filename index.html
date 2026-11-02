@@ -820,7 +820,7 @@ function drawPost() {
   const rowY = top + 480, box = 300, usX = d.home === false ? W - 250 : 250;
   drawFcf(ctx, usX, rowY, box, pink);
   const oppHasLogo = drawOpp(ctx, W - usX, rowY, box, d.opponent, text);
-  if (names) { drawName(ctx, usX, rowY + box / 2 + 60, 'FC Flamingo', text); if (oppHasLogo) drawName(ctx, W - usX, rowY + box / 2 + 60, d.opponent, text); }
+  if (names) { drawName(ctx, usX, rowY + box / 2 + 60, 'FC Flamingo 4', text); if (oppHasLogo) drawName(ctx, W - usX, rowY + box / 2 + 60, d.opponent, text); }
   ctx.fillStyle = text; ctx.textAlign = 'center';
   if (result && !d.empty) { const sc = d.home ? `${d.gf} - ${d.ga}` : `${d.ga} - ${d.gf}`; fitFont(ctx, sc, 800, 150, 280); ctx.fillText(sc, cx, rowY + 52); }
   else { ctx.font = `800 120px ${DISPLAY}`; ctx.fillText('VS', cx, rowY + 42); }

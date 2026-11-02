@@ -155,6 +155,35 @@ tr.click:hover td { background: var(--panel-2); }
 .subnav { display: flex; gap: 8px; margin-bottom: 16px; }
 .subnav .btn[aria-pressed="true"] { border-color: var(--pink); color: var(--pink); }
 
+/* keepers */
+.keepers { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); margin-bottom: 12px; }
+.kcard { display: grid; gap: 12px; align-content: start; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
+.kcard h3 { font: 800 1.75rem/1 var(--font-display); text-transform: uppercase; }
+.kcard h3 span { color: var(--muted); font-weight: 600; }
+.kcard .k { color: var(--muted); font-size: 0.875rem; }
+.kstats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.kstats div { display: grid; gap: 4px; }
+.kstats .v { font: 800 2.25rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.kbest { display: grid; gap: 4px; padding: 12px; border: 1px solid var(--pink); border-radius: var(--r-sm); }
+.kbest .k { color: var(--pink); }
+.kbest strong { font: 800 1.5rem/1.1 var(--font-display); text-transform: uppercase; overflow-wrap: anywhere; }
+.kbest .res { width: 22px; height: 22px; font-size: 0.875rem; vertical-align: middle; }
+.kform { display: flex; gap: 8px; align-items: end; height: 72px; }
+.kform div { flex: 1; display: grid; grid-template-rows: 1fr auto; height: 100%; text-align: center; font-size: 0.875rem; color: var(--muted); }
+.linkbtn { all: unset; color: var(--pink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; justify-self: start; }
+.linkbtn:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+.kbest .linkbtn { font-size: 0.875rem; }
+.rules th, .rules td { text-align: left; position: static; font-weight: inherit; white-space: normal; }
+.rules th:last-child, .rules td:last-child { text-align: right; white-space: nowrap; }
+.kdlg { display: grid; gap: 12px; }
+.kdlg h3 { font: 800 1.25rem/1.1 var(--font-display); text-transform: uppercase; margin-top: 8px; }
+.kdlg .k { color: var(--pink); font-size: 0.875rem; margin: 8px 0 -8px; }
+.kdlg .res { width: 22px; height: 22px; font-size: 0.875rem; vertical-align: middle; }
+.kdlg td .linkbtn { font-weight: 600; }
+.kstar { color: var(--pink); font-size: 0.875rem; }
+.kbtn { justify-self: end; min-height: 36px; font-size: 0.875rem; }
+.kform i { align-self: end; display: block; background: var(--pink); border-radius: 3px 3px 0 0; }
+
 /* sponsors */
 .sponsors { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
 .sponsor { display: grid; gap: 8px; align-content: start; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; transition: border-color .15s ease; }
@@ -321,6 +350,30 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
       <button type="button" class="btn" data-close>Annuleren</button>
       <button type="submit" class="btn primary">Opslaan</button>
     </div>
+  </form>
+</dialog>
+
+<dialog id="dlgKeeperRules" aria-labelledby="dlgKeeperRulesTitle">
+  <form method="dialog">
+    <h2 id="dlgKeeperRulesTitle">Keepers punten</h2>
+    <div id="krBody" class="kdlg"></div>
+    <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Sluiten</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgKeeperList" aria-labelledby="dlgKeeperListTitle">
+  <form method="dialog">
+    <h2 id="dlgKeeperListTitle">Keepers punten</h2>
+    <div id="klBody" class="kdlg"></div>
+    <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Sluiten</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlgKeeperCalc" aria-labelledby="dlgKeeperCalcTitle">
+  <form method="dialog">
+    <h2 id="dlgKeeperCalcTitle">Keepers punten</h2>
+    <div id="kcBody" class="kdlg"></div>
+    <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Terug</button></div>
   </form>
 </dialog>
 
@@ -509,21 +562,90 @@ function renderMatches(matches) {
     </li>`; }).join('')}</ul>`;
 }
 
-function renderKeepers(stats) {
+// Best match: goals conceded vs the season average, plus clean sheet +3, goal +3, assist +2, MOTM +2, win +1.
+const dec = n => n.toFixed(1).replace('.', ',');
+const signed = n => (n > 0 ? '+' : '') + dec(n);
+function keeperScore(m, id, avg) {
+  const g = +(m.goals?.[id] || 0), a = +(m.assists?.[id] || 0), ga = +m.ga || 0;
+  const parts = [['Tegendoelpunten', `${ga} tegen, gemiddeld ${dec(avg)}`, avg - ga]];
+  if (ga === 0) parts.push(['De nul gehouden', 'ja', 3]);
+  if (g) parts.push(['Doelpunten', g, 3 * g]);
+  if (a) parts.push(['Assists', a, 2 * a]);
+  if (m.mvp === id) parts.push(['Man of the match', 'ja', 2]);
+  if (result(m) === 'W') parts.push(['Gewonnen', `${m.gf} - ${m.ga}`, 1]);
+  const why = [ga ? `${ga} tegen` : 'De nul', ...(g ? [g > 1 ? g + ' goals' : '1 goal'] : []), ...(a ? [a > 1 ? a + ' assists' : '1 assist'] : []), ...(m.mvp === id ? ['MOTM'] : [])];
+  return { m, pts: parts.reduce((t, p) => t + p[2], 0), parts, why };
+}
+
+const RULES = [['Tegendoelpunten', 'Seizoensgemiddelde min de tegendoelpunten', '+1 per goal minder, -1 per goal meer'], ['De nul gehouden', '0 tegen', '+3'], ['Doelpunt', 'Per goal van de keeper', '+3'], ['Assist', 'Per assist van de keeper', '+2'], ['Man of the match', 'Keeper is MOTM', '+2'], ['Gewonnen', 'Wedstrijd gewonnen', '+1']];
+const table = (head, rows) => `<div class="tablewrap"><table class="rules"><thead><tr>${head.map(h => `<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+const vs = m => (m.home ? '' : '@ ') + m.opponent;
+const calcTable = sc => `<h3>${esc(vs(sc.m))}</h3><p class="note">${esc(fmtDate(sc.m.date))} · <span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga}</p>
+  ${table(['Onderdeel', 'Wat', 'Keepers punten'], [...sc.parts.map(([l, v, p]) => [esc(l), esc(v), signed(p)]), ['<strong>Totaal</strong>', '', `<strong>${dec(sc.pts)}</strong>`]])}`;
+const rulesLink = '<p class="note"><button type="button" class="linkbtn" data-act="keeperRules">Hoe worden Keepers punten berekend?</button></p>';
+
+// With a keeper id: rules plus that keeper's best match. Without: rules only.
+function openKeeperRules(keeper) {
+  const k = S.kp, kp = k.byId[keeper];
+  $('#krBody').innerHTML = `<p class="note">Per wedstrijd krijgt de keeper Keepers punten. De wedstrijd met de meeste Keepers punten is zijn beste wedstrijd; bij gelijke stand telt de wedstrijd met de minste tegendoelpunten.</p>
+    ${table(['Onderdeel', 'Wanneer', 'Keepers punten'], RULES.map(r => r.map(esc)))}
+    <p class="note">Het seizoensgemiddelde is nu <strong>${dec(k.avg)}</strong> tegen per wedstrijd. Het wordt na elke wedstrijd opnieuw berekend, dus de Keepers punten kunnen een beetje verschuiven. Welke wedstrijd de beste is verandert daardoor niet.</p>
+    ${kp ? `<p class="k">Beste wedstrijd van ${esc(kp.name)}</p>${calcTable(kp.best)}` : ''}`;
+  $('#dlgKeeperRules').showModal();
+}
+
+// All matches of one keeper; each row opens its own calculation on top.
+function openKeeperList(keeper) {
+  const kp = S.kp.byId[keeper]; if (!kp) return;
+  $('#dlgKeeperListTitle').textContent = 'Keepers punten · ' + kp.name;
+  $('#klBody').innerHTML = `<p class="note">Klik op een wedstrijd voor de berekening.</p>
+    ${table(['Wedstrijd', 'Uitslag', 'Keepers punten'], kp.scores.map(sc => [
+      `<button type="button" class="linkbtn" data-act="keeperCalc" data-keeper="${esc(keeper)}" data-match="${esc(sc.m.id)}">${esc(vs(sc.m))}</button><br><span class="note">${esc(fmtDate(sc.m.date))}</span>`,
+      `<span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga}`,
+      (sc === kp.best ? '<span class="kstar">Beste</span> ' : '') + `<strong>${dec(sc.pts)}</strong>`]))}${rulesLink}`;
+  $('#dlgKeeperList').showModal();
+}
+
+function openKeeperCalc(keeper, match) {
+  const kp = S.kp.byId[keeper], sc = kp?.scores.find(s => s.m.id === match); if (!sc) return;
+  $('#dlgKeeperCalcTitle').textContent = 'Keepers punten · ' + kp.name;
+  $('#kcBody').innerHTML = calcTable(sc) + rulesLink;
+  $('#dlgKeeperCalc').showModal();
+}
+
+function renderKeepers(stats, matches) {
   const el = $('#p-keepers');
-  const ks = stats.filter(s => s.kgp > 0 || s.p.position === 'keeper').sort((a, b) => b.cs - a.cs || b.kgp - a.kgp);
+  const ks = stats.filter(s => s.kgp > 0 || s.p.position === 'keeper').sort((a, b) => b.kgp - a.kgp || b.cs - a.cs);
   if (!ks.length) { el.innerHTML = emptyState('Nog geen keepers', 'Zet een speler op positie keeper, of kies de keeper bij een wedstrijd.'); return; }
-  el.innerHTML = `<div class="tablewrap"><table>
-    <thead><tr><th scope="col">#</th><th scope="col">Keeper</th><th scope="col">In doel</th><th scope="col">Tegengoals</th><th scope="col">Gem. tegen</th><th scope="col">De nul gehouden</th></tr></thead>
-    <tbody>${ks.map(s => `<tr class="${s.kgp ? '' : 'idle'}"><td class="num">${s.p.number ?? ''}</td><td>${esc(s.p.name)}</td><td>${s.kgp}</td><td>${s.conc}</td><td>${s.kgp ? (s.conc / s.kgp).toFixed(1).replace('.', ',') : '–'}</td><td class="sorted">${s.cs}</td></tr>`).join('')}</tbody>
-  </table></div>`;
+  const avg = matches.length ? matches.reduce((t, m) => t + (+m.ga || 0), 0) / matches.length : 0;
+  S.kp = { avg, byId: {} };
+  el.innerHTML = `<div class="keepers">${ks.map(s => {
+    const id = s.p.id, km = matches.filter(m => m.keeper === id);
+    const head = `<h3>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}</h3>`;
+    if (!km.length) return `<article class="kcard">${head}<p class="note">Nog niet in het doel gestaan.</p></article>`;
+    const n = r => km.filter(m => result(m) === r).length;
+    const g = km.reduce((t, m) => t + +(m.goals?.[id] || 0), 0), a = km.reduce((t, m) => t + +(m.assists?.[id] || 0), 0), motm = km.filter(m => m.mvp === id).length;
+    const scores = km.map(m => keeperScore(m, id, avg)), best = [...scores].sort((x, y) => y.pts - x.pts || x.m.ga - y.m.ga)[0];
+    S.kp.byId[id] = { name: s.p.name, scores, best };
+    const form = km.slice(0, 5).reverse(), top = Math.max(1, ...form.map(m => +m.ga || 0));
+    return `<article class="kcard">${head}
+      <div class="kstats"><div><span class="v">${s.kgp}</span><span class="k">Wedstrijden</span></div><div><span class="v">${dec(s.conc / s.kgp)}</span><span class="k">Tegen per wedstrijd</span></div><div><span class="v">${s.cs}</span><span class="k">De nul</span></div></div>
+      <p class="note">${n('W')}W ${n('G')}G ${n('V')}V · ${g} ${g === 1 ? 'goal' : 'goals'} · ${a} ${a === 1 ? 'assist' : 'assists'}${motm ? ` · ${motm}x MOTM` : ''}</p>
+      <div class="kbest"><button type="button" class="linkbtn k" data-act="keeperRules" data-keeper="${esc(id)}">Beste wedstrijd · ${dec(best.pts)} Keepers punten</button>
+        <strong>${esc(vs(best.m))}</strong>
+        <span class="note">${esc(fmtDate(best.m.date))} · <span class="res ${result(best.m)}">${result(best.m)}</span> ${best.m.gf} - ${best.m.ga}</span>
+        <span>${best.why.map(esc).join(' · ')}</span></div>
+      <div class="kform" aria-label="Tegendoelpunten laatste ${form.length} wedstrijden">${form.map(m => `<div title="${esc(m.opponent)}: ${+m.ga || 0} tegen"><i style="height:${Math.max(4, (+m.ga || 0) / top * 100)}%"></i><span>${+m.ga || 0}</span></div>`).join('')}</div>
+      <span class="k">Tegen, laatste ${form.length} als keeper</span>
+      <button type="button" class="btn kbtn" data-act="keeperList" data-keeper="${esc(id)}">Keepers punten</button>
+    </article>`; }).join('')}</div>${rulesLink}`;
 }
 
 function render() {
   if (!S.ready) return;
   renderSeasons();
   const matches = seasonMatches(), stats = playerStats(matches);
-  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderSponsors(); renderLogos(); renderPostOptions();
+  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats, matches); renderSponsors(); renderLogos(); renderPostOptions();
   $('#addMatch').disabled = !S.players.length || !S.seasons.length;
 }
 
@@ -559,7 +681,7 @@ $('#season').addEventListener('change', e => { S.season = e.target.value; render
 document.addEventListener('click', e => {
   const sort = e.target.closest('[data-sort]');
   if (sort) { const k = sort.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? (S.sort.dir === 'asc' ? 'desc' : 'asc') : (k === 'name' || k === 'num' ? 'asc' : 'desc') }; render(); return; }
-  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addSponsor: () => openSponsor(), addLogo: () => openLogo() })[act.dataset.act](); return; }
+  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addSponsor: () => openSponsor(), addLogo: () => openLogo(), keeperRules: () => openKeeperRules(act.dataset.keeper), keeperList: () => openKeeperList(act.dataset.keeper), keeperCalc: () => openKeeperCalc(act.dataset.keeper, act.dataset.match) })[act.dataset.act](); return; }
   const sub = e.target.closest('[data-sub]');
   if (sub) { document.querySelectorAll('[data-sub]').forEach(b => { const on = b === sub; b.setAttribute('aria-pressed', on); $('#' + b.dataset.sub).hidden = !on; }); if (sub.dataset.sub === 'postGrid') drawPost(); return; }
   if (e.target.closest('[data-close]')) { e.target.closest('dialog').close(); return; }

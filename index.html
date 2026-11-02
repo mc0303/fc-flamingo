@@ -155,6 +155,30 @@ tr.click:hover td { background: var(--panel-2); }
 .subnav { display: flex; gap: 8px; margin-bottom: 16px; }
 .subnav .btn[aria-pressed="true"] { border-color: var(--pink); color: var(--pink); }
 
+/* match filter */
+/* One line from tablet width up; below that every part gets its own line. */
+.mfbar { display: flex; gap: 12px 16px; align-items: center; margin-bottom: 12px; }
+.btn.icon { flex: none; display: inline-grid; place-items: center; width: 44px; padding: 0; color: var(--text); }
+.btn.icon[aria-expanded="true"] { border-color: var(--pink); color: var(--pink); }
+.mfpanel { flex: 1 1 auto; display: flex; gap: 8px 20px; align-items: center; min-width: 0; }
+.mfsearch { position: relative; flex: 0 1 280px; min-width: 0; }
+.mfsearch input { width: 100%; box-sizing: border-box; min-height: 44px; padding: 0 44px 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); }
+.mfsearch input:focus { outline: none; border-color: var(--pink); }
+.mfsearch input::-webkit-search-cancel-button { display: none; }
+.mfsearch button { all: unset; position: absolute; right: 0; top: 0; width: 44px; height: 100%; display: grid; place-items: center; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
+.mfsearch button:hover, .mfsearch button:focus-visible { color: var(--pink); }
+.mfpanel .check-row { flex: none; }
+@media (max-width: 639px) {
+  .mfbar { flex-direction: column; align-items: stretch; }
+  .mfbar .btn.icon { align-self: start; }
+  .mfpanel { flex-direction: column; align-items: stretch; }
+  .mfsearch { flex: none; }
+  .mfpanel .check-row { min-height: 36px; }
+}
+#mfNote { margin-bottom: 12px; }
+mark.hl { background: none; color: var(--pink); font-weight: 700; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
 /* keepers */
 .keepers { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); margin-bottom: 12px; }
 .kcard { display: grid; gap: 12px; align-content: start; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
@@ -263,7 +287,18 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
       <button class="tab" role="tab" id="t-posts" aria-controls="p-posts" aria-selected="false" hidden>Instagram</button>
     </div>
     <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers"><div class="tablewrap sk-rows" aria-hidden="true"><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div>
-    <div class="panel" id="p-wedstrijden" role="tabpanel" aria-labelledby="t-wedstrijden" hidden></div>
+    <div class="panel" id="p-wedstrijden" role="tabpanel" aria-labelledby="t-wedstrijden" hidden>
+      <div class="mfbar">
+        <button type="button" class="btn icon" id="mfToggle" aria-expanded="false" aria-controls="mfPanel" title="Zoeken op speler"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span class="sr-only">Zoeken op speler</span></button>
+        <div class="mfpanel" id="mfPanel" hidden>
+          <div class="mfsearch"><input id="mfPlayer" type="search" list="mfPlayers" placeholder="Speler zoeken" autocomplete="off" aria-label="Speler"><datalist id="mfPlayers"></datalist><button type="button" id="mfClear" title="Wissen" hidden><span aria-hidden="true">×</span><span class="sr-only">Wissen</span></button></div>
+          <label class="check-row"><input type="checkbox" id="mfGoals" checked> Doelpunten</label>
+          <label class="check-row"><input type="checkbox" id="mfAssists" checked> Assists</label>
+        </div>
+      </div>
+      <p class="note" id="mfNote" aria-live="polite" hidden></p>
+      <div id="matchList"></div>
+    </div>
     <div class="panel" id="p-keepers" role="tabpanel" aria-labelledby="t-keepers" hidden></div>
     <div class="panel" id="p-sponsors" role="tabpanel" aria-labelledby="t-sponsors" hidden></div>
     <div class="panel" id="p-posts" role="tabpanel" aria-labelledby="t-posts" hidden>
@@ -547,10 +582,24 @@ function renderPlayers(stats) {
     </tr>`).join('')}</tbody></table></div>`;
 }
 
-function renderMatches(matches) {
-  const el = $('#p-wedstrijden');
-  if (!matches.length) { el.innerHTML = emptyState('Nog geen wedstrijden', S.canEdit ? (S.players.length ? 'Voer na elke wedstrijd de uitslag, opstelling, goals en assists in.' : 'Voeg eerst spelers toe.') : 'Er zijn nog geen uitslagen ingevoerd.', S.players.length && S.seasons.length ? '<button class="btn primary" type="button" data-act="addMatch">Wedstrijd toevoegen</button>' : ''); return; }
-  const list = (obj) => Object.entries(obj || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => esc(playerName(id)) + (n > 1 ? ' ' + n + 'x' : '')).join(', ');
+// Player filter: exact name, or the only name that starts with what was typed.
+function filterPlayer() {
+  const q = norm($('#mfPlayer').value); if (!q || $('#mfPanel').hidden) return null;
+  const hit = S.players.filter(p => norm(p.name).startsWith(q));
+  return hit.find(p => norm(p.name) === q) || (hit.length === 1 ? hit[0] : null);
+}
+
+function renderMatches(all) {
+  const el = $('#matchList'), note = $('#mfNote'), p = filterPlayer(), wantG = $('#mfGoals').checked, wantA = $('#mfAssists').checked;
+  $('#mfPlayers').innerHTML = sortedPlayers().map(x => `<option value="${esc(x.name)}"></option>`).join('');
+  $('.mfbar').hidden = !all.length;
+  const matches = p ? all.filter(m => (wantG && +m.goals?.[p.id] > 0) || (wantA && +m.assists?.[p.id] > 0)) : all;
+  note.hidden = !p;
+  if (p) note.textContent = !wantG && !wantA ? 'Vink doelpunten of assists aan.' : `${matches.length} ${matches.length === 1 ? 'wedstrijd' : 'wedstrijden'} met ${[wantG && 'doelpunten', wantA && 'assists'].filter(Boolean).join(' of ')} van ${p.name}.`;
+  if (p && !matches.length) { el.innerHTML = ''; return; }
+  const hl = id => s => id === p?.id ? `<mark class="hl">${s}</mark>` : s;
+  if (!all.length) { el.innerHTML = emptyState('Nog geen wedstrijden', S.canEdit ? (S.players.length ? 'Voer na elke wedstrijd de uitslag, opstelling, goals en assists in.' : 'Voeg eerst spelers toe.') : 'Er zijn nog geen uitslagen ingevoerd.', S.players.length && S.seasons.length ? '<button class="btn primary" type="button" data-act="addMatch">Wedstrijd toevoegen</button>' : ''); return; }
+  const list = (obj) => Object.entries(obj || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => hl(id)(esc(playerName(id)) + (n > 1 ? ' ' + n + 'x' : ''))).join(', ');
   el.innerHTML = `<ul class="matches">${matches.map(m => {
     const g = list(m.goals), a = list(m.assists);
     return `<li class="match ${result(m)}${S.canEdit ? ' click' : ''}" data-match="${esc(m.id)}"${S.canEdit ? ' tabindex="0" role="button" aria-label="Bewerk wedstrijd tegen ' + esc(m.opponent) + '"' : ''}>
@@ -558,9 +607,20 @@ function renderMatches(matches) {
       <span class="when"><span class="venue ${m.home ? 'home' : 'away'}">${m.home ? 'Thuis' : 'Uit'}</span>${fmtDate(m.date)}</span>
       <span class="opp">${m.home ? 'FC Flamingo vs ' + esc(m.opponent) : esc(m.opponent) + ' vs FC Flamingo'}</span>
       <span class="score">${m.home ? `${m.gf}-${m.ga}` : `${m.ga}-${m.gf}`}</span>
-      ${g || a || m.mvp ? `<span class="detail">${g ? 'Goals: ' + g + '. ' : ''}${a ? 'Assists: ' + a + '. ' : ''}${m.mvp ? 'MVP: ' + esc(playerName(m.mvp)) + '.' : ''}</span>` : ''}
+      ${g || a || m.mvp ? `<span class="detail">${[g && 'Goals: ' + g, a && 'Assists: ' + a, m.mvp && 'MVP: ' + hl(m.mvp)(esc(playerName(m.mvp)))].filter(Boolean).join('<br>')}</span>` : ''}
     </li>`; }).join('')}</ul>`;
 }
+
+const mfRefresh = () => { $('#mfClear').hidden = !$('#mfPlayer').value; renderMatches(seasonMatches()); };
+['mfPlayer', 'mfGoals', 'mfAssists'].forEach(id => $('#' + id).addEventListener('input', mfRefresh));
+// Closed by default; closing (or leaving the tab) resets the filter.
+function mfOpen(open) {
+  $('#mfPanel').hidden = !open; $('#mfToggle').setAttribute('aria-expanded', open);
+  if (open) { $('#mfPlayer').focus(); return; }
+  $('#mfPlayer').value = ''; $('#mfGoals').checked = $('#mfAssists').checked = true; mfRefresh();
+}
+$('#mfToggle').onclick = () => mfOpen($('#mfPanel').hidden);
+$('#mfClear').onclick = () => { $('#mfPlayer').value = ''; mfRefresh(); $('#mfPlayer').focus(); };
 
 // Best match: goals conceded vs the season average, plus clean sheet +3, goal +3, assist +2, MOTM +2, win +1.
 const dec = n => n.toFixed(1).replace('.', ',');
@@ -672,6 +732,7 @@ document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
 function selectTab(name) {
   S.tab = name;
   if (name === 'posts') setTimeout(drawPost);
+  if (name !== 'wedstrijden' && !$('#mfPanel').hidden) mfOpen(false);
   document.querySelectorAll('[role="tab"]').forEach(t => { const on = t.id === 't-' + name; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
   document.querySelectorAll('[role="tabpanel"]').forEach(p => p.hidden = p.id !== 'p-' + name);
 }

@@ -152,6 +152,8 @@ tr.click:hover td { background: var(--panel-2); }
 .check-row input[type="checkbox"] { flex: none; width: 20px; height: 20px; min-height: 0; padding: 0; margin: 0; accent-color: var(--pink); cursor: pointer; }
 .field .check-row { color: var(--text); font-size: 1rem; justify-self: start; }
 .checks { display: flex; flex-wrap: wrap; gap: 0 24px; }
+.subnav { display: flex; gap: 8px; margin-bottom: 16px; }
+.subnav .btn[aria-pressed="true"] { border-color: var(--pink); color: var(--pink); }
 
 /* sponsors */
 .sponsors { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
@@ -236,7 +238,9 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
     <div class="panel" id="p-keepers" role="tabpanel" aria-labelledby="t-keepers" hidden></div>
     <div class="panel" id="p-sponsors" role="tabpanel" aria-labelledby="t-sponsors" hidden></div>
     <div class="panel" id="p-posts" role="tabpanel" aria-labelledby="t-posts" hidden>
-      <div class="post-grid">
+      <div class="subnav"><button type="button" class="btn" data-sub="postGrid" aria-pressed="true">Post maken</button><button type="button" class="btn" data-sub="logoPane" aria-pressed="false">Logo's</button></div>
+      <div id="logoPane" hidden></div>
+      <div class="post-grid" id="postGrid">
         <form id="postForm" class="post-form">
           <h2>Post maken</h2>
           <div class="fields">
@@ -256,12 +260,8 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
             <div class="field"><label for="poPlace">Locatie</label><input id="poPlace" maxlength="30" value="De Kannebuis"></div>
             <div class="field"><label for="poKlasse">Klasse</label><input id="poKlasse" maxlength="30" value="3e klasse"></div>
           </div>
-          <div class="field">
-            <label for="poLogo">Logo tegenstander</label>
-            <div class="logo-row"><input id="poLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><button type="button" class="btn danger" id="poLogoClear" hidden>Logo verwijderen</button></div>
-            <label class="check-row"><input type="checkbox" id="poCut"> Witte achtergrond van het logo verwijderen</label>
-            <p class="note">Een PNG met transparante achtergrond werkt het mooist. Het logo wordt op dit apparaat onthouden voor deze tegenstander.</p>
-          </div>
+          <label class="check-row"><input type="checkbox" id="poNames"> Club- en teamnaam onder de logo's tonen</label>
+          <p class="note">Het logo van de tegenstander komt uit Logo's. Staat de club er niet in, dan komt de naam op de plek van het logo.</p>
           <label class="check-row"><input type="checkbox" id="poSponsors" checked> Sponsors onder de post zetten</label>
           <div class="actions">
             <button type="button" class="btn" id="poShare" hidden>Delen</button>
@@ -317,6 +317,29 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
     </div>
     <div class="actions">
       <button type="button" class="btn danger" id="spDelete" hidden>Verwijderen</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgLogo" aria-labelledby="dlgLogoTitle">
+  <form id="formLogo">
+    <h2 id="dlgLogoTitle">Logo</h2>
+    <div class="fields">
+      <div class="field"><label for="lgClub">Club</label><input id="lgClub" required maxlength="80" list="lgClubs" autocomplete="off" placeholder="Cluzona '74"><datalist id="lgClubs"></datalist></div>
+      <div class="field"><label for="lgTeam">Team (optioneel)</label><input id="lgTeam" maxlength="80" list="poOpps" autocomplete="off" placeholder="Cluzona '74 2"></div>
+    </div>
+    <p class="note">Laat Team leeg voor het logo van de hele club. Met een team erbij gebruikt alleen dat team dit logo, in plaats van het clublogo.</p>
+    <div class="field">
+      <label for="lgFile">Logo</label>
+      <div class="logo-row"><input id="lgFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"></div>
+      <label class="check-row"><input type="checkbox" id="lgCut"> Witte achtergrond om het logo heen verwijderen</label>
+      <div class="sp-logo" id="lgPreview" hidden></div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn danger" id="lgDelete" hidden>Verwijderen</button>
       <span class="spacer"></span>
       <button type="button" class="btn" data-close>Annuleren</button>
       <button type="submit" class="btn primary">Opslaan</button>
@@ -382,7 +405,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
-const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], sponsors: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
+const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], sponsors: [], logos: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
 
 /* ---------- stats ---------- */
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
@@ -500,7 +523,7 @@ function render() {
   if (!S.ready) return;
   renderSeasons();
   const matches = seasonMatches(), stats = playerStats(matches);
-  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderSponsors(); renderPostOptions();
+  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats); renderSponsors(); renderLogos(); renderPostOptions();
   $('#addMatch').disabled = !S.players.length || !S.seasons.length;
 }
 
@@ -536,14 +559,17 @@ $('#season').addEventListener('change', e => { S.season = e.target.value; render
 document.addEventListener('click', e => {
   const sort = e.target.closest('[data-sort]');
   if (sort) { const k = sort.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? (S.sort.dir === 'asc' ? 'desc' : 'asc') : (k === 'name' || k === 'num' ? 'asc' : 'desc') }; render(); return; }
-  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addSponsor: () => openSponsor() })[act.dataset.act](); return; }
+  const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addSponsor: () => openSponsor(), addLogo: () => openLogo() })[act.dataset.act](); return; }
+  const sub = e.target.closest('[data-sub]');
+  if (sub) { document.querySelectorAll('[data-sub]').forEach(b => { const on = b === sub; b.setAttribute('aria-pressed', on); $('#' + b.dataset.sub).hidden = !on; }); if (sub.dataset.sub === 'postGrid') drawPost(); return; }
   if (e.target.closest('[data-close]')) { e.target.closest('dialog').close(); return; }
   if (!S.canEdit) return;
   const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
   const mr = e.target.closest('[data-match]'); if (mr) { openMatch(S.matches.find(m => m.id === mr.dataset.match)); return; }
-  const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a') && Date.now() - justDragged > 400) openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor));
+  const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a') && Date.now() - justDragged > 400) { openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor)); return; }
+  const lr = e.target.closest('[data-logo]'); if (lr) openLogo(S.logos.find(l => l.id === lr.dataset.logo));
 });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-sponsor].click')) e.target.click(); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-sponsor].click, [data-logo].click')) e.target.click(); });
 
 $('#addPlayer').onclick = () => openPlayer();
 $('#addMatch').onclick = () => openMatch();
@@ -644,20 +670,20 @@ $('#formMatch').addEventListener('submit', async e => {
 const FCF_PATH = new Path2D(document.querySelector('#fcf path').getAttribute('d'));
 const DISPLAY = '"Barlow Condensed", "Arial Narrow", sans-serif';
 const token = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const logoKey = name => 'fcf-logo:' + name.trim().toLowerCase();
 const logoCache = {};
 
-// Opponent logos live in this browser only, keyed by opponent name.
-const cutKey = name => 'fcf-logo-cut:' + name.trim().toLowerCase();
+// Opponent "Cluzona '74 2": a team row for exactly that name wins, else the club whose name it starts with.
+const norm = s => (s || '').trim().toLowerCase();
+function logoRow(name) {
+  const o = norm(name); if (!o) return null;
+  const withLogo = S.logos.filter(l => safeLogo(l.logo));
+  return withLogo.find(l => l.team && (norm(l.team) === o || norm(l.club + ' ' + l.team) === o))
+    || withLogo.filter(l => !l.team && (o === norm(l.club) || o.startsWith(norm(l.club) + ' '))).sort((a, b) => b.club.length - a.club.length)[0] || null;
+}
 function oppLogo(name) {
-  if (!name.trim()) return null;
-  const k = logoKey(name), cut = store.get(cutKey(name)) === '1', ck = k + (cut ? '#cut' : '');
-  if (!(ck in logoCache)) {
-    logoCache[ck] = null;
-    const src = store.get(k);
-    if (src) { const img = new Image(); img.onload = () => { logoCache[ck] = cut ? removeWhite(img) : img; drawPost(); }; img.src = src; }
-  }
-  return logoCache[ck];
+  const src = logoRow(name)?.logo; if (!src) return null;
+  if (!(src in logoCache)) { logoCache[src] = null; const img = new Image(); img.onload = () => { logoCache[src] = img; drawPost(); }; img.src = src; }
+  return logoCache[src];
 }
 
 // Makes near-white pixels transparent, but only the ones connected to the image edge,
@@ -701,18 +727,27 @@ function drawFcf(ctx, cx, cy, h, color) {
   ctx.fillStyle = color; ctx.fill(FCF_PATH, 'evenodd'); ctx.restore();
 }
 
+function wrapLines(ctx, text, weight, size, maxW) {
+  const lines = []; ctx.font = `${weight} ${size}px ${DISPLAY}`;
+  for (const w of text.toUpperCase().split(/\s+/)) { const last = lines[lines.length - 1]; if (last && ctx.measureText(last + ' ' + w).width <= maxW) lines[lines.length - 1] = last + ' ' + w; else lines.push(w); }
+  return lines;
+}
+
+// Returns false when there is no logo and the name was drawn in its place.
 function drawOpp(ctx, cx, cy, box, name, color) {
   const img = oppLogo(name || '');
   if (img) {
     const r = Math.min(box / img.width, box / img.height), w = img.width * r, h = img.height * r;
-    ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h); return;
+    ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h); return true;
   }
-  // No logo yet: the opponent's name in its place.
-  const words = (name || 'Tegenstander').toUpperCase().split(/\s+/), lines = [];
-  ctx.font = `800 64px ${DISPLAY}`;
-  for (const w of words) { const last = lines[lines.length - 1]; if (last && ctx.measureText(last + ' ' + w).width <= box) lines[lines.length - 1] = last + ' ' + w; else lines.push(w); }
   ctx.fillStyle = color; ctx.textAlign = 'center';
-  lines.slice(0, 4).forEach((l, i, a) => { fitFont(ctx, l, 800, 64, box); ctx.fillText(l, cx, cy + 22 + (i - (a.length - 1) / 2) * 68); });
+  wrapLines(ctx, name || 'Tegenstander', 800, 64, box).slice(0, 4).forEach((l, i, a) => { fitFont(ctx, l, 800, 64, box); ctx.fillText(l, cx, cy + 22 + (i - (a.length - 1) / 2) * 68); });
+  return false;
+}
+
+function drawName(ctx, cx, y, name, color) {
+  ctx.fillStyle = color; ctx.textAlign = 'center';
+  wrapLines(ctx, name, 600, 42, 400).slice(0, 2).forEach((l, i) => { fitFont(ctx, l, 600, 42, 400); ctx.fillText(l, cx, y + i * 46); });
 }
 
 function drawIcon(ctx, kind, x, y, s, color, bg) {
@@ -761,8 +796,9 @@ function drawPost() {
   const spons = $('#poSponsors').checked && S.sponsors.length > 0;
   const scorers = result && $('#poGoals').checked ? countList(d.goals) : [], assists = result && $('#poAssists').checked ? countList(d.assists).join(', ') : '';
 
-  // Vertical positions, measured from the top of the content block.
-  const rule = scorers.length ? 700 + (scorers.length - 1) * 56 + 50 : 690;
+  // Vertical positions, measured from the top of the content block; names push everything below the logos down.
+  const names = $('#poNames').checked, nm = names ? 100 : 0;
+  const rule = (scorers.length ? 700 + (scorers.length - 1) * 56 + 50 : 690) + nm;
   const below = result ? rule + 80 : rule + 100;
   const tag = result ? (assists ? rule + 236 : rule + 100) : rule + 200;
   const total = spons ? tag + 140 : tag + 20;
@@ -781,12 +817,14 @@ function drawPost() {
 
   // Home team on the left, like the fixture list.
   const rowY = top + 480, box = 300, usX = d.home === false ? W - 250 : 250;
-  drawFcf(ctx, usX, rowY, box, pink); drawOpp(ctx, W - usX, rowY, box, d.opponent, text);
+  drawFcf(ctx, usX, rowY, box, pink);
+  const oppHasLogo = drawOpp(ctx, W - usX, rowY, box, d.opponent, text);
+  if (names) { drawName(ctx, usX, rowY + box / 2 + 60, 'FC Flamingo', text); if (oppHasLogo) drawName(ctx, W - usX, rowY + box / 2 + 60, d.opponent, text); }
   ctx.fillStyle = text; ctx.textAlign = 'center';
   if (result && !d.empty) { const sc = d.home ? `${d.gf} - ${d.ga}` : `${d.ga} - ${d.gf}`; fitFont(ctx, sc, 800, 150, 280); ctx.fillText(sc, cx, rowY + 52); }
   else { ctx.font = `800 120px ${DISPLAY}`; ctx.fillText('VS', cx, rowY + 42); }
   ctx.fillStyle = text;
-  scorers.forEach((n, k) => { fitFont(ctx, n, 600, 46, 400); ctx.fillText(n, usX, top + 700 + k * 56); });
+  scorers.forEach((n, k) => { fitFont(ctx, n, 600, 46, 400); ctx.fillText(n, usX, top + 700 + nm + k * 56); });
 
   ctx.fillStyle = pink; ctx.fillRect(90, top + rule, W - 180, 3);
   if (!result) drawInfo(ctx, d, top + below, W, pink, text, bg);
@@ -797,7 +835,6 @@ function drawPost() {
   ctx.fillStyle = pink; ctx.font = `600 46px ${DISPLAY}`; ctx.fillText('#FCFLAMINGO', cx, top + tag);
   if (spons) drawSponsors(ctx, top + tag + 80, W, pink);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  $('#poLogoClear').hidden = !oppLogo(d.opponent || '');
 }
 
 function drawSponsors(ctx, y, W, pink) {
@@ -812,37 +849,17 @@ function renderPostOptions() {
   sel.innerHTML = [...S.matches].sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(m => `<option value="${esc(m.id)}">${esc(fmtDate(m.date))}, ${m.home ? 'thuis' : 'uit'} tegen ${esc(m.opponent)}</option>`).join('');
   if ([...sel.options].some(o => o.value === v)) sel.value = v;
   $('#poOpps').innerHTML = [...new Set(S.matches.map(m => m.opponent))].map(o => `<option value="${esc(o)}"></option>`).join('');
-  if (S.tab === 'posts') { syncCut(); drawPost(); }
+  if (S.tab === 'posts') drawPost();
 }
 
 function postBlob() { return new Promise(r => $('#poCanvas').toBlob(r, 'image/png')); }
 function postName() { const d = postData(); return `fcflamingo-${d.type}-${d.date || 'post'}.png`; }
 
-const syncCut = () => { const n = postData().opponent; $('#poCut').checked = !!n && store.get(cutKey(n)) === '1'; };
-$('#postForm').addEventListener('input', e => { if (e.target.id === 'poOpp') syncCut(); drawPost(); });
+$('#postForm').addEventListener('input', drawPost);
 $('#postForm').addEventListener('change', e => {
   if (e.target.id === 'poType') document.querySelectorAll('#postForm [data-for]').forEach(el => el.hidden = el.dataset.for !== e.target.value);
-  if (['poType', 'poMatch'].includes(e.target.id)) syncCut();
   drawPost();
 });
-$('#poLogo').addEventListener('change', async e => {
-  const f = e.target.files[0], name = postData().opponent;
-  if (!f) return;
-  if (!name) { toast('Vul eerst de tegenstander in.'); e.target.value = ''; return; }
-  try {
-    const img0 = new Image(); img0.src = URL.createObjectURL(f); await img0.decode();
-    const r = Math.min(1, 600 / Math.max(img0.naturalWidth, img0.naturalHeight)) || 1, c = document.createElement('canvas');
-    c.width = Math.round((img0.naturalWidth || 600) * r); c.height = Math.round((img0.naturalHeight || 600) * r);
-    c.getContext('2d').drawImage(img0, 0, 0, c.width, c.height); URL.revokeObjectURL(img0.src);
-    const img = new Image(); img.src = c.toDataURL('image/png'); await img.decode();
-    store.set(logoKey(name), img.src); store.set(cutKey(name), $('#poCut').checked ? '1' : '0');
-    delete logoCache[logoKey(name)]; delete logoCache[logoKey(name) + '#cut'];
-    drawPost(); toast('Logo van ' + name + ' toegevoegd');
-  } catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
-  e.target.value = '';
-});
-$('#poLogoClear').onclick = () => { const k = logoKey(postData().opponent); delete logoCache[k]; delete logoCache[k + '#cut']; try { localStorage.removeItem(k); } catch {} drawPost(); };
-$('#poCut').addEventListener('change', e => { const name = postData().opponent; if (name) store.set(cutKey(name), e.target.checked ? '1' : '0'); });
 $('#poDownload').onclick = async () => {
   const url = URL.createObjectURL(await postBlob()), a = document.createElement('a');
   a.href = url; a.download = postName(); document.body.append(a); a.click(); a.remove();
@@ -927,6 +944,56 @@ $('#formSponsor').addEventListener('submit', async e => {
   if (await save(() => ref.set(data), data.name + ' opgeslagen')) { $('#dlgSponsor').close(); if (from >= 0 && from !== to) reorderSponsors(from, to); }
 });
 
+/* ---------- Logo's ---------- */
+const byClub = (a, b) => a.club.localeCompare(b.club) || a.team.localeCompare(b.team);
+function renderLogos() {
+  const el = $('#logoPane'), add = '<button class="btn primary" type="button" data-act="addLogo">Logo toevoegen</button>';
+  if (!S.logos.length) { el.innerHTML = emptyState('Nog geen logo\'s', 'Voeg per club een logo toe. Het logo komt dan vanzelf op de Instagram-posts tegen die club.', add); return; }
+  el.innerHTML = `<ul class="sponsors">${[...S.logos].sort(byClub).map(l => `<li class="sponsor click" tabindex="0" data-logo="${esc(l.id)}">
+      <div class="sp-logo">${safeLogo(l.logo) ? `<img src="${esc(l.logo)}" alt="Logo ${esc(l.team || l.club)}">` : `<span>${esc(l.club)}</span>`}</div>
+      <div class="sp-name">${esc(l.club)}</div><div class="note">${l.team ? 'Team: ' + esc(l.team) : 'Hele club'}</div>
+    </li>`).join('')}</ul><p class="note">Een logo met een team erbij gaat voor dat team boven het clublogo.</p><div>${add}</div>`;
+  $('#lgClubs').innerHTML = [...new Set(S.logos.map(l => l.club))].map(c => `<option value="${esc(c)}"></option>`).join('');
+}
+
+let editLogo = null, lgRaw = null, lgLogo = '';
+function showLgLogo() { $('#lgPreview').hidden = !lgLogo; $('#lgPreview').innerHTML = lgLogo ? `<img src="${esc(lgLogo)}" alt="Voorbeeld van het logo">` : ''; }
+function openLogo(l) {
+  editLogo = l || null; lgRaw = null; lgLogo = safeLogo(l?.logo);
+  $('#dlgLogoTitle').textContent = l ? 'Logo bewerken' : 'Logo toevoegen';
+  $('#lgClub').value = l?.club || ''; $('#lgTeam').value = l?.team || ''; $('#lgFile').value = ''; $('#lgCut').checked = false; showLgLogo();
+  $('#lgDelete').hidden = !l;
+  if (l) armDelete($('#lgDelete'), async () => { if (await save(() => S.db.doc('logos/' + l.id).delete(), 'Logo verwijderd')) $('#dlgLogo').close(); });
+  $('#dlgLogo').showModal();
+}
+// Re-run from the original file when the checkbox flips, so cutting is never applied twice.
+function bakeLogo() {
+  if (!lgRaw) return;
+  for (const max of [600, 400, 250]) {
+    const r = Math.min(1, max / Math.max(lgRaw.naturalWidth || max, lgRaw.naturalHeight || max)), c = document.createElement('canvas');
+    c.width = Math.round((lgRaw.naturalWidth || max) * r); c.height = Math.round((lgRaw.naturalHeight || max) * r);
+    c.getContext('2d').drawImage(lgRaw, 0, 0, c.width, c.height);
+    lgLogo = ($('#lgCut').checked ? removeWhite(c) : c).toDataURL('image/png');
+    if (lgLogo.length < 390000) break;
+  }
+  showLgLogo();
+}
+$('#lgFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const img = new Image(); img.src = URL.createObjectURL(f); await img.decode(); lgRaw = img; bakeLogo(); }
+  catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
+});
+$('#lgCut').addEventListener('change', bakeLogo);
+$('#formLogo').addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = { club: $('#lgClub').value.trim(), team: $('#lgTeam').value.trim(), logo: lgLogo };
+  if (!data.club) return;
+  if (!data.logo) { toast('Kies eerst een logo.'); return; }
+  if (S.logos.some(l => l.id !== editLogo?.id && norm(l.club) === norm(data.club) && norm(l.team) === norm(data.team))) { toast('Voor ' + (data.team || data.club) + ' staat al een logo. Klik daarop om het te wijzigen.'); return; }
+  const ref = editLogo ? S.db.doc('logos/' + editLogo.id) : S.db.collection('logos').doc();
+  if (await save(() => ref.set(data), 'Logo van ' + (data.team || data.club) + ' opgeslagen')) $('#dlgLogo').close();
+});
+
 /* ---------- Supabase ---------- */
 // De publishable key is openbaar en mag in de pagina staan; de beveiliging zit in de database-regels (setup.sql).
 const SUPABASE_URL = 'https://yptfjefhouoiiisuyeyt.supabase.co';
@@ -949,8 +1016,9 @@ S.db = {
 };
 
 async function loadAll() {
-  const [sp, ...res] = await Promise.all([sb.from('sponsors').select('*').order('created_at'), ...TABLES.map(t => sb.from(t).select('*'))]);
+  const [sp, lg, ...res] = await Promise.all([sb.from('sponsors').select('*').order('created_at'), sb.from('logos').select('*'), ...TABLES.map(t => sb.from(t).select('*'))]);
   S.sponsors = sp.error ? [] : sp.data.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  S.logos = lg.error ? [] : lg.data;
   if (res.some(r => r.error)) { if (!S.ready) $('#summary').innerHTML = $('#p-spelers').innerHTML = ''; $('#status').hidden = false; $('#status').textContent = 'De gegevens konden niet worden geladen. Probeer het later opnieuw.'; return; }
   TABLES.forEach((t, i) => S[t] = res[i].data);
   $('#status').hidden = true; S.ready = true;

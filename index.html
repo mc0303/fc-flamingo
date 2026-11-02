@@ -405,7 +405,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
-const S = { db: null, canEdit: false, seasons: [], players: [], matches: [], sponsors: [], logos: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
+const S = { db: null, canEdit: false, canPost: false, seasons: [], players: [], matches: [], sponsors: [], logos: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
 
 /* ---------- stats ---------- */
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
@@ -473,8 +473,8 @@ const COLS = [
 ];
 const sortVal = (s, k) => k === 'name' ? (s.p.name || '').toLowerCase() : k === 'num' ? (s.p.number ?? 999) : s[k];
 
-function emptyState(title, text, btn) {
-  return `<div class="empty"><h3>${title}</h3><p class="note">${text}</p>${btn && S.canEdit ? btn : ''}</div>`;
+function emptyState(title, text, btn, allowed = S.canEdit) {
+  return `<div class="empty"><h3>${title}</h3><p class="note">${text}</p>${btn && allowed ? btn : ''}</div>`;
 }
 
 function renderPlayers(stats) {
@@ -563,11 +563,12 @@ document.addEventListener('click', e => {
   const sub = e.target.closest('[data-sub]');
   if (sub) { document.querySelectorAll('[data-sub]').forEach(b => { const on = b === sub; b.setAttribute('aria-pressed', on); $('#' + b.dataset.sub).hidden = !on; }); if (sub.dataset.sub === 'postGrid') drawPost(); return; }
   if (e.target.closest('[data-close]')) { e.target.closest('dialog').close(); return; }
+  if (!S.canPost) return;
+  const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a') && Date.now() - justDragged > 400) { openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor)); return; }
+  const lr = e.target.closest('[data-logo]'); if (lr) { openLogo(S.logos.find(l => l.id === lr.dataset.logo)); return; }
   if (!S.canEdit) return;
   const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
-  const mr = e.target.closest('[data-match]'); if (mr) { openMatch(S.matches.find(m => m.id === mr.dataset.match)); return; }
-  const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a') && Date.now() - justDragged > 400) { openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor)); return; }
-  const lr = e.target.closest('[data-logo]'); if (lr) openLogo(S.logos.find(l => l.id === lr.dataset.logo));
+  const mr = e.target.closest('[data-match]'); if (mr) openMatch(S.matches.find(m => m.id === mr.dataset.match));
 });
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-sponsor].click, [data-logo].click')) e.target.click(); });
 
@@ -881,13 +882,13 @@ const safeLogo = s => /^data:image\//.test(s || '') ? s : '';
 const safeSite = s => /^https?:\/\//i.test(s || '') ? s : '';
 function renderSponsors() {
   const el = $('#p-sponsors'), add = '<button class="btn primary" type="button" data-act="addSponsor">Sponsor toevoegen</button>';
-  if (!S.sponsors.length) { el.innerHTML = emptyState('Nog geen sponsors', 'Voeg sponsors toe met naam, website en logo. Daarna kun je ze onder je Instagram-posts zetten.', add); return; }
+  if (!S.sponsors.length) { el.innerHTML = emptyState('Nog geen sponsors', 'Voeg sponsors toe met naam, website en logo. Daarna kun je ze onder je Instagram-posts zetten.', add, S.canPost); return; }
   el.innerHTML = `<ul class="sponsors">${S.sponsors.map(s => `<li class="sponsor click" tabindex="0" data-sponsor="${esc(s.id)}">
       <div class="sp-logo">${safeLogo(s.logo) ? `<img src="${esc(s.logo)}" alt="Logo ${esc(s.name)}">` : `<span>${esc(s.name)}</span>`}</div>
       <div class="sp-name">${esc(s.name)}</div>
       ${safeSite(s.website) ? `<a href="${esc(s.website)}" target="_blank" rel="noopener">${esc(s.website.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, ''))}</a>` : ''}
-    </li>`).join('')}</ul><p class="note">Sleep de tegels om de volgorde te veranderen. Deze volgorde staat ook onder de Instagram-posts.</p><div>${S.canEdit ? add : ''}</div>`;
-  if (S.canEdit && window.Sortable) {
+    </li>`).join('')}</ul><p class="note">Sleep de tegels om de volgorde te veranderen. Deze volgorde staat ook onder de Instagram-posts.</p><div>${S.canPost ? add : ''}</div>`;
+  if (S.canPost && window.Sortable) {
     const ul = el.querySelector('.sponsors'); ul.classList.add('sortable');
     Sortable.create(ul, { animation: 150, delay: 150, delayOnTouchOnly: true, ghostClass: 'sp-ghost',
       onStart: () => { justDragged = Date.now(); },
@@ -948,7 +949,7 @@ $('#formSponsor').addEventListener('submit', async e => {
 const byClub = (a, b) => a.club.localeCompare(b.club) || a.team.localeCompare(b.team);
 function renderLogos() {
   const el = $('#logoPane'), add = '<button class="btn primary" type="button" data-act="addLogo">Logo toevoegen</button>';
-  if (!S.logos.length) { el.innerHTML = emptyState('Nog geen logo\'s', 'Voeg per club een logo toe. Het logo komt dan vanzelf op de Instagram-posts tegen die club.', add); return; }
+  if (!S.logos.length) { el.innerHTML = emptyState('Nog geen logo\'s', 'Voeg per club een logo toe. Het logo komt dan vanzelf op de Instagram-posts tegen die club.', add, S.canPost); return; }
   el.innerHTML = `<ul class="sponsors">${[...S.logos].sort(byClub).map(l => `<li class="sponsor click" tabindex="0" data-logo="${esc(l.id)}">
       <div class="sp-logo">${safeLogo(l.logo) ? `<img src="${esc(l.logo)}" alt="Logo ${esc(l.team || l.club)}">` : `<span>${esc(l.club)}</span>`}</div>
       <div class="sp-name">${esc(l.club)}</div><div class="note">${l.team ? 'Team: ' + esc(l.team) : 'Hele club'}</div>
@@ -1029,8 +1030,11 @@ async function refreshAuth() {
   const { data: { session } } = await sb.auth.getSession();
   S.user = session?.user || null;
   S.canEdit = S.user ? !!(await sb.rpc('is_editor')).data : false;
-  ['addMatch', 'addPlayer', 'addSeason', 't-posts', 't-sponsors'].forEach(id => $('#' + id).hidden = !S.canEdit);
-  if (!S.canEdit && ['posts', 'sponsors'].includes(S.tab)) selectTab('spelers');
+  // socials: only Sponsors, Logo's and Instagram (can_post comes from roles.sql; editors keep access without it).
+  S.canPost = S.canEdit || (S.user ? !!(await sb.rpc('can_post')).data : false);
+  ['addMatch', 'addPlayer', 'addSeason'].forEach(id => $('#' + id).hidden = !S.canEdit);
+  ['t-posts', 't-sponsors'].forEach(id => $('#' + id).hidden = !S.canPost);
+  if (!S.canPost && ['posts', 'sponsors'].includes(S.tab)) selectTab('spelers');
   $('#login').textContent = S.user ? 'Uitloggen' : 'Inloggen';
   $('#login').title = S.user ? 'Ingelogd als ' + shortName(S.user.email) : 'Inloggen voor coaches en aanvoerders';
   render();
@@ -1048,7 +1052,7 @@ $('#formLogin').addEventListener('submit', async e => {
   const { data, error } = await sb.auth.signInWithPassword({ email: toEmail($('#lEmail').value.trim()), password: $('#lPass').value });
   btn.disabled = false; btn.textContent = 'Inloggen';
   if (error) { err.textContent = 'Inloggen lukte niet. Controleer je gebruikersnaam en wachtwoord.'; err.hidden = false; return; }
-  const { data: ok } = await sb.rpc('is_editor');
+  const ok = (await sb.rpc('is_editor')).data || (await sb.rpc('can_post')).data;
   if (!ok) { err.textContent = 'Je bent ingelogd, maar dit account heeft geen bewerkrechten. Vraag de aanvoerder om je toe te voegen.'; err.hidden = false; return; }
   $('#dlgLogin').close(); toast('Ingelogd als ' + shortName(data.user.email));
 });

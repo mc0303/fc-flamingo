@@ -103,7 +103,7 @@ button, input, select { font: inherit; color: inherit; }
 /* table */
 .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-th, td { padding: 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th, td { padding: 12px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--line); }
 tbody tr:last-child td { border-bottom: 0; }
 th { font-weight: 500; font-size: 0.875rem; color: var(--muted); background: var(--panel-2); }
 th:nth-child(2), td:nth-child(2) { text-align: left; position: sticky; left: 0; background: inherit; }
@@ -519,7 +519,7 @@ const COLS = [
   { key: 'g', label: 'Goals' },
   { key: 'a', label: 'Assists' },
   { key: 'pts', label: 'G+A', title: 'Goals plus assists' },
-  { key: 'gpg', label: 'G+A per wedstr.' },
+  { key: 'gpg', label: '<span>G+A<br>p. wedstr.</span>', title: 'Goals plus assists per wedstrijd' },
   { key: 'mvp', label: 'MVP', title: 'Man of the match' },
   { key: 'y', label: '<span class="cardglyph y"></span>Geel' },
   { key: 'r', label: '<span class="cardglyph r"></span>Rood' },

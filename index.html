@@ -68,18 +68,23 @@ button, input, select { font: inherit; color: inherit; }
 .select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; }
 
 /* summary */
-.summary { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
-@media (min-width: 560px) { .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tile.wide { grid-column: span 2; } }
-@media (min-width: 960px) { .summary { grid-template-columns: minmax(0, 1.25fr) repeat(4, minmax(0, 1fr)); } .tile.wide { grid-column: auto; } }
-.tile { background: var(--panel); padding: 16px 20px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+/* bento: record tile full width on phones, 2x2 next to four small tiles from 960px */
+.summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tile.wide { grid-column: 1 / -1; }
+@media (min-width: 960px) { .summary { grid-template-columns: repeat(4, minmax(0, 1fr)); } .tile.wide { grid-column: span 2; grid-row: span 2; } }
+.tile { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.tile.wide { background: linear-gradient(160deg, rgb(232 103 155 / .2), var(--panel) 65%); border-color: rgb(232 103 155 / .35); }
 .tile .k { color: var(--muted); font-size: 0.875rem; }
+.tile > .k:first-child { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
 .tile .v { font-family: var(--font-display); font-weight: 800; font-size: 2.25rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.tile.wide .v { font-size: 3rem; }
 .tile .v small { font-size: 1rem; font-weight: 600; color: var(--muted); font-family: var(--font-body); }
 .tile .v.rec { display: flex; gap: 20px; align-items: baseline; }
 .tile .v.rec small { margin-left: 4px; }
-.tile .v.name { font-size: 1.75rem; color: var(--pink); overflow-wrap: anywhere; }
+.tile .v.name { font-size: 1.5rem; color: var(--pink); overflow-wrap: anywhere; }
 .form { display: flex; gap: 4px; flex-wrap: wrap; }
-.tile .form .res { width: 26px; height: 26px; font-size: 0.9375rem; }
+.tile .form { gap: 3px; }
+.tile .form .res { width: 22px; height: 22px; font-size: 0.8125rem; }
 .tile .form { flex-wrap: nowrap; }
 .ratio { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--panel-2); }
 .ratio .W { background: var(--pink); }

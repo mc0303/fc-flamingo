@@ -56,7 +56,10 @@ button, input, select { font: inherit; color: inherit; }
 
 /* masthead */
 .mast { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding-bottom: 20px; border-bottom: 2px solid var(--pink); }
-.mast svg.logo { width: 72px; height: 90px; flex: none; }
+.mast .logo { width: 72px; height: 90px; flex: none; object-fit: contain; }
+.st-logo { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.st-logo img, .st-logo svg { width: 64px; height: 80px; object-fit: contain; flex: none; }
+.st-logo .field { flex: 1 1 200px; }
 .mast .id { flex: 1 1 220px; min-width: 0; }
 .mast h1 { font-size: clamp(2.25rem, 7vw, 3.75rem); text-transform: uppercase; color: var(--pink); }
 .mast p { margin: 4px 0 0; color: var(--muted); font-size: 0.9375rem; }
@@ -89,9 +92,9 @@ button, input, select { font: inherit; color: inherit; }
 .tile .v.rec small { margin-left: 4px; }
 .tile .v.name { font-size: 1.5rem; color: var(--pink); overflow-wrap: anywhere; }
 .form { display: flex; gap: 4px; flex-wrap: wrap; }
-.tile .form { gap: 3px; }
-.tile .form .res { width: 22px; height: 22px; font-size: 0.8125rem; }
-.tile .form { flex-wrap: nowrap; }
+/* Five equal cells that shrink with the tile, so the 5th badge never sticks out. */
+.tile .form { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; max-width: 160px; }
+.tile .form .res { width: auto; height: auto; aspect-ratio: 1; max-width: 28px; font-size: 0.8125rem; }
 .ratio { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--panel-2); }
 .ratio .W { background: var(--pink); }
 .ratio .G { background: var(--muted); }
@@ -274,8 +277,11 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
 .field label, .field .lbl { font-size: 0.875rem; color: var(--muted); }
 .field input, .field select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); width: 100%; box-sizing: border-box; }
 /* iOS gives date inputs a fixed native width that spills over the next field. */
-.field input[type="date"] { -webkit-appearance: none; appearance: none; min-width: 0; display: block; }
-.field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+/* Date/time: iOS draws these natively with its own width, centred text and top-aligned value,
+   so they don't line up with the other fields. Strip the native look and pin text left + vertically centred. */
+.field input[type="date"], .field input[type="time"] { -webkit-appearance: none; appearance: none; min-width: 0; display: block; height: 44px; line-height: 42px; padding-block: 0; text-align: left; }
+.field input[type="date"]::-webkit-date-and-time-value, .field input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; line-height: 42px; min-height: 0; }
+.field input[type="date"]::-webkit-datetime-edit, .field input[type="time"]::-webkit-datetime-edit { padding: 0; line-height: 42px; }
 .score-in { display: flex; gap: 8px; align-items: center; }
 .score-in input { text-align: center; font: 800 1.5rem/1 var(--font-display); }
 /* match wizard: header and footer fixed, only the body scrolls */
@@ -353,14 +359,16 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
 
 <div class="wrap">
   <header class="mast">
-    <svg class="logo" role="img" aria-label="FCF logo" style="color: var(--pink)"><use href="#fcf"/></svg>
+    <svg class="logo" id="teamLogoSvg" role="img" aria-label="Clublogo" style="color: var(--pink)"><use href="#fcf"/></svg>
+    <img class="logo" id="teamLogoImg" alt="Clublogo" hidden>
     <div class="id">
-      <h1>FC Flamingo</h1>
-      <p>Futsal, 3e klasse KNVB. Thuisbasis De Kannebuis.</p>
-      <p class="tag">#FCFlamingo</p>
+      <h1 id="teamName">FC Flamingo 4</h1>
+      <p id="teamSub">Futsal, 3e klasse KNVB. Thuisbasis De Kannebuis.</p>
+      <p class="tag" id="teamTag">#FCFlamingo</p>
     </div>
     <div class="tools">
       <select id="season" class="select" aria-label="Seizoen"></select>
+      <button id="settingsBtn" class="btn icon" type="button" title="Instellingen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sr-only">Instellingen</span></button>
       <button id="login" class="btn" type="button">Inloggen</button>
     </div>
   </header>
@@ -420,8 +428,8 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
             <div class="field"><label for="poHome">Thuis of uit</label><select id="poHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
             <div class="field"><label for="poDate">Datum</label><input id="poDate" type="date"></div>
             <div class="field"><label for="poTime">Aftrap</label><input id="poTime" type="time" value="19:00"></div>
-            <div class="field"><label for="poPlace">Locatie</label><input id="poPlace" maxlength="30" value="De Kannebuis"></div>
-            <div class="field"><label for="poKlasse">Klasse</label><input id="poKlasse" maxlength="30" value="3e klasse"></div>
+            <div class="field"><label for="poPlace">Locatie</label><input id="poPlace" maxlength="30"></div>
+            <div class="field"><label for="poKlasse">Klasse</label><input id="poKlasse" maxlength="30"></div>
           </div>
           <label class="check-row"><input type="checkbox" id="poNames"> Club- en teamnaam onder de logo's tonen</label>
           <p class="note">Het logo van de tegenstander komt uit Logo's. Staat de club er niet in, dan komt de naam op de plek van het logo.</p>
@@ -455,6 +463,30 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
     <div class="actions">
       <button type="button" class="btn danger" id="pDelete" hidden>Verwijderen</button>
       <span class="spacer"></span>
+      <button type="button" class="btn" data-close>Annuleren</button>
+      <button type="submit" class="btn primary">Opslaan</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgSettings" aria-labelledby="dlgSettingsTitle">
+  <form id="formSettings">
+    <h2 id="dlgSettingsTitle">Instellingen</h2>
+    <p class="note">Alleen captain- en manager-accounts kunnen dit wijzigen.</p>
+    <div class="fields">
+      <div class="field"><label for="stName">Teamnaam</label><input id="stName" required maxlength="40" autocomplete="off"></div>
+      <div class="field"><label for="stNum">Teamnummer</label><input id="stNum" type="number" min="1" max="99" inputmode="numeric"></div>
+      <div class="field"><label for="stKlasse">Klasse</label><input id="stKlasse" maxlength="40" autocomplete="off" placeholder="Bijv. 3e klasse KNVB"></div>
+      <div class="field"><label for="stHome">Thuisbasis</label><input id="stHome" maxlength="40" autocomplete="off"></div>
+      <div class="field"><label for="stTag">Hashtag</label><input id="stTag" maxlength="40" autocomplete="off" placeholder="#FCFlamingo"></div>
+    </div>
+    <div class="st-logo">
+      <img id="stLogoImg" alt="Huidig logo" hidden><svg id="stLogoSvg" style="color: var(--pink)" aria-hidden="true"><use href="#fcf"/></svg>
+      <div class="field"><label for="stFile">Eigen logo (gaat voor de logo's in de lijst)</label><input id="stFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+        <button type="button" class="linkbtn" id="stLogoReset">Standaard FCF-logo gebruiken</button></div>
+    </div>
+    <details class="log" id="stLog" hidden></details>
+    <div class="actions">
       <button type="button" class="btn" data-close>Annuleren</button>
       <button type="submit" class="btn primary">Opslaan</button>
     </div>
@@ -652,7 +684,9 @@ function playerStats(matches) {
     if (map.has(m.manager)) map.get(m.manager).mgr++;
     for (const id of keepersOf(m)) { const k = map.get(id); if (k) { k.kgp++; k.conc += conceded(m, id); if (+m.ga === 0) k.cs++; } }
   }
-  return [...map.values()].map(s => ({ ...s, pts: s.g + s.a, gpg: s.gp ? (s.g + s.a) / s.gp : 0 }));
+  // att = attendance: share of the shown matches this player played in, in %.
+  const n = matches.length, out = [...map.values()].map(s => ({ ...s, pts: s.g + s.a, gpg: s.gp ? (s.g + s.a) / s.gp : 0, att: n ? s.gp / n * 100 : 0 }));
+  out.n = n; return out;
 }
 
 /* ---------- render ---------- */
@@ -691,6 +725,7 @@ const COLS = [
   { key: 'num', label: '#', title: 'Rugnummer' },
   { key: 'name', label: 'Speler' },
   { key: 'gp', label: 'Wedstr.', title: 'Gespeelde wedstrijden' },
+  { key: 'att', label: 'Aanw.', title: 'Aanwezigheid: gespeelde wedstrijden van het totaal' },
   { key: 'g', label: 'Goals' },
   { key: 'a', label: 'Assists' },
   { key: 'pts', label: 'G+A', title: 'Goals plus assists' },
@@ -717,15 +752,17 @@ function renderPlayers(stats) {
   const rows = [...stats].sort((a, b) => { const x = sortVal(a, key), y = sortVal(b, key); return (x > y ? 1 : x < y ? -1 : 0) * f || b.g - a.g || a.p.name.localeCompare(b.p.name); });
   const hurt = sortedPlayers().filter(p => p.injury);
   const injBar = hurt.length ? `<div class="injbar"><span class="inj-ic" aria-hidden="true"></span><div><strong>Geblesseerd</strong><ul>${hurt.map(p => `<li>${esc(p.name)}${p.injury !== 'geblesseerd' ? ` <span class="note">· ${esc(p.injury)}</span>` : ''}</li>`).join('')}</ul></div></div>` : '';
-  el.innerHTML = `${bar(`Tik op een kolomkop om te sorteren${S.canEdit ? ', op een speler om te bewerken' : ''}.`)}${injBar}<div class="tablewrap"><table>
+  el.innerHTML = `${bar(`Tik op een kolomkop om te sorteren${S.canEdit ? ', op een speler om te bewerken' : ''}.`)}<div class="tablewrap"><table>
     <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>
     <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
       <td class="num">${s.p.number ?? ''}</td>
       <td>${esc(s.p.name)}${injuryIcon(s.p)}${hasRole(s.p, 'captain') || s.cap ? `<span class="cap" title="Captain${s.cap ? ', ' + s.cap + 'x deze periode' : ''}">C</span>` : ''}${s.p.position === 'keeper' ? '<span class="pos">keeper</span>' : ''}${hasRole(s.p, 'manager') || s.mgr ? `<span class="pos" title="Manager${s.mgr ? ', ' + s.mgr + 'x deze periode' : ''}">manager</span>` : ''}</td>
-      ${['gp', 'g', 'a', 'pts'].map(k => `<td class="${k === key ? 'sorted' : ''}">${s[k]}</td>`).join('')}
+      <td class="${key === 'gp' ? 'sorted' : ''}">${s.gp}</td>
+      <td class="${key === 'att' ? 'sorted' : ''}" title="${s.gp} van ${stats.n}">${s.att.toFixed(2).replace('.', ',')}%</td>
+      ${['g', 'a', 'pts'].map(k => `<td class="${k === key ? 'sorted' : ''}">${s[k]}</td>`).join('')}
       <td class="${key === 'gpg' ? 'sorted' : ''}">${s.gp ? s.gpg.toFixed(2).replace('.', ',') : '–'}</td>
       ${['mvp', 'y', 'r'].map(k => `<td class="${k === key ? 'sorted' : ''}">${s[k]}</td>`).join('')}
-    </tr>`).join('')}</tbody></table></div>`;
+    </tr>`).join('')}</tbody></table></div>${injBar}`;
 }
 
 // Player filter: exact name, or the only name that starts with what was typed.
@@ -751,7 +788,7 @@ function renderMatches(all) {
     return `<li class="match ${result(m)}${S.canEdit ? ' click' : ''}" data-match="${esc(m.id)}"${S.canEdit ? ' tabindex="0" role="button" aria-label="Bewerk wedstrijd tegen ' + esc(m.opponent) + '"' : ''}>
       <span class="res ${result(m)}" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(m)]}">${result(m)}</span>
       <span class="when"><span class="venue ${m.home ? 'home' : 'away'}">${m.home ? 'Thuis' : 'Uit'}</span>${fmtDate(m.date)}</span>
-      <span class="opp">${m.home ? 'FC Flamingo vs ' + esc(m.opponent) : esc(m.opponent) + ' vs FC Flamingo'}</span>
+      <span class="opp">${m.home ? esc(teamFull()) + ' vs ' + esc(m.opponent) : esc(m.opponent) + ' vs ' + esc(teamFull())}</span>
       <span class="score">${m.home ? `${m.gf}-${m.ga}` : `${m.ga}-${m.gf}`}</span>
       ${g || a || m.mvp ? `<span class="detail">${[g && 'Goals: ' + g, a && 'Assists: ' + a, m.mvp && 'MVP: ' + hl(m.mvp)(esc(playerName(m.mvp)))].filter(Boolean).join('<br>')}</span>` : ''}
     </li>`; }).join('')}</ul>`;
@@ -1099,11 +1136,12 @@ function logoRow(name) {
   return withLogo.find(l => l.team && (norm(l.team) === o || norm(l.club + ' ' + l.team) === o))
     || withLogo.filter(l => !l.team && (o === norm(l.club) || o.startsWith(norm(l.club) + ' '))).sort((a, b) => b.club.length - a.club.length)[0] || null;
 }
-function oppLogo(name) {
-  const src = logoRow(name)?.logo; if (!src) return null;
+// Loads an image once; returns null until it's ready, then redraws the post.
+function imgFor(src) {
   if (!(src in logoCache)) { logoCache[src] = null; const img = new Image(); img.onload = () => { logoCache[src] = img; drawPost(); }; img.src = src; }
   return logoCache[src];
 }
+function oppLogo(name) { const src = logoRow(name)?.logo; return src ? imgFor(src) : null; }
 
 // Makes near-white pixels transparent, but only the ones connected to the image edge,
 // so white parts inside the logo (stripes, letters) stay.
@@ -1236,9 +1274,11 @@ function drawPost() {
 
   // Home team on the left, like the fixture list.
   const rowY = top + 480, box = 300, usX = d.home === false ? W - 250 : 250;
-  drawFcf(ctx, usX, rowY, box, pink);
+  const own = safeLogo(team().logo) ? imgFor(team().logo) : null;
+  if (own) { const r = Math.min(box / own.width, box / own.height), w = own.width * r, h = own.height * r; ctx.drawImage(own, usX - w / 2, rowY - h / 2, w, h); }
+  else drawFcf(ctx, usX, rowY, box, pink);
   const oppHasLogo = drawOpp(ctx, W - usX, rowY, box, d.opponent, text);
-  if (names) { drawName(ctx, usX, rowY + box / 2 + 60, 'FC Flamingo 4', text); if (oppHasLogo) drawName(ctx, W - usX, rowY + box / 2 + 60, d.opponent, text); }
+  if (names) { drawName(ctx, usX, rowY + box / 2 + 60, teamFull(), text); if (oppHasLogo) drawName(ctx, W - usX, rowY + box / 2 + 60, d.opponent, text); }
   ctx.fillStyle = text; ctx.textAlign = 'center';
   if (result && !d.empty) { const sc = d.home ? `${d.gf} - ${d.ga}` : `${d.ga} - ${d.gf}`; fitFont(ctx, sc, 800, 150, 280); ctx.fillText(sc, cx, rowY + 52); }
   else { ctx.font = `800 120px ${DISPLAY}`; ctx.fillText('VS', cx, rowY + 42); }
@@ -1413,6 +1453,52 @@ $('#formLogo').addEventListener('submit', async e => {
   if (await save(() => ref.set(data), 'Logo van ' + (data.team || data.club) + ' opgeslagen')) $('#dlgLogo').close();
 });
 
+/* ---------- team settings (settings.sql): name, number, class, home base, hashtag, own logo ---------- */
+const DEFAULT_TEAM = { team_name: 'FC Flamingo', team_number: 4, klasse: '3e klasse KNVB', home_base: 'De Kannebuis', hashtag: '#FCFlamingo', logo: '' };
+function team() { return { ...DEFAULT_TEAM, ...Object.fromEntries(Object.entries(S.settings || {}).filter(([, v]) => v != null)) }; }
+function teamFull() { const t = team(); return t.team_name + (t.team_number ? ' ' + t.team_number : ''); }
+function showLogo(img, svg, src) { const ok = safeLogo(src); img.hidden = !ok; svg.style.display = ok ? 'none' : ''; if (ok) img.src = src; }
+function applySettings() {
+  const t = team();
+  $('#teamName').textContent = teamFull();
+  $('#teamSub').textContent = ['Futsal', t.klasse].filter(Boolean).join(', ') + '.' + (t.home_base ? ' Thuisbasis ' + t.home_base + '.' : '');
+  $('#teamTag').textContent = t.hashtag || ''; $('#teamTag').hidden = !t.hashtag;
+  document.title = t.team_name + ' Stats';
+  showLogo($('#teamLogoImg'), $('#teamLogoSvg'), t.logo);
+  $('label[for="mGF"]').textContent = 'Goals ' + t.team_name;
+  if (!$('#poPlace').value) $('#poPlace').value = t.home_base || '';
+  if (!$('#poKlasse').value) $('#poKlasse').value = t.klasse || '';
+}
+let stLogo = '';
+$('#settingsBtn').onclick = () => {
+  const t = team();
+  $('#stName').value = t.team_name; $('#stNum').value = t.team_number ?? ''; $('#stKlasse').value = t.klasse || ''; $('#stHome').value = t.home_base || ''; $('#stTag').value = t.hashtag || '';
+  stLogo = t.logo || ''; $('#stFile').value = ''; showLogo($('#stLogoImg'), $('#stLogoSvg'), stLogo);
+  showLog($('#stLog'), 'settings', 'team');
+  $('#dlgSettings').showModal();
+};
+$('#stLogoReset').onclick = () => { stLogo = ''; $('#stFile').value = ''; showLogo($('#stLogoImg'), $('#stLogoSvg'), ''); };
+// Same downscale as the Logo's dialog, so the stored data URL stays small.
+$('#stFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const img = new Image(); img.src = URL.createObjectURL(f); await img.decode();
+    for (const max of [600, 400, 250]) {
+      const w = img.naturalWidth || max, h = img.naturalHeight || max, r = Math.min(1, max / Math.max(w, h)), c = document.createElement('canvas');
+      c.width = Math.round(w * r); c.height = Math.round(h * r); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      stLogo = c.toDataURL('image/png'); if (stLogo.length < 390000) break;
+    }
+    showLogo($('#stLogoImg'), $('#stLogoSvg'), stLogo);
+  } catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
+});
+$('#formSettings').addEventListener('submit', async e => {
+  e.preventDefault();
+  let tag = $('#stTag').value.trim().replace(/\s+/g, ''); if (tag && !tag.startsWith('#')) tag = '#' + tag;
+  const data = { team_name: $('#stName').value.trim(), team_number: $('#stNum').value === '' ? null : +$('#stNum').value, klasse: $('#stKlasse').value.trim(), home_base: $('#stHome').value.trim(), hashtag: tag, logo: stLogo };
+  if (!data.team_name) return;
+  if (await save(() => S.db.doc('settings/team').set(data), 'Instellingen opgeslagen')) $('#dlgSettings').close();
+});
+
 /* ---------- Supabase ---------- */
 // De publishable key is openbaar en mag in de pagina staan; de beveiliging zit in de database-regels (setup.sql).
 const SUPABASE_URL = 'https://yptfjefhouoiiisuyeyt.supabase.co';
@@ -1435,7 +1521,8 @@ S.db = {
 };
 
 async function loadAll() {
-  const [sp, lg, ...res] = await Promise.all([sb.from('sponsors').select('*').order('created_at'), sb.from('logos').select('*'), ...TABLES.map(t => sb.from(t).select('*'))]);
+  const [st, sp, lg, ...res] = await Promise.all([sb.from('settings').select('*').eq('id', 'team').maybeSingle(), sb.from('sponsors').select('*').order('created_at'), sb.from('logos').select('*'), ...TABLES.map(t => sb.from(t).select('*'))]);
+  S.settings = st.error ? null : st.data; applySettings();
   S.sponsors = sp.error ? [] : sp.data.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   S.logos = lg.error ? [] : lg.data;
   if (res.some(r => r.error)) { if (!S.ready) $('#summary').innerHTML = $('#p-spelers').innerHTML = ''; $('#status').hidden = false; $('#status').textContent = 'De gegevens konden niet worden geladen. Probeer het later opnieuw.'; return; }
@@ -1451,6 +1538,9 @@ async function refreshAuth() {
   // socials: only Sponsors, Logo's and Instagram (can_post comes from roles.sql; editors keep access without it).
   S.canPost = S.canEdit || (S.user ? !!(await sb.rpc('can_post')).data : false);
   $('#addMatch').hidden = !S.canEdit;
+  // Settings: only editor accounts with role captain or manager (is_admin() in settings.sql).
+  S.isAdmin = S.user ? !!(await sb.rpc('is_admin')).data : false;
+  $('#settingsBtn').hidden = !S.isAdmin;
   ['t-posts', 't-sponsors'].forEach(id => $('#' + id).hidden = !S.canPost);
   tabArrows();
   if (!S.canPost && ['posts', 'sponsors'].includes(S.tab)) selectTab('spelers');

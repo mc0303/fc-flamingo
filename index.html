@@ -38,6 +38,12 @@
   color-scheme: dark;
 }
 html, body { overflow-x: clip; }
+/* Scrollbars in club colours instead of the grey system ones. */
+* { scrollbar-width: thin; scrollbar-color: var(--loss) transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--loss); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--pink); }
 [hidden] { display: none !important; }
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body { margin: 0; }
@@ -99,7 +105,9 @@ button, input, select { font: inherit; color: inherit; }
 .res.V { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
 
 /* tabs */
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+/* No scroll container: overflow-x:auto also made the bar drag up/down on phones. Tabs wrap instead. */
+.tabs { display: flex; flex-wrap: wrap; gap: 0 4px; border-bottom: 1px solid var(--line); touch-action: manipulation; }
+@media (max-width: 639px) { .tabs { gap: 0; } .tab { flex: 1 1 auto; padding: 0 8px; font-size: 1.125rem; } }
 .tab { min-height: 44px; padding: 0 16px; border: 0; background: none; cursor: pointer; color: var(--muted); font: 800 1.375rem/1 var(--font-display); text-transform: uppercase; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: color .15s ease, border-color .15s ease; }
 .tab:hover { color: var(--text); }
 .tab[aria-selected="true"] { color: var(--pink); border-bottom-color: var(--pink); }
@@ -236,11 +244,57 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
 .field input, .field select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); width: 100%; box-sizing: border-box; }
 .score-in { display: flex; gap: 8px; align-items: center; }
 .score-in input { text-align: center; font: 800 1.5rem/1 var(--font-display); }
-.lineup { border: 1px solid var(--line); border-radius: var(--r-sm); overflow: auto; max-height: 46vh; }
-.lineup table th, .lineup table td { padding: 8px; text-align: center; }
-.lineup table th:nth-child(2), .lineup table td:nth-child(2) { text-align: left; }
-.lineup input[type="number"] { width: 3.25rem; min-height: 36px; text-align: center; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); }
-.lineup input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--pink); cursor: pointer; }
+/* match wizard: header and footer fixed, only the body scrolls */
+#dlgMatch { width: min(560px, calc(100% - 24px)); height: min(780px, calc(100dvh - 24px)); max-height: none; overflow: hidden; }
+#formMatch { height: 100%; box-sizing: border-box; padding: 0; gap: 0; grid-template-rows: auto minmax(0, 1fr) auto; }
+.wiz-head { display: grid; gap: 10px; padding: 16px 20px 12px; border-bottom: 1px solid var(--line); }
+.wiz-top { display: flex; align-items: center; gap: 12px; }
+.wiz-top h2 { flex: 1; font-size: 1.5rem; }
+.wiz-steps { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.wiz-steps li { flex: 1; }
+.wiz-steps button { all: unset; display: block; width: 100%; height: 20px; cursor: pointer; }
+.wiz-steps button::after { content: ""; display: block; height: 6px; margin-top: 7px; border-radius: 3px; background: var(--line); }
+.wiz-steps button.done::after { background: var(--pink); opacity: .5; }
+.wiz-steps button[aria-current="step"]::after { background: var(--pink); }
+.wiz-steps button:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; border-radius: 3px; }
+#mStepLbl { margin: 0; color: var(--muted); font-size: 0.875rem; }
+#mStepLbl strong { color: var(--text); }
+.wiz-body { overflow-y: auto; overscroll-behavior: contain; padding: 16px 20px 24px; }
+.wstep { display: grid; gap: 16px; align-content: start; }
+.wiz-foot { display: flex; gap: 8px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
+.wiz-foot .btn { flex: 1 1 0; }
+.scores { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.step { display: inline-flex; align-items: center; gap: 4px; }
+.step button { flex: none; width: 44px; height: 44px; padding: 0; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); font: 800 1.375rem/1 var(--font-display); cursor: pointer; touch-action: manipulation; }
+.step button:active { border-color: var(--pink); color: var(--pink); }
+.field .step input, .step input { width: 3rem; min-width: 0; min-height: 44px; padding: 0; text-align: center; font: 800 1.375rem/1 var(--font-display); border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); -moz-appearance: textfield; }
+.step input::-webkit-inner-spin-button, .step input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.plist { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); }
+.plist.wide { grid-template-columns: minmax(0, 1fr); }
+.prow { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 12px; box-sizing: border-box; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); }
+.prow .nm { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.prow .nm small, .srow .nm small { color: var(--muted); font-weight: 400; margin-right: 6px; }
+label.prow { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+label.prow:has(input:checked) { border-color: var(--pink); background: var(--glow); }
+.prow input[type="checkbox"] { flex: none; width: 24px; height: 24px; margin: 0; accent-color: var(--pink); cursor: pointer; }
+.srow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); }
+.srow .nm { grid-column: 1 / -1; font-weight: 600; }
+.srow .fld { display: grid; gap: 4px; justify-items: start; font-size: 0.8125rem; color: var(--muted); }
+.tog { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer; font-size: 0.875rem; -webkit-tap-highlight-color: transparent; }
+.tog input { position: absolute; opacity: 0; pointer-events: none; }
+.tog.y:has(input:checked) { background: var(--yellow); border-color: var(--yellow); color: var(--bg); }
+.tog.r:has(input:checked) { background: var(--red); border-color: var(--red); color: var(--bg); }
+.tog:has(input:focus-visible) { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+/* Stays at the top of the scrolling body while you fill in step 3. */
+.wstick { position: sticky; top: -16px; z-index: 1; margin: -16px -20px 0; padding: 12px 20px; background: var(--panel-2); border-bottom: 1px solid var(--yellow); }
+@media (max-width: 639px) { .wstick { margin-inline: -16px; padding-inline: 16px; } }
+.wempty { margin: 0; padding: 24px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: var(--r-sm); }
+@media (max-width: 639px) {
+  #dlgMatch { width: 100%; max-width: 100%; height: 100dvh; margin: 0; border: 0; border-radius: 0; }
+  .wiz-head { padding: max(12px, env(safe-area-inset-top, 0px)) 16px 12px; }
+  .wiz-body { padding: 16px 16px 24px; }
+  .wiz-foot { padding-inline: 16px; }
+}
 .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .actions .spacer { flex: 1; }
 .check { font-size: 0.875rem; margin: 0; color: var(--muted); }
@@ -441,36 +495,56 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
 </dialog>
 
 <dialog id="dlgMatch" aria-labelledby="dlgMatchTitle">
-  <form id="formMatch">
-    <h2 id="dlgMatchTitle">Wedstrijd</h2>
-    <div class="fields">
-      <div class="field"><label for="mDate">Datum</label><input id="mDate" type="date" required></div>
-      <div class="field"><label for="mOpp">Tegenstander</label><input id="mOpp" required maxlength="40" autocomplete="off"></div>
-      <div class="field"><label for="mHome">Thuis of uit</label><select id="mHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
-      <div class="field"><span class="lbl" id="mScoreLbl">Uitslag (wij, zij)</span>
-        <div class="score-in" role="group" aria-labelledby="mScoreLbl">
-          <input id="mGF" type="number" min="0" max="99" required inputmode="numeric" aria-label="Doelpunten FC Flamingo">
-          <span aria-hidden="true">-</span>
-          <input id="mGA" type="number" min="0" max="99" required inputmode="numeric" aria-label="Doelpunten tegenstander">
+  <form id="formMatch" novalidate>
+    <div class="wiz-head">
+      <div class="wiz-top"><h2 id="dlgMatchTitle">Wedstrijd</h2><button type="button" class="btn icon" data-close><span aria-hidden="true">×</span><span class="sr-only">Sluiten</span></button></div>
+      <ol class="wiz-steps" aria-label="Stappen"><li><button type="button" data-goto="0" aria-label="Stap 1: Wedstrijd"></button></li><li><button type="button" data-goto="1" aria-label="Stap 2: Wie speelde"></button></li><li><button type="button" data-goto="2" aria-label="Stap 3: Goals en assists"></button></li><li><button type="button" data-goto="3" aria-label="Stap 4: Keeper"></button></li><li><button type="button" data-goto="4" aria-label="Stap 5: Kaarten en man of the match"></button></li></ol>
+      <p id="mStepLbl" aria-live="polite"></p>
+    </div>
+    <div class="wiz-body">
+      <section class="wstep">
+        <div class="fields">
+          <div class="field"><label for="mDate">Datum</label><input id="mDate" type="date" required></div>
+          <div class="field"><label for="mOpp">Tegenstander</label><input id="mOpp" required maxlength="40" autocomplete="off"></div>
+          <div class="field"><label for="mHome">Thuis of uit</label><select id="mHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
         </div>
-      </div>
+        <div class="scores">
+          <div class="field"><label for="mGF">Goals FC Flamingo</label><span class="step"><button type="button" data-step="-1" aria-label="Min 1">−</button><input id="mGF" type="number" min="0" max="99" required inputmode="numeric"><button type="button" data-step="1" aria-label="Plus 1">+</button></span></div>
+          <div class="field"><label for="mGA">Goals tegenstander</label><span class="step"><button type="button" data-step="-1" aria-label="Min 1">−</button><input id="mGA" type="number" min="0" max="99" required inputmode="numeric"><button type="button" data-step="1" aria-label="Plus 1">+</button></span></div>
+        </div>
+        <button type="button" class="btn danger" id="mDelete" hidden>Wedstrijd verwijderen</button>
+      </section>
+      <section class="wstep" hidden>
+        <p class="note">Tik op iedereen die speelde, ook de keeper.</p>
+        <div class="plist" id="mPlayed"></div>
+      </section>
+      <section class="wstep" hidden>
+        <div class="wstick" id="mCheckBar" hidden><p class="check off" id="mCheck" aria-live="polite"></p></div>
+        <div class="srow"><span class="nm">Eigen goal tegenstander</span><div class="fld">Aantal<span class="step"><button type="button" data-step="-1" aria-label="Eigen goals min 1">−</button><input id="mOwn" type="number" min="0" max="30" inputmode="numeric" value="0" aria-label="Eigen goals tegenstander"><button type="button" data-step="1" aria-label="Eigen goals plus 1">+</button></span></div></div>
+        <div class="plist wide" id="mStats"></div>
+        <p class="wempty" data-empty>Kies eerst in stap 2 wie er speelden.</p>
+      </section>
+      <section class="wstep" hidden>
+        <p class="wempty" data-empty>Kies eerst in stap 2 wie er speelden.</p>
+        <div class="field"><label for="mKeeper">Keeper</label><select id="mKeeper"></select></div>
+        <label class="prow"><input type="checkbox" id="mHas2"><span class="nm">Tweede keeper ingevallen<br><small>Blessure of rode kaart</small></span></label>
+        <div class="fields" id="mKeeper2Row" hidden>
+          <div class="field"><label for="mKeeper2">Tweede keeper</label><select id="mKeeper2"></select></div>
+          <div class="field"><label for="mKeeper2GA">Tegendoelpunten bij tweede keeper</label><span class="step"><button type="button" data-step="-1" aria-label="Min 1">−</button><input id="mKeeper2GA" type="number" min="0" max="99" inputmode="numeric" value="0"><button type="button" data-step="1" aria-label="Plus 1">+</button></span></div>
+        </div>
+        <p class="check" id="mKeeperCheck" aria-live="polite" hidden></p>
+      </section>
+      <section class="wstep" hidden>
+        <div class="field"><label for="mMvp">Man of the match</label><select id="mMvp"></select></div>
+        <p class="note">Kaarten</p>
+        <div class="plist wide" id="mCards"></div>
+        <p class="wempty" data-empty>Kies eerst in stap 2 wie er speelden.</p>
+      </section>
     </div>
-    <div class="lineup">
-      <table>
-        <thead><tr><th scope="col">Speelde</th><th scope="col">Speler</th><th scope="col">Goals</th><th scope="col">Assists</th><th scope="col"><span class="cardglyph y"></span>Geel</th><th scope="col"><span class="cardglyph r"></span>Rood</th></tr></thead>
-        <tbody id="lineupBody"></tbody>
-      </table>
-    </div>
-    <p class="check" id="mCheck" aria-live="polite"></p>
-    <div class="fields">
-      <div class="field"><label for="mMvp">Man of the match</label><select id="mMvp"></select></div>
-      <div class="field"><label for="mKeeper">Keeper</label><select id="mKeeper"></select></div>
-    </div>
-    <div class="actions">
-      <button type="button" class="btn danger" id="mDelete" hidden>Verwijderen</button>
-      <span class="spacer"></span>
-      <button type="button" class="btn" data-close>Annuleren</button>
-      <button type="submit" class="btn primary">Opslaan</button>
+    <div class="wiz-foot">
+      <button type="button" class="btn" id="mBack">Terug</button>
+      <button type="button" class="btn primary" id="mNext">Volgende</button>
+      <button type="submit" class="btn primary" id="mSave">Opslaan</button>
     </div>
   </form>
 </dialog>
@@ -504,6 +578,10 @@ const S = { db: null, canEdit: false, canPost: false, seasons: [], players: [], 
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
 const seasonMatches = () => S.matches.filter(m => S.season === 'all' || m.season === S.season).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
+// A match can have a second keeper (injury, red card): keeper2 conceded keeper2_ga, keeper the rest.
+const keepersOf = m => [m.keeper, m.keeper2].filter(Boolean);
+const conceded = (m, id) => id === m.keeper2 ? +m.keeper2_ga || 0 : id === m.keeper ? Math.max(0, (+m.ga || 0) - (m.keeper2 ? +m.keeper2_ga || 0 : 0)) : 0;
+
 function playerStats(matches) {
   const map = new Map(S.players.map(p => [p.id, { p, gp: 0, g: 0, a: 0, y: 0, r: 0, mvp: 0, kgp: 0, conc: 0, cs: 0 }]));
   for (const m of matches) {
@@ -514,8 +592,7 @@ function playerStats(matches) {
       if ((m.red || []).includes(id)) s.r++;
     }
     if (map.has(m.mvp)) map.get(m.mvp).mvp++;
-    const k = map.get(m.keeper);
-    if (k) { k.kgp++; k.conc += +m.ga || 0; if (+m.ga === 0) k.cs++; }
+    for (const id of keepersOf(m)) { const k = map.get(id); if (k) { k.kgp++; k.conc += conceded(m, id); if (+m.ga === 0) k.cs++; } }
   }
   return [...map.values()].map(s => ({ ...s, pts: s.g + s.a, gpg: s.gp ? (s.g + s.a) / s.gp : 0 }));
 }
@@ -575,8 +652,7 @@ function renderPlayers(stats) {
   if (!S.players.length) { el.innerHTML = emptyState('Nog geen spelers', S.canEdit ? 'Voeg eerst de selectie toe. Daarna kun je wedstrijden invoeren.' : 'De selectie is nog niet ingevoerd.', '<button class="btn primary" type="button" data-act="addPlayer">Speler toevoegen</button>'); return; }
   const { key, dir } = S.sort, f = dir === 'asc' ? 1 : -1;
   const rows = [...stats].sort((a, b) => { const x = sortVal(a, key), y = sortVal(b, key); return (x > y ? 1 : x < y ? -1 : 0) * f || b.g - a.g || a.p.name.localeCompare(b.p.name); });
-  el.innerHTML = `<div class="tablewrap"><table>
-    <caption class="note" style="text-align:left;padding:12px">Klik op een kolomkop om te sorteren${S.canEdit ? ', op een speler om te bewerken' : ''}.</caption>
+  el.innerHTML = `<p class="note">Tik op een kolomkop om te sorteren${S.canEdit ? ', op een speler om te bewerken' : ''}.</p><div class="tablewrap"><table>
     <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>
     <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
       <td class="num">${s.p.number ?? ''}</td>
@@ -606,7 +682,7 @@ function renderMatches(all) {
   if (!all.length) { el.innerHTML = emptyState('Nog geen wedstrijden', S.canEdit ? (S.players.length ? 'Voer na elke wedstrijd de uitslag, opstelling, goals en assists in.' : 'Voeg eerst spelers toe.') : 'Er zijn nog geen uitslagen ingevoerd.', S.players.length && S.seasons.length ? '<button class="btn primary" type="button" data-act="addMatch">Wedstrijd toevoegen</button>' : ''); return; }
   const list = (obj) => Object.entries(obj || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => hl(id)(esc(playerName(id)) + (n > 1 ? ' ' + n + 'x' : ''))).join(', ');
   el.innerHTML = `<ul class="matches">${matches.map(m => {
-    const g = list(m.goals), a = list(m.assists);
+    const og = +m.own_goals || 0, g = [list(m.goals), og && 'eigen goal' + (og > 1 ? ' ' + og + 'x' : '')].filter(Boolean).join(', '), a = list(m.assists);
     return `<li class="match ${result(m)}${S.canEdit ? ' click' : ''}" data-match="${esc(m.id)}"${S.canEdit ? ' tabindex="0" role="button" aria-label="Bewerk wedstrijd tegen ' + esc(m.opponent) + '"' : ''}>
       <span class="res ${result(m)}" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(m)]}">${result(m)}</span>
       <span class="when"><span class="venue ${m.home ? 'home' : 'away'}">${m.home ? 'Thuis' : 'Uit'}</span>${fmtDate(m.date)}</span>
@@ -631,9 +707,9 @@ $('#mfClear').onclick = () => { $('#mfPlayer').value = ''; mfRefresh(); $('#mfPl
 const dec = n => n.toFixed(1).replace('.', ',');
 const signed = n => (n > 0 ? '+' : '') + dec(n);
 function keeperScore(m, id, avg) {
-  const g = +(m.goals?.[id] || 0), a = +(m.assists?.[id] || 0), ga = +m.ga || 0;
+  const g = +(m.goals?.[id] || 0), a = +(m.assists?.[id] || 0), ga = conceded(m, id);
   const parts = [['Tegendoelpunten', `${ga} tegen, gemiddeld ${dec(avg)}`, avg - ga]];
-  if (ga === 0) parts.push(['De nul gehouden', 'ja', 3]);
+  if (+m.ga === 0) parts.push(['De nul gehouden', 'ja', 3]);
   if (g) parts.push(['Doelpunten', g, 3 * g]);
   if (a) parts.push(['Assists', a, 2 * a]);
   if (m.mvp === id) parts.push(['Man of the match', 'ja', 2]);
@@ -685,14 +761,14 @@ function renderKeepers(stats, matches) {
   const avg = matches.length ? matches.reduce((t, m) => t + (+m.ga || 0), 0) / matches.length : 0;
   S.kp = { avg, byId: {} };
   el.innerHTML = `<div class="keepers">${ks.map(s => {
-    const id = s.p.id, km = matches.filter(m => m.keeper === id);
+    const id = s.p.id, km = matches.filter(m => keepersOf(m).includes(id));
     const head = `<h3>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}</h3>`;
     if (!km.length) return `<article class="kcard">${head}<p class="note">Nog niet in het doel gestaan.</p></article>`;
     const n = r => km.filter(m => result(m) === r).length;
     const g = km.reduce((t, m) => t + +(m.goals?.[id] || 0), 0), a = km.reduce((t, m) => t + +(m.assists?.[id] || 0), 0), motm = km.filter(m => m.mvp === id).length;
-    const scores = km.map(m => keeperScore(m, id, avg)), best = [...scores].sort((x, y) => y.pts - x.pts || x.m.ga - y.m.ga)[0];
+    const scores = km.map(m => keeperScore(m, id, avg)), best = [...scores].sort((x, y) => y.pts - x.pts || conceded(x.m, id) - conceded(y.m, id))[0];
     S.kp.byId[id] = { name: s.p.name, scores, best };
-    const form = km.slice(0, 5).reverse(), top = Math.max(1, ...form.map(m => +m.ga || 0));
+    const form = km.slice(0, 5).reverse(), top = Math.max(1, ...form.map(m => conceded(m, id)));
     return `<article class="kcard">${head}
       <div class="kstats"><div><span class="v">${s.kgp}</span><span class="k">Wedstrijden</span></div><div><span class="v">${dec(s.conc / s.kgp)}</span><span class="k">Tegen per wedstrijd</span></div><div><span class="v">${s.cs}</span><span class="k">De nul</span></div></div>
       <p class="note">${n('W')}W ${n('G')}G ${n('V')}V · ${g} ${g === 1 ? 'goal' : 'goals'} · ${a} ${a === 1 ? 'assist' : 'assists'}${motm ? ` · ${motm}x MOTM` : ''}</p>
@@ -700,7 +776,7 @@ function renderKeepers(stats, matches) {
         <strong>${esc(vs(best.m))}</strong>
         <span class="note">${esc(fmtDate(best.m.date))} · <span class="res ${result(best.m)}">${result(best.m)}</span> ${best.m.gf} - ${best.m.ga}</span>
         <span>${best.why.map(esc).join(' · ')}</span></div>
-      <div class="kform" aria-label="Tegendoelpunten laatste ${form.length} wedstrijden">${form.map(m => `<div title="${esc(m.opponent)}: ${+m.ga || 0} tegen"><i style="height:${Math.max(4, (+m.ga || 0) / top * 100)}%"></i><span>${+m.ga || 0}</span></div>`).join('')}</div>
+      <div class="kform" aria-label="Tegendoelpunten laatste ${form.length} wedstrijden">${form.map(m => `<div title="${esc(m.opponent)}: ${conceded(m, id)} tegen"><i style="height:${Math.max(4, conceded(m, id) / top * 100)}%"></i><span>${conceded(m, id)}</span></div>`).join('')}</div>
       <span class="k">Tegen, laatste ${form.length} als keeper</span>
       <button type="button" class="btn kbtn" data-act="keeperList" data-keeper="${esc(id)}">Keepers punten</button>
     </article>`; }).join('')}</div>${rulesLink}`;
@@ -794,62 +870,102 @@ $('#formSeason').addEventListener('submit', async e => {
 /* match dialog */
 let editMatch = null;
 const sortedPlayers = () => [...S.players].sort((a, b) => (a.number ?? 999) - (b.number ?? 999) || a.name.localeCompare(b.name));
+const MSTEPS = ['Wedstrijd', 'Wie speelde?', 'Goals en assists', 'Keeper', 'Kaarten en man of the match'];
+const wsteps = () => [...document.querySelectorAll('#formMatch .wstep')];
+const stepper = (cls, v, label) => `<span class="step"><button type="button" data-step="-1" aria-label="${esc(label)} min 1">−</button><input type="number" class="${cls}" min="0" max="30" inputmode="numeric" value="${+v || 0}" aria-label="${esc(label)}"><button type="button" data-step="1" aria-label="${esc(label)} plus 1">+</button></span>`;
+const pname = p => `<span class="nm">${p.number != null ? `<small>${p.number}</small>` : ''}${esc(p.name)}</span>`;
+let mStep = 0;
 function openMatch(m) {
   editMatch = m || null;
   $('#dlgMatchTitle').textContent = m ? 'Wedstrijd bewerken' : 'Wedstrijd toevoegen';
   $('#mDate').value = m?.date || new Date().toISOString().slice(0, 10);
   $('#mOpp').value = m?.opponent || ''; $('#mHome').value = m ? (m.home ? '1' : '0') : '1';
-  $('#mGF').value = m?.gf ?? ''; $('#mGA').value = m?.ga ?? '';
-  const ps = sortedPlayers();
-  $('#lineupBody').innerHTML = ps.map(p => {
-    const id = esc(p.id), on = m ? (m.played || []).includes(p.id) : false;
-    return `<tr data-id="${id}">
-      <td><input type="checkbox" class="pl" id="pl-${id}" ${on ? 'checked' : ''} aria-label="${esc(p.name)} speelde"></td>
-      <td><label for="pl-${id}">${p.number != null ? p.number + '. ' : ''}${esc(p.name)}</label></td>
-      <td><input type="number" class="g" min="0" max="30" inputmode="numeric" value="${+m?.goals?.[p.id] || ''}" aria-label="Goals ${esc(p.name)}"></td>
-      <td><input type="number" class="a" min="0" max="30" inputmode="numeric" value="${+m?.assists?.[p.id] || ''}" aria-label="Assists ${esc(p.name)}"></td>
-      <td><input type="checkbox" class="y" ${(m?.yellow || []).includes(p.id) ? 'checked' : ''} aria-label="Gele kaart ${esc(p.name)}"></td>
-      <td><input type="checkbox" class="r" ${(m?.red || []).includes(p.id) ? 'checked' : ''} aria-label="Rode kaart ${esc(p.name)}"></td>
-    </tr>`; }).join('');
+  $('#mGF').value = m?.gf ?? 0; $('#mGA').value = m?.ga ?? 0; $('#mOwn').value = +m?.own_goals || 0;
+  const ps = sortedPlayers(), has = (k, id) => (m?.[k] || []).includes(id);
+  $('#mPlayed').innerHTML = ps.map(p => `<label class="prow"><input type="checkbox" class="pl" value="${esc(p.id)}"${has('played', p.id) ? ' checked' : ''}>${pname(p)}</label>`).join('');
+  $('#mStats').innerHTML = ps.map(p => `<div class="srow" data-id="${esc(p.id)}">${pname(p)}<div class="fld">Goals${stepper('g', m?.goals?.[p.id], 'Goals ' + p.name)}</div><div class="fld">Assists${stepper('a', m?.assists?.[p.id], 'Assists ' + p.name)}</div></div>`).join('');
+  $('#mCards').innerHTML = ps.map(p => `<div class="prow" data-id="${esc(p.id)}">${pname(p)}<label class="tog y"><input type="checkbox" class="y"${has('yellow', p.id) ? ' checked' : ''}><span class="cardglyph y"></span>Geel</label><label class="tog r"><input type="checkbox" class="r"${has('red', p.id) ? ' checked' : ''}><span class="cardglyph r"></span>Rood</label></div>`).join('');
   const opts = '<option value="">Geen</option>' + ps.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
-  $('#mMvp').innerHTML = opts; $('#mKeeper').innerHTML = opts;
+  $('#mMvp').innerHTML = opts; $('#mKeeper').innerHTML = opts; $('#mKeeper2').innerHTML = opts;
   $('#mMvp').value = m?.mvp || '';
   $('#mKeeper').value = m?.keeper || (ps.find(p => p.position === 'keeper')?.id ?? '');
+  $('#mHas2').checked = !!m?.keeper2; $('#mKeeper2').value = m?.keeper2 || ''; $('#mKeeper2GA').value = m?.keeper2 ? +m.keeper2_ga || 0 : 0;
   $('#mDelete').hidden = !m;
   if (m) armDelete($('#mDelete'), async () => { if (await save(() => S.db.doc('matches/' + m.id).delete(), 'Wedstrijd verwijderd')) $('#dlgMatch').close(); });
-  checkGoals();
+  goStep(0);
   $('#dlgMatch').showModal();
 }
-function checkGoals() {
-  const sum = [...document.querySelectorAll('#lineupBody .g')].reduce((t, i) => t + (+i.value || 0), 0), gf = +$('#mGF').value || 0;
-  const c = $('#mCheck');
-  c.textContent = `${sum} van ${gf} doelpunten toegekend aan spelers.` + (sum !== gf ? ' Klopt dit? Eigen goals van de tegenstander tellen niet mee.' : '');
-  c.classList.toggle('off', sum !== gf);
+// Steps 3 and 5 only list who played (step 2); the data stays in the DOM until save.
+function goStep(n) {
+  mStep = n;
+  const played = new Set([...document.querySelectorAll('#mPlayed .pl:checked')].map(i => i.value));
+  document.querySelectorAll('#mStats [data-id], #mCards [data-id]').forEach(r => r.hidden = !played.has(r.dataset.id));
+  document.querySelectorAll('#formMatch [data-empty]').forEach(e => e.hidden = played.size > 0);
+  // Keepers and MOTM can only be someone who played; a choice that's no longer ticked is cleared.
+  const pp = sortedPlayers().filter(p => played.has(p.id)), opts = '<option value="">Geen</option>' + pp.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  for (const id of ['mMvp', 'mKeeper', 'mKeeper2']) { const sel = $('#' + id), v = sel.value; sel.innerHTML = opts; sel.value = played.has(v) ? v : ''; }
+  if (!$('#mKeeper').value) $('#mKeeper').value = pp.find(p => p.position === 'keeper')?.id ?? '';
+  wsteps().forEach((s, i) => s.hidden = i !== n);
+  document.querySelectorAll('.wiz-steps button').forEach((b, i) => { b.classList.toggle('done', i < n); if (i === n) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+  $('#mStepLbl').innerHTML = `Stap ${n + 1} van ${MSTEPS.length} · <strong>${MSTEPS[n]}</strong>`;
+  const last = n === MSTEPS.length - 1;
+  $('#mBack').hidden = n === 0; $('#mNext').hidden = last; $('#mSave').hidden = !last;
+  $('#formMatch .wiz-body').scrollTop = 0;
+  checkGoals(); checkKeepers();
 }
-$('#lineupBody').addEventListener('input', e => {
-  if (e.target.matches('.g, .a, .y, .r') && (e.target.type === 'checkbox' ? e.target.checked : +e.target.value > 0)) e.target.closest('tr').querySelector('.pl').checked = true;
-  checkGoals();
+// Form is novalidate (hidden steps can't show a bubble), so each step checks itself.
+function stepValid(i) {
+  const bad = [...wsteps()[i].querySelectorAll('input, select')].find(el => !el.checkValidity());
+  if (bad) { if (mStep !== i) goStep(i); bad.reportValidity(); }
+  return !bad;
+}
+$('#mNext').onclick = () => { if (stepValid(mStep)) goStep(mStep + 1); };
+$('#mBack').onclick = () => goStep(mStep - 1);
+document.querySelector('.wiz-steps').addEventListener('click', e => { const b = e.target.closest('[data-goto]'); if (b) goStep(+b.dataset.goto); });
+function checkGoals() {
+  const tot = cls => [...document.querySelectorAll(`#mStats .srow:not([hidden]) .${cls}`)].reduce((t, i) => t + (+i.value || 0), 0);
+  const g = tot('g'), a = tot('a'), og = +$('#mOwn').value || 0, gf = +$('#mGF').value || 0, msgs = [];
+  // Silent when everything adds up; otherwise say what's missing.
+  if (g + og !== gf) msgs.push(`Goals: ${g + og} van ${gf} ingevuld${og ? ` (${og} eigen goal)` : ''} · Assists: ${a}`);
+  if (a > g) msgs.push(`Meer assists (${a}) dan goals van spelers (${g}).`);
+  $('#mCheck').textContent = msgs.join(' '); $('#mCheckBar').hidden = !msgs.length;
+}
+$('#formMatch').addEventListener('click', e => {
+  const b = e.target.closest('[data-step]'); if (!b) return;
+  const i = b.parentNode.querySelector('input'), v = Math.min(+i.max || 99, Math.max(0, (+i.value || 0) + +b.dataset.step));
+  i.value = v; i.dispatchEvent(new Event('input', { bubbles: true }));
 });
+// Second keeper concedes what's entered; the first keeper the rest.
+function checkKeepers() {
+  const has2 = $('#mHas2').checked, k1 = $('#mKeeper').value, k2 = has2 ? $('#mKeeper2').value : '', ga = +$('#mGA').value || 0, g2 = +$('#mKeeper2GA').value || 0, c = $('#mKeeperCheck');
+  $('#mKeeper2Row').hidden = !has2; $('#mKeeper2').disabled = $('#mKeeper2GA').disabled = !has2;
+  $('#mKeeper2GA').max = ga;
+  $('#mKeeper2').setCustomValidity(!has2 ? '' : !k2 ? 'Kies de tweede keeper.' : k2 === k1 ? 'Kies een andere keeper dan de eerste.' : '');
+  c.hidden = !k2;
+  if (k2) { c.textContent = `${k1 ? playerName(k1) : 'Eerste keeper'}: ${Math.max(0, ga - g2)} tegen · ${playerName(k2)}: ${g2} tegen` + (g2 > ga ? ` (meer dan de ${ga} tegendoelpunten)` : ''); c.classList.toggle('off', g2 > ga); }
+}
+['mKeeper', 'mHas2', 'mKeeper2', 'mKeeper2GA', 'mGA'].forEach(id => $('#' + id).addEventListener('input', checkKeepers));
+$('#mStats').addEventListener('input', checkGoals);
 $('#mGF').addEventListener('input', checkGoals);
+$('#mOwn').addEventListener('input', checkGoals);
 $('#formMatch').addEventListener('submit', async e => {
   e.preventDefault();
-  const rows = [...document.querySelectorAll('#lineupBody tr')];
-  const played = [], goals = {}, assists = {}, yellow = [], red = [];
-  for (const r of rows) {
-    const id = r.dataset.id, q = s => r.querySelector(s);
-    if (!q('.pl').checked) continue;
-    played.push(id);
-    if (+q('.g').value > 0) goals[id] = +q('.g').value;
-    if (+q('.a').value > 0) assists[id] = +q('.a').value;
-    if (q('.y').checked) yellow.push(id);
-    if (q('.r').checked) red.push(id);
+  for (let i = 0; i < MSTEPS.length; i++) if (!stepValid(i)) return;
+  const played = [...document.querySelectorAll('#mPlayed .pl:checked')].map(i => i.value), goals = {}, assists = {}, yellow = [], red = [];
+  for (const id of played) {
+    const sr = $(`#mStats [data-id="${CSS.escape(id)}"]`), cr = $(`#mCards [data-id="${CSS.escape(id)}"]`);
+    if (+sr.querySelector('.g').value > 0) goals[id] = +sr.querySelector('.g').value;
+    if (+sr.querySelector('.a').value > 0) assists[id] = +sr.querySelector('.a').value;
+    if (cr.querySelector('input.y').checked) yellow.push(id);
+    if (cr.querySelector('input.r').checked) red.push(id);
   }
-  const mvp = $('#mMvp').value, keeper = $('#mKeeper').value;
-  if (keeper && !played.includes(keeper)) played.push(keeper);
+  const mvp = $('#mMvp').value, keeper = $('#mKeeper').value, keeper2 = $('#mHas2').checked ? $('#mKeeper2').value : '';
+  for (const k of [keeper, keeper2]) if (k && !played.includes(k)) played.push(k);
   const data = {
     season: editMatch?.season || (S.season === 'all' ? [...S.seasons].sort((a, b) => b.name.localeCompare(a.name))[0].id : S.season),
     date: $('#mDate').value, opponent: $('#mOpp').value.trim(), home: $('#mHome').value === '1',
     gf: +$('#mGF').value, ga: +$('#mGA').value, played, goals, assists, yellow, red, mvp: mvp || null, keeper: keeper || null,
+    keeper2: keeper2 || null, keeper2_ga: keeper2 ? +$('#mKeeper2GA').value || 0 : 0, own_goals: +$('#mOwn').value || 0,
   };
   const ref = editMatch ? S.db.doc('matches/' + editMatch.id) : S.db.collection('matches').doc();
   if (await save(() => ref.set(data), 'Wedstrijd tegen ' + data.opponent + ' opgeslagen')) $('#dlgMatch').close();
@@ -899,7 +1015,7 @@ function postData() {
   const type = $('#poType').value;
   if (type === 'uitslag') {
     const m = S.matches.find(x => x.id === $('#poMatch').value);
-    return m ? { type, opponent: m.opponent, home: m.home, gf: m.gf, ga: m.ga, date: m.date, goals: m.goals, assists: m.assists } : { type, opponent: '', home: true, empty: true };
+    return m ? { type, opponent: m.opponent, home: m.home, gf: m.gf, ga: m.ga, date: m.date, goals: m.goals, own: +m.own_goals || 0, assists: m.assists } : { type, opponent: '', home: true, empty: true };
   }
   return { type, opponent: $('#poOpp').value.trim(), home: $('#poHome').value === '1', date: $('#poDate').value, time: $('#poTime').value, place: $('#poPlace').value.trim(), klasse: $('#poKlasse').value.trim() };
 }
@@ -983,7 +1099,7 @@ function drawPost() {
   const ctx = cv.getContext('2d'), d = postData(), result = d.type === 'uitslag', cx = W / 2;
   const pink = token('--pink'), text = token('--text'), bg = token('--poster');
   const spons = $('#poSponsors').checked && S.sponsors.length > 0;
-  const scorers = result && $('#poGoals').checked ? countList(d.goals) : [], assists = result && $('#poAssists').checked ? countList(d.assists).join(', ') : '';
+  const scorers = result && $('#poGoals').checked ? [...countList(d.goals), ...(d.own ? ['Eigen goal' + (d.own > 1 ? ' ' + d.own + 'x' : '')] : [])] : [], assists = result && $('#poAssists').checked ? countList(d.assists).join(', ') : '';
 
   // Vertical positions, measured from the top of the content block; names push everything below the logos down.
   const names = $('#poNames').checked, nm = names ? 100 : 0;

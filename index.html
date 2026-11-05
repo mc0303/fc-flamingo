@@ -119,7 +119,9 @@ table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nu
 th, td { padding: 12px; text-align: center; white-space: nowrap; border-bottom: 1px solid var(--line); }
 tbody tr:last-child td { border-bottom: 0; }
 th { font-weight: 500; font-size: 0.875rem; color: var(--muted); background: var(--panel-2); }
-th:nth-child(2), td:nth-child(2) { text-align: left; position: sticky; left: 0; background: inherit; }
+/* Sticky name column needs a solid background (header too), or scrolled columns show through it. */
+th:nth-child(2), td:nth-child(2) { text-align: left; position: sticky; left: 0; z-index: 1; box-shadow: inset -1px 0 var(--line); }
+th:nth-child(2) { background: var(--panel-2); }
 td:nth-child(2) { background: var(--panel); font-weight: 600; }
 th button { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; min-height: 28px; }
 th button:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
@@ -242,6 +244,9 @@ dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }
 .field { display: grid; gap: 4px; min-width: 0; }
 .field label, .field .lbl { font-size: 0.875rem; color: var(--muted); }
 .field input, .field select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); width: 100%; box-sizing: border-box; }
+/* iOS gives date inputs a fixed native width that spills over the next field. */
+.field input[type="date"] { -webkit-appearance: none; appearance: none; min-width: 0; display: block; }
+.field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 .score-in { display: flex; gap: 8px; align-items: center; }
 .score-in input { text-align: center; font: 800 1.5rem/1 var(--font-display); }
 /* match wizard: header and footer fixed, only the body scrolls */
@@ -294,6 +299,7 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
   .wiz-head { padding: max(12px, env(safe-area-inset-top, 0px)) 16px 12px; }
   .wiz-body { padding: 16px 16px 24px; }
   .wiz-foot { padding-inline: 16px; }
+  .wstep .fields { grid-template-columns: minmax(0, 1fr); }
 }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 .actions .spacer { flex: 1; }

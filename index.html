@@ -35,6 +35,12 @@
   --font-body: "Barlow", "Segoe UI", system-ui, sans-serif;
   --r-sm: 6px;
   --r-md: 10px;
+  /* depth: a soft drop shadow plus a faint top highlight ("shine") on cards and primary buttons */
+  --shadow: 0 1px 2px rgb(0 0 0 / .45), 0 8px 24px -6px rgb(0 0 0 / .55);
+  --shine: linear-gradient(180deg, rgb(255 255 255 / .045), rgb(255 255 255 / 0) 45%);
+  --edge: inset 0 1px 0 rgb(255 255 255 / .06);
+  /* selection: two pink lines, top and bottom (same look as the selected row in Spelers) */
+  --select: inset 0 2px 0 var(--pink-hi), inset 0 -2px 0 var(--pink-hi);
   color-scheme: dark;
 }
 html, body { overflow-x: clip; }
@@ -70,7 +76,7 @@ button, input, select { font: inherit; color: inherit; }
 .btn:hover { border-color: var(--pink); }
 .btn:active { transform: scale(.97); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
-.btn.primary { background: var(--pink); border-color: var(--pink); color: var(--pink-ink); }
+.btn.primary { background: linear-gradient(180deg, var(--pink-hi), var(--pink)); border-color: var(--pink); color: var(--pink-ink); box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), 0 4px 14px -4px rgb(232 103 155 / .55); }
 .btn.primary:hover { background: var(--pink-hi); border-color: var(--pink-hi); }
 .btn.danger { border-color: var(--red); color: var(--red); background: transparent; }
 .btn.danger.armed { background: var(--red); color: var(--bg); }
@@ -146,13 +152,14 @@ tr.idle td { color: var(--muted); }
 .cap { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: 8px; border: 1.5px solid var(--pink); border-radius: 50%; color: var(--pink); font: 800 0.75rem/1 var(--font-display); vertical-align: 1px; }
 .pos { font-size: 0.8125rem; color: var(--muted); font-weight: 400; margin-left: 8px; }
 tr.click { cursor: pointer; }
-tr.click:hover td { background: var(--panel-2); }
+tr.click:hover td, tr.click:focus-visible td { background: var(--panel-2); box-shadow: var(--select); }
+tr.click:hover td:nth-child(2), tr.click:focus-visible td:nth-child(2) { box-shadow: var(--select), inset -1px 0 var(--line); }
+tr.click:focus-visible { outline: none; }
 
 /* matches */
 .matches { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
 .match { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
 .match.click { cursor: pointer; transition: border-color .15s ease; }
-.match.click:hover { border-color: var(--pink); }
 .match .when { color: var(--muted); font-size: 0.875rem; grid-column: 2; }
 .match .opp { font-weight: 600; grid-column: 2; overflow-wrap: anywhere; }
 .match .score { grid-column: 3; grid-row: 1 / span 2; font: 800 2rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
@@ -218,11 +225,47 @@ mark.hl { background: none; color: var(--pink); font-weight: 700; }
 
 /* keepers */
 .keepers { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); margin-bottom: 12px; }
-.kcard { display: grid; gap: 12px; align-content: start; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
-.kcard h3 { font: 800 1.75rem/1 var(--font-display); text-transform: uppercase; }
+.kcard { display: grid; gap: 10px; align-content: start; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
+.kcard[data-act] { cursor: pointer; }
+.khead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.kmore { flex: none; font-size: 0.8125rem; color: var(--pink); }
+/* four key numbers in one row; labels may wrap to two lines */
+.kstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.kstats div { display: grid; gap: 2px; align-content: start; }
+.kstats .v { font: 800 1.625rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.kcard .kstats .k { font-size: 0.75rem; line-height: 1.25; }
+/* best match: result badge | opponent + date/score | points */
+.kb { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding: 8px 10px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); }
+.kb .res { grid-row: 1 / span 2; width: 26px; height: 26px; font-size: 0.875rem; }
+.kb .lbl { grid-column: 2; font-size: 0.75rem; color: var(--muted); }
+.kb strong { grid-column: 2; font: 800 1.125rem/1.1 var(--font-display); text-transform: uppercase; overflow-wrap: anywhere; }
+.kb .when { grid-column: 2; font-size: 0.8125rem; color: var(--muted); }
+.kb .pts { grid-column: 3; grid-row: 1 / span 3; text-align: right; font: 800 1.5rem/1 var(--font-display); color: var(--pink); }
+.kb .pts small { display: block; font: 400 0.6875rem/1.2 var(--font-body); color: var(--muted); }
+.kb.r3 .res { grid-row: 1 / span 3; }
+/* detail dialog */
+.kgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 110px), 1fr)); gap: 12px 8px; }
+.kgrid div { display: grid; gap: 2px; }
+.kgrid .v { font: 800 1.5rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.kdlg .kgrid .k { font-size: 0.75rem; line-height: 1.25; color: var(--muted); margin: 0; }
+.kchart { display: grid; gap: 6px; padding: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); }
+.kchart h3 { margin: 0; font-size: 1rem; }
+.kchart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.kchart .grid { stroke: var(--line); stroke-width: 1; }
+.kchart .axis { fill: var(--muted); font: 400 10px var(--font-body); }
+.kchart .avgl { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.kchart .avgt { fill: var(--muted); font: 600 10px var(--font-body); }
+.kchart .line { fill: none; stroke: var(--pink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.kchart .dot { fill: var(--pink); stroke: var(--panel-2); stroke-width: 2; transition: r .12s ease; }
+.kchart .kpt { cursor: pointer; outline: none; }
+.kchart .kpt .hit { fill: transparent; }
+.kchart .kpt.on .dot, .kchart .kpt:focus-visible .dot { r: 6; fill: var(--pink-hi); }
+.kchart .kpt.on .vline { stroke: var(--muted); }
+.kchart .vline { stroke: transparent; stroke-width: 1; }
+#kCap { min-height: 2.6em; margin: 0; font-size: 0.875rem; }
+.kcard h3 { font: 800 1.375rem/1 var(--font-display); text-transform: uppercase; }
 .kcard h3 span { color: var(--muted); font-weight: 600; }
 .kcard .k { color: var(--muted); font-size: 0.875rem; }
-.kstats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 8px; }
 /* sort picker in the Keepers toolbar */
 .sortsel { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--muted); }
 .sortsel select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); color: var(--text); }
@@ -233,17 +276,8 @@ mark.hl { background: none; color: var(--pink); font-weight: 700; }
 .injbar ul { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }
 fieldset.plain { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 4px; }
 fieldset.plain legend { padding: 0; margin-bottom: 4px; font-size: 0.875rem; color: var(--muted); }
-.kstats div { display: grid; gap: 4px; }
-.kstats .v { font: 800 2.25rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
-.kbest { display: grid; gap: 4px; padding: 12px; border: 1px solid var(--pink); border-radius: var(--r-sm); }
-.kbest .k { color: var(--pink); }
-.kbest strong { font: 800 1.5rem/1.1 var(--font-display); text-transform: uppercase; overflow-wrap: anywhere; }
-.kbest .res { width: 22px; height: 22px; font-size: 0.875rem; vertical-align: middle; }
-.kform { display: flex; gap: 8px; align-items: end; height: 72px; }
-.kform div { flex: 1; display: grid; grid-template-rows: 1fr auto; height: 100%; text-align: center; font-size: 0.875rem; color: var(--muted); }
 .linkbtn { all: unset; color: var(--pink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; justify-self: start; }
 .linkbtn:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
-.kbest .linkbtn { font-size: 0.875rem; }
 .rules th, .rules td { text-align: left; position: static; font-weight: inherit; white-space: normal; }
 .rules th:last-child, .rules td:last-child { text-align: right; white-space: nowrap; }
 .kdlg { display: grid; gap: 12px; }
@@ -252,13 +286,11 @@ fieldset.plain legend { padding: 0; margin-bottom: 4px; font-size: 0.875rem; col
 .kdlg .res { width: 22px; height: 22px; font-size: 0.875rem; vertical-align: middle; }
 .kdlg td .linkbtn { font-weight: 600; }
 .kstar { color: var(--pink); font-size: 0.875rem; }
-.kbtn { justify-self: end; min-height: 36px; font-size: 0.875rem; }
-.kform i { align-self: end; display: block; background: var(--pink); border-radius: 3px 3px 0 0; }
+.nw { white-space: nowrap; }
 
 /* sponsors */
 .sponsors { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
 .sponsor { display: grid; gap: 8px; align-content: start; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; transition: border-color .15s ease; }
-.sponsor:hover { border-color: var(--pink); }
 .sponsor.sp-ghost { opacity: .4; }
 .sponsors.sortable .sponsor { cursor: grab; }
 .sp-logo { aspect-ratio: 16 / 9; max-width: 100%; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; padding: 12px; box-sizing: border-box; overflow: hidden; background: var(--logo-bg); border-radius: var(--r-sm); }
@@ -325,6 +357,12 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
 .tog.y:has(input:checked) { background: var(--yellow); border-color: var(--yellow); color: var(--bg); }
 .tog.r:has(input:checked) { background: var(--red); border-color: var(--red); color: var(--bg); }
 .tog:has(input:focus-visible) { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+/* cards: shadow + shine; clickable cards (and keeper cards) show the two-line selection */
+.tile, .match, .kcard, .sponsor, .tablewrap, .injbar, .post-form, .empty { box-shadow: var(--edge), var(--shadow); background-image: var(--shine); }
+.match.click, .sponsor, .kcard { transition: box-shadow .15s ease; }
+.match.click:hover, .match.click:focus-visible, .sponsor:hover, .sponsor:focus-visible, .kcard:hover, .kcard:focus-within { box-shadow: var(--select), var(--edge), var(--shadow); outline: none; }
+.match .by { grid-column: 2 / -1; order: 9; font-size: 0.8125rem; color: var(--muted); }
+dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 /* Stays at the top of the scrolling body while you fill in step 3. */
 .wstick { position: sticky; top: -16px; z-index: 1; margin: -16px -20px 0; padding: 12px 20px; background: var(--panel-2); border-bottom: 1px solid var(--yellow); }
 @media (max-width: 639px) { .wstick { margin-inline: -16px; padding-inline: 16px; } }
@@ -528,7 +566,7 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
 
 <dialog id="dlgKeeperRules" aria-labelledby="dlgKeeperRulesTitle">
   <form method="dialog">
-    <h2 id="dlgKeeperRulesTitle">Keepers punten</h2>
+    <h2 id="dlgKeeperRulesTitle">Keepers-punten</h2>
     <div id="krBody" class="kdlg"></div>
     <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Sluiten</button></div>
   </form>
@@ -536,7 +574,7 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
 
 <dialog id="dlgKeeperList" aria-labelledby="dlgKeeperListTitle">
   <form method="dialog">
-    <h2 id="dlgKeeperListTitle">Keepers punten</h2>
+    <h2 id="dlgKeeperListTitle">Keepers-punten</h2>
     <div id="klBody" class="kdlg"></div>
     <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Sluiten</button></div>
   </form>
@@ -544,7 +582,7 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
 
 <dialog id="dlgKeeperCalc" aria-labelledby="dlgKeeperCalcTitle">
   <form method="dialog">
-    <h2 id="dlgKeeperCalcTitle">Keepers punten</h2>
+    <h2 id="dlgKeeperCalcTitle">Keepers-punten</h2>
     <div id="kcBody" class="kdlg"></div>
     <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Terug</button></div>
   </form>
@@ -790,6 +828,7 @@ function renderMatches(all) {
       <span class="when"><span class="venue ${m.home ? 'home' : 'away'}">${m.home ? 'Thuis' : 'Uit'}</span>${fmtDate(m.date)}</span>
       <span class="opp">${m.home ? esc(teamFull()) + ' vs ' + esc(m.opponent) : esc(m.opponent) + ' vs ' + esc(teamFull())}</span>
       <span class="score">${m.home ? `${m.gf}-${m.ga}` : `${m.ga}-${m.gf}`}</span>
+      ${S.mlog?.[m.id] ? `<span class="by">${[S.mlog[m.id].add && 'Ingevuld door ' + esc(who(S.mlog[m.id].add)), S.mlog[m.id].edit && 'bewerkt door ' + esc(who(S.mlog[m.id].edit)) + ' op ' + shortWhen(S.mlog[m.id].edit.at)].filter(Boolean).join(' · ')}</span>` : ''}
       ${g || a || m.mvp ? `<span class="detail">${[g && 'Goals: ' + g, a && 'Assists: ' + a, m.mvp && 'MVP: ' + hl(m.mvp)(esc(playerName(m.mvp)))].filter(Boolean).join('<br>')}</span>` : ''}
     </li>`; }).join('')}</ul>`;
 }
@@ -824,70 +863,102 @@ const RULES = [['Tegendoelpunten', 'Seizoensgemiddelde min de tegendoelpunten', 
 const table = (head, rows) => `<div class="tablewrap"><table class="rules"><thead><tr>${head.map(h => `<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 const vs = m => (m.home ? '' : '@ ') + m.opponent;
 const calcTable = sc => `<h3>${esc(vs(sc.m))}</h3><p class="note">${esc(fmtDate(sc.m.date))} · <span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga}</p>
-  ${table(['Onderdeel', 'Wat', 'Keepers punten'], [...sc.parts.map(([l, v, p]) => [esc(l), esc(v), signed(p)]), ['<strong>Totaal</strong>', '', `<strong>${dec(sc.pts)}</strong>`]])}`;
-const rulesLink = '<p class="note"><button type="button" class="linkbtn" data-act="keeperRules">Hoe worden Keepers punten berekend?</button></p>';
+  ${table(['Onderdeel', 'Wat', 'Keepers-punten'], [...sc.parts.map(([l, v, p]) => [esc(l), esc(v), signed(p)]), ['<strong>Totaal</strong>', '', `<strong>${dec(sc.pts)}</strong>`]])}`;
+const rulesLink = '<p class="note"><button type="button" class="linkbtn" data-act="keeperRules">Hoe worden Keepers-punten berekend?</button></p>';
 
 // With a keeper id: rules plus that keeper's best match. Without: rules only.
 function openKeeperRules(keeper) {
   const k = S.kp, kp = k.byId[keeper];
-  $('#krBody').innerHTML = `<p class="note">Per wedstrijd krijgt de keeper Keepers punten. De wedstrijd met de meeste Keepers punten is zijn beste wedstrijd; bij gelijke stand telt de wedstrijd met de minste tegendoelpunten.</p>
-    ${table(['Onderdeel', 'Wanneer', 'Keepers punten'], RULES.map(r => r.map(esc)))}
-    <p class="note">Het seizoensgemiddelde is nu <strong>${dec(k.avg)}</strong> tegen per wedstrijd. Het wordt na elke wedstrijd opnieuw berekend, dus de Keepers punten kunnen een beetje verschuiven. Welke wedstrijd de beste is verandert daardoor niet.</p>
+  $('#krBody').innerHTML = `<p class="note">Per wedstrijd krijgt de keeper Keepers-punten. De wedstrijd met de meeste Keepers-punten is zijn beste wedstrijd; bij gelijke stand telt de wedstrijd met de minste tegendoelpunten.</p>
+    ${table(['Onderdeel', 'Wanneer', 'Keepers-punten'], RULES.map(r => r.map(esc)))}
+    <p class="note">Het seizoensgemiddelde is nu <strong>${dec(k.avg)}</strong> tegen per wedstrijd. Het wordt na elke wedstrijd opnieuw berekend, dus de Keepers-punten kunnen een beetje verschuiven. Welke wedstrijd de beste is verandert daardoor niet.</p>
     ${kp ? `<p class="k">Beste wedstrijd van ${esc(kp.name)}</p>${calcTable(kp.best)}` : ''}`;
   $('#dlgKeeperRules').showModal();
 }
 
-// All matches of one keeper; each row opens its own calculation on top.
+// Line chart of goals conceded per match (oldest -> newest) with the team average as a dashed reference.
+// One series, so no legend: the heading names it. Tap/hover a point to read that match below the chart.
+function keeperChart(id, scores, avg) {
+  const ms = [...scores].reverse(), n = ms.length, W = 320, H = 150, L = 24, R = 12, T = 14, B = 24;
+  const vals = ms.map(sc => conceded(sc.m, id)), hi = Math.max(1, ...vals, avg);
+  const step = hi <= 6 ? 2 : hi <= 15 ? 5 : 10, top = Math.ceil(hi / step) * step;
+  const x = i => n === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (n - 1), y = v => T + (H - T - B) * (1 - v / top);
+  const ticks = []; for (let v = 0; v <= top; v += step) ticks.push(v);
+  const short = d => d ? new Date(d + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : '';
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tegendoelpunten per wedstrijd, ${n} wedstrijden">
+    ${ticks.map(v => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${v}</text>`).join('')}
+    <line class="avgl" x1="${L}" x2="${W - R}" y1="${y(avg)}" y2="${y(avg)}"/><text class="avgt" x="${W - R}" y="${y(avg) - 5}" text-anchor="end">gem. team ${dec(avg)}</text>
+    ${n > 1 ? `<path class="line" d="${vals.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ')}"/>` : ''}
+    <text class="axis" x="${x(0)}" y="${H - 6}" text-anchor="${n === 1 ? 'middle' : 'start'}">${esc(short(ms[0]?.m.date))}</text>
+    ${n > 1 ? `<text class="axis" x="${x(n - 1)}" y="${H - 6}" text-anchor="end">${esc(short(ms[n - 1].m.date))}</text>` : ''}
+    ${ms.map((sc, i) => `<g class="kpt" tabindex="0" data-i="${i}"><line class="vline" x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}"/><circle class="hit" cx="${x(i)}" cy="${y(vals[i])}" r="14"/><circle class="dot" cx="${x(i)}" cy="${y(vals[i])}" r="4"/></g>`).join('')}
+  </svg>`;
+}
+let kChartData = [];
+function kPick(g) {
+  document.querySelectorAll('#klBody .kpt').forEach(p => p.classList.toggle('on', p === g));
+  const sc = kChartData[+g.dataset.i]; if (!sc) return;
+  $('#kCap').innerHTML = `<strong>${esc(vs(sc.m))}</strong> · ${esc(fmtDate(sc.m.date))}<br><span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga} · ${sc.conc} tegen · ${dec(sc.pts)} keepers-punten`;
+}
+['pointerover', 'click', 'focusin'].forEach(t => $('#klBody').addEventListener(t, e => { const g = e.target.closest('.kpt'); if (g) kPick(g); }));
+
+// Detail per keeper: key numbers, the chart, best/worst match and every match with its points.
 function openKeeperList(keeper) {
   const kp = S.kp.byId[keeper]; if (!kp) return;
-  $('#dlgKeeperListTitle').textContent = 'Keepers punten · ' + kp.name;
-  $('#klBody').innerHTML = `<p class="note">Klik op een wedstrijd voor de berekening.</p>
-    ${table(['Wedstrijd', 'Uitslag', 'Keepers punten'], kp.scores.map(sc => [
+  const { scores, best, worst, s } = kp, id = keeper, km = scores.map(sc => sc.m);
+  const n = r => km.filter(m => result(m) === r).length, sum = f => km.reduce((t, m) => t + f(m), 0);
+  const g = sum(m => +(m.goals?.[id] || 0)), a = sum(m => +(m.assists?.[id] || 0)), motm = km.filter(m => m.mvp === id).length;
+  const ppm = scores.reduce((t, x) => t + x.pts, 0) / scores.length, subs = km.filter(m => m.keeper2 && keepersOf(m).includes(id)).length;
+  kChartData = [...scores].reverse().map(sc => ({ ...sc, conc: conceded(sc.m, id) }));
+  const stat = (v, k) => `<div><span class="v">${v}</span><p class="k">${k}</p></div>`;
+  const mrow = (label, sc) => `<div class="kb r3"><span class="res ${result(sc.m)}">${result(sc.m)}</span><span class="lbl">${label}</span><strong>${esc(vs(sc.m))}</strong><span class="when">${esc(fmtDate(sc.m.date))} · ${sc.m.gf} - ${sc.m.ga} · ${conceded(sc.m, id)} tegen</span><span class="pts">${dec(sc.pts)}<small>keepers-punten</small></span></div>`;
+  $('#dlgKeeperListTitle').textContent = kp.name;
+  $('#klBody').innerHTML = `<div class="kgrid">
+      ${stat(s.kgp, 'Wedstrijden')}${stat(dec(s.conc / s.kgp), 'Gemiddeld tegen per wedstrijd')}${stat(s.cs + 'x', 'De nul gehouden')}${stat(dec(best.pts), 'Hoogste keepers-punten')}
+      ${stat(dec(ppm), 'Keepers-punten per wedstrijd')}${stat(s.conc, 'Tegendoelpunten totaal')}${stat(`${n('W')}-${n('G')}-${n('V')}`, 'Winst - gelijk - verlies')}${stat(`${g} / ${a}`, 'Goals / assists')}${motm ? stat(motm + 'x', 'Man of the match') : ''}${subs ? stat(subs + 'x', 'Met tweede keeper') : ''}
+    </div>
+    <div class="kchart"><h3>Tegendoelpunten per wedstrijd</h3>${keeperChart(id, scores, S.kp.avg)}<p id="kCap" class="note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
+    ${mrow('Beste wedstrijd', best)}${scores.length > 1 ? mrow('Minste wedstrijd', worst) : ''}
+    <p class="note">Alle wedstrijden. Tik op een wedstrijd voor de berekening.</p>
+    ${table(['Wedstrijd', 'Uitslag', 'Keepers-<br>punten'], scores.map(sc => [
       `<button type="button" class="linkbtn" data-act="keeperCalc" data-keeper="${esc(keeper)}" data-match="${esc(sc.m.id)}">${esc(vs(sc.m))}</button><br><span class="note">${esc(fmtDate(sc.m.date))}</span>`,
-      `<span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga}`,
-      (sc === kp.best ? '<span class="kstar">Beste</span> ' : '') + `<strong>${dec(sc.pts)}</strong>`]))}${rulesLink}`;
+      `<span class="nw"><span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga}</span>`,
+      `<strong>${dec(sc.pts)}</strong>` + (sc === best ? '<br><span class="kstar">Beste</span>' : '')]))}${rulesLink}`;
   $('#dlgKeeperList').showModal();
 }
 
 function openKeeperCalc(keeper, match) {
   const kp = S.kp.byId[keeper], sc = kp?.scores.find(s => s.m.id === match); if (!sc) return;
-  $('#dlgKeeperCalcTitle').textContent = 'Keepers punten · ' + kp.name;
+  $('#dlgKeeperCalcTitle').textContent = 'Keepers-punten · ' + kp.name;
   $('#kcBody').innerHTML = calcTable(sc) + rulesLink;
   $('#dlgKeeperCalc').showModal();
 }
 
 // Sort options for the keeper cards; keepers without matches always go last (except by name).
-const KSORT = { kgp: ['Wedstrijden', (a, b) => b.s.kgp - a.s.kgp], name: ['Naam', (a, b) => a.s.p.name.localeCompare(b.s.p.name)], avg: ['Minste tegen per wedstrijd', (a, b) => a.avg - b.avg], cs: ['Vaakst de nul', (a, b) => b.s.cs - a.s.cs], pts: ['Keepers punten', (a, b) => b.total - a.total] };
+const KSORT = { kgp: ['Wedstrijden', (a, b) => b.s.kgp - a.s.kgp], name: ['Naam', (a, b) => a.s.p.name.localeCompare(b.s.p.name)], avg: ['Minste tegen per wedstrijd', (a, b) => a.avg - b.avg], cs: ['Vaakst de nul', (a, b) => b.s.cs - a.s.cs], pts: ['Hoogste keepers-punten', (a, b) => b.top - a.top] };
 function renderKeepers(stats, matches) {
   const el = $('#p-keepers');
   const avg = matches.length ? matches.reduce((t, m) => t + (+m.ga || 0), 0) / matches.length : 0;
   S.kp = { avg, byId: {} };
   const ks = stats.filter(s => s.kgp > 0 || s.p.position === 'keeper').map(s => {
     const id = s.p.id, km = matches.filter(m => keepersOf(m).includes(id)), scores = km.map(m => keeperScore(m, id, avg));
-    return { s, id, km, scores, total: scores.reduce((t, x) => t + x.pts, 0), avg: s.kgp ? s.conc / s.kgp : Infinity };
+    const best = [...scores].sort((x, y) => y.pts - x.pts || conceded(x.m, id) - conceded(y.m, id))[0];
+    const worst = [...scores].sort((x, y) => x.pts - y.pts || conceded(y.m, id) - conceded(x.m, id))[0];
+    if (best) S.kp.byId[id] = { name: s.p.name, s, scores, best, worst };
+    return { s, id, km, best, top: best ? best.pts : -Infinity, avg: s.kgp ? s.conc / s.kgp : Infinity };
   });
   if (!ks.length) { el.innerHTML = emptyState('Nog geen keepers', 'Geef een speler de rol keeper, of kies de keeper bij een wedstrijd.'); return; }
   const key = KSORT[S.ksort] ? S.ksort : 'kgp';
   ks.sort((a, b) => (key !== 'name' && (!a.km.length - !b.km.length)) || KSORT[key][1](a, b) || b.s.kgp - a.s.kgp);
   const sortSel = `<label class="sortsel"><span>Sorteren op</span><select id="kSort">${Object.entries(KSORT).map(([k, [l]]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
-  el.innerHTML = `${ptool(sortSel)}<div class="keepers">${ks.map(({ s, id, km, scores, total }) => {
-    const head = `<h3>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}${injuryIcon(s.p)}</h3>`;
-    if (!km.length) return `<article class="kcard">${head}<p class="note">Nog niet in het doel gestaan.</p></article>`;
-    const n = r => km.filter(m => result(m) === r).length;
-    const g = km.reduce((t, m) => t + +(m.goals?.[id] || 0), 0), a = km.reduce((t, m) => t + +(m.assists?.[id] || 0), 0), motm = km.filter(m => m.mvp === id).length;
-    const best = [...scores].sort((x, y) => y.pts - x.pts || conceded(x.m, id) - conceded(y.m, id))[0];
-    S.kp.byId[id] = { name: s.p.name, scores, best };
-    const form = km.slice(0, 5).reverse(), top = Math.max(1, ...form.map(m => conceded(m, id)));
-    return `<article class="kcard">${head}
-      <div class="kstats"><div><span class="v">${s.kgp}</span><span class="k">Wedstrijden</span></div><div><span class="v">${dec(s.conc / s.kgp)}</span><span class="k">Tegen per wedstrijd</span></div><div><span class="v">${s.cs}</span><span class="k">De nul</span></div><div><span class="v">${dec(total)}</span><span class="k">Keepers punten</span></div></div>
-      <p class="note">${n('W')}W ${n('G')}G ${n('V')}V · ${g} ${g === 1 ? 'goal' : 'goals'} · ${a} ${a === 1 ? 'assist' : 'assists'}${motm ? ` · ${motm}x MOTM` : ''}</p>
-      <div class="kbest"><button type="button" class="linkbtn k" data-act="keeperRules" data-keeper="${esc(id)}">Beste wedstrijd · ${dec(best.pts)} Keepers punten</button>
-        <strong>${esc(vs(best.m))}</strong>
-        <span class="note">${esc(fmtDate(best.m.date))} · <span class="res ${result(best.m)}">${result(best.m)}</span> ${best.m.gf} - ${best.m.ga}</span>
-        <span>${best.why.map(esc).join(' · ')}</span></div>
-      <div class="kform" aria-label="Tegendoelpunten laatste ${form.length} wedstrijden">${form.map(m => `<div title="${esc(m.opponent)}: ${conceded(m, id)} tegen"><i style="height:${Math.max(4, conceded(m, id) / top * 100)}%"></i><span>${conceded(m, id)}</span></div>`).join('')}</div>
-      <span class="k">Tegen, laatste ${form.length} als keeper</span>
-      <button type="button" class="btn kbtn" data-act="keeperList" data-keeper="${esc(id)}">Keepers punten</button>
+  // Compact card (2-3 fit on a phone screen); tap it for the detail dialog with chart and all matches.
+  el.innerHTML = `${ptool(sortSel)}<div class="keepers">${ks.map(({ s, id, km, best }) => {
+    const name = `<h3>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}${injuryIcon(s.p)}</h3>`;
+    if (!km.length) return `<article class="kcard">${name}<p class="note">Nog niet in het doel gestaan.</p></article>`;
+    return `<article class="kcard" data-act="keeperList" data-keeper="${esc(id)}" tabindex="0" role="button" aria-label="Details van ${esc(s.p.name)}">
+      <div class="khead">${name}<span class="kmore" aria-hidden="true">Details ›</span></div>
+      <div class="kstats"><div><span class="v">${s.kgp}</span><span class="k">Wedstrijden</span></div><div><span class="v">${dec(s.conc / s.kgp)}</span><span class="k">Gem. tegen per wedstrijd</span></div><div><span class="v">${s.cs}x</span><span class="k">De nul</span></div><div><span class="v">${dec(best.pts)}</span><span class="k">Hoogste keepers-punten</span></div></div>
+      <div class="kb"><span class="res ${result(best.m)}">${result(best.m)}</span><strong>${esc(vs(best.m))}</strong><span class="when">Beste · ${esc(fmtDate(best.m.date))} · ${best.m.gf} - ${best.m.ga}</span><span class="pts">${dec(best.pts)}<small>punten</small></span></div>
     </article>`; }).join('')}</div>${rulesLink}`;
 }
 $('#p-keepers').addEventListener('change', e => { if (e.target.id === 'kSort') { S.ksort = e.target.value; render(); } });
@@ -963,21 +1034,34 @@ document.addEventListener('click', e => {
   const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
   const mr = e.target.closest('[data-match]'); if (mr) openMatch(S.matches.find(m => m.id === mr.dataset.match));
 });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-sponsor].click, [data-logo].click')) e.target.click(); });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-sponsor].click, [data-logo].click, .kcard[data-act]')) e.target.click(); });
 
 $('#addMatch').onclick = () => openMatch();
 
 /* who added / changed what: audit_log is filled by a database trigger (audit.sql) and only editors can read it */
 const LOG_FIELDS = { played: 'opstelling', goals: 'goals', assists: 'assists', own_goals: 'eigen goals', gf: 'uitslag', ga: 'uitslag', date: 'datum', opponent: 'tegenstander', home: 'thuis/uit', yellow: 'kaarten', red: 'kaarten', mvp: 'man of the match', keeper: 'keeper', keeper2: 'tweede keeper', keeper2_ga: 'tweede keeper', captain: 'captain', manager: 'manager', season: 'seizoen', name: 'naam', number: 'rugnummer', position: 'rollen', roles: 'rollen', injury: 'blessure' };
+// Who made a change: the account's role (audit-roles.sql); no account = a change made directly in SQL = Beheerder.
+const ROLE_LABEL = { captain: 'Captain', manager: 'Manager', coach: 'Coach', socials: 'Socials', beheerder: 'Beheerder' };
+const who = r => ROLE_LABEL[r.role] || (r.email ? shortName(r.email) : 'Beheerder');
+const shortWhen = a => new Date(a).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+// Per match: first insert and last update, shown on the match cards for editors.
+async function loadMatchLog() {
+  if (!S.canEdit) { S.mlog = null; return; }
+  const { data, error } = await sb.from('audit_log').select('*').eq('tbl', 'matches').order('at');
+  if (error) { S.mlog = null; return; }
+  S.mlog = {};
+  for (const r of data) { const e = S.mlog[r.row_id] ||= {}; if (r.action === 'insert') e.add ||= r; else if (r.action === 'update') e.edit = r; }
+  if (S.ready) renderMatches(seasonMatches());
+}
 async function showLog(el, tbl, id) {
   el.hidden = true; el.dataset.for = id || ''; if (!id || !S.canEdit) return;
-  const { data } = await sb.from('audit_log').select('at, email, action, changed').eq('tbl', tbl).eq('row_id', id).order('at', { ascending: false }).limit(30);
+  const { data } = await sb.from('audit_log').select('*').eq('tbl', tbl).eq('row_id', id).order('at', { ascending: false }).limit(30);
   if (el.dataset.for !== id || !data?.length) return;
   const when = a => new Date(a).toLocaleString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const what = r => r.action === 'insert' ? 'toegevoegd' : 'gewijzigd: ' + [...new Set((r.changed || []).map(k => LOG_FIELDS[k]).filter(Boolean))].join(', ');
   const first = data.at(-1);
-  el.innerHTML = `<summary>${first.action === 'insert' ? `Toegevoegd door ${esc(first.email || 'onbekend')}` : 'Wijzigingen'} · ${data.length}x</summary>
-    <ul>${data.map(r => `<li>${esc(when(r.at))} · ${esc(r.email || 'onbekend')} · ${esc(what(r))}</li>`).join('')}</ul>`;
+  el.innerHTML = `<summary>${first.action === 'insert' ? `Toegevoegd door ${esc(who(first))}` : 'Wijzigingen'} · ${data.length}x</summary>
+    <ul>${data.map(r => `<li title="${esc(r.email || 'via SQL')}">${esc(when(r.at))} · ${esc(who(r))} · ${esc(what(r))}</li>`).join('')}</ul>`;
   el.hidden = false;
 }
 
@@ -1528,7 +1612,7 @@ async function loadAll() {
   if (res.some(r => r.error)) { if (!S.ready) $('#summary').innerHTML = $('#p-spelers').innerHTML = ''; $('#status').hidden = false; $('#status').textContent = 'De gegevens konden niet worden geladen. Probeer het later opnieuw.'; return; }
   TABLES.forEach((t, i) => S[t] = res[i].data);
   $('#status').hidden = true; S.ready = true;
-  render();
+  render(); loadMatchLog();
 }
 
 async function refreshAuth() {
@@ -1546,7 +1630,7 @@ async function refreshAuth() {
   if (!S.canPost && ['posts', 'sponsors'].includes(S.tab)) selectTab('spelers');
   $('#login').textContent = S.user ? 'Uitloggen' : 'Inloggen';
   $('#login').title = S.user ? 'Ingelogd als ' + shortName(S.user.email) : 'Inloggen voor coaches en aanvoerders';
-  render();
+  render(); loadMatchLog();
 }
 sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
 

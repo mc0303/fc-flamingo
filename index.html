@@ -379,7 +379,7 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 .check { font-size: 0.875rem; margin: 0; color: var(--muted); }
 .check.off { color: var(--yellow); }
 
-.toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--pink); padding: 12px 16px; border-radius: var(--r-sm); max-width: calc(100% - 32px); }
+.toast { inset: auto; margin: 0; color: inherit; position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--pink); padding: 12px 16px; border-radius: var(--r-sm); max-width: calc(100% - 32px); }
 .status { color: var(--muted); font-size: 0.875rem; margin: 0; }
 /* skeleton while the first load runs */
 .sk { display: block; height: 0.875rem; width: 70%; border-radius: 4px; background: linear-gradient(90deg, var(--panel-2) 25%, var(--line) 50%, var(--panel-2) 75%); background-size: 200% 100%; animation: sk 1.4s ease-in-out infinite; }
@@ -685,7 +685,7 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
   </form>
 </dialog>
 
-<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" popover="manual"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js" integrity="sha384-xPW3QHswsICVC2mW6BFNwMbhpLkbZ133fKOhxNx3QGGgAOJfL3O9t8r2aWn1aez6" crossorigin="anonymous"></script>
@@ -972,7 +972,12 @@ function render() {
 }
 
 /* ---------- interactions ---------- */
-function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3500); }
+// Popover = top layer, so it shows above an open modal dialog (re-shown to land above the newest one).
+function toast(msg, ms = 3500) {
+  const t = $('#toast'); t.textContent = msg;
+  if (t.matches(':popover-open')) t.hidePopover();
+  t.showPopover(); clearTimeout(toast.t); toast.t = setTimeout(() => t.hidePopover(), ms);
+}
 async function save(fn, okMsg) {
   try { await fn(); toast(okMsg); return true; }
   catch (e) {
@@ -981,7 +986,7 @@ async function save(fn, okMsg) {
     const col = ['PGRST204', '42703'].includes(e?.code) && (e.message.match(/'(\w+)' column|column "?(\w+)/) || []).slice(1).find(Boolean);
     toast(e?.code === '42501' ? 'Opslaan lukte niet. Je hebt geen bewerkrechten; log opnieuw in.'
       : col ? `Opslaan lukte niet: kolom "${col}" ontbreekt in de database. Draai de bijbehorende SQL in Supabase.`
-      : 'Opslaan lukte niet. Probeer het opnieuw.');
+      : 'Opslaan lukte niet. Probeer het opnieuw.', 8000);
     return false;
   }
 }

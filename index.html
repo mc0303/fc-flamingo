@@ -975,7 +975,15 @@ function render() {
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 3500); }
 async function save(fn, okMsg) {
   try { await fn(); toast(okMsg); return true; }
-  catch (e) { toast(e?.code === '42501' ? 'Opslaan lukte niet. Je hebt geen bewerkrechten; log opnieuw in.' : 'Opslaan lukte niet. Probeer het opnieuw.'); return false; }
+  catch (e) {
+    console.error('save failed', e);
+    // PGRST204/42703 = the app sends a column the database doesn't have yet: an SQL file still needs to run.
+    const col = ['PGRST204', '42703'].includes(e?.code) && (e.message.match(/'(\w+)' column|column "?(\w+)/) || []).slice(1).find(Boolean);
+    toast(e?.code === '42501' ? 'Opslaan lukte niet. Je hebt geen bewerkrechten; log opnieuw in.'
+      : col ? `Opslaan lukte niet: kolom "${col}" ontbreekt in de database. Draai de bijbehorende SQL in Supabase.`
+      : 'Opslaan lukte niet. Probeer het opnieuw.');
+    return false;
+  }
 }
 function armDelete(btn, action) {
   btn.classList.remove('armed'); btn.textContent = 'Verwijderen';
@@ -1159,8 +1167,10 @@ document.querySelector('.wiz-steps').addEventListener('click', e => { const b = 
 function checkGoals() {
   const tot = cls => [...document.querySelectorAll(`#mStats .srow:not([hidden]) .${cls}`)].reduce((t, i) => t + (+i.value || 0), 0);
   const g = tot('g'), a = tot('a'), og = +$('#mOwn').value || 0, gf = +$('#mGF').value || 0, msgs = [];
+  // Expect one assist per goal by our players (own goals of the opponent have none).
+  const ea = Math.max(0, gf - og);
   // Silent when everything adds up; otherwise say what's missing.
-  if (g + og !== gf) msgs.push(`Goals: ${g + og} van ${gf} ingevuld${og ? ` (${og} eigen goal)` : ''} · Assists: ${a}`);
+  if (g + og !== gf || a !== ea) msgs.push(`Goals: ${g + og} van ${gf} ingevuld${og ? ` (${og} eigen goal)` : ''} · Assists: ${a} van ${ea} ingevuld`);
   if (a > g) msgs.push(`Meer assists (${a}) dan goals van spelers (${g}).`);
   $('#mCheck').textContent = msgs.join(' '); $('#mCheckBar').hidden = !msgs.length;
 }

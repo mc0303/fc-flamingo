@@ -80,7 +80,14 @@ button, input, select { font: inherit; color: inherit; }
 .btn.primary:hover { background: var(--pink-hi); border-color: var(--pink-hi); }
 .btn.danger { border-color: var(--red); color: var(--red); background: transparent; }
 .btn.danger.armed { background: var(--red); color: var(--bg); }
-.select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; }
+/* Dropdowns (season, sort) look like the buttons next to them. appearance: none because iOS Safari ignores
+   the height of a native select and draws it smaller; the arrow is two gradient triangles in the muted colour. */
+.select { -webkit-appearance: none; appearance: none; box-sizing: border-box; height: 44px; min-width: 0; padding: 0 36px 0 16px; border-radius: var(--r-sm); border: 1px solid var(--line); color: var(--text); font-weight: 600; line-height: 42px; cursor: pointer; text-overflow: ellipsis; touch-action: manipulation; transition: border-color .15s ease;
+  background: var(--panel-2) no-repeat; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size: 5px 5px; }
+.select:hover { border-color: var(--pink); }
+.select:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+.select option { background: var(--panel-2); color: var(--text); font-weight: 400; }
 
 /* summary */
 /* bento: record tile full width on phones, 2x2 next to four small tiles from 960px */
@@ -156,14 +163,7 @@ tr.click:hover td, tr.click:focus-visible td { background: var(--panel-2); box-s
 tr.click:hover td:nth-child(2), tr.click:focus-visible td:nth-child(2) { box-shadow: var(--select), inset -1px 0 var(--line); }
 tr.click:focus-visible { outline: none; }
 /* players on phones: sort chips + compact cards (name / goals+assists bar with G+A / details) instead of the table */
-.pchips, .pcards, .mob { display: none; }
-.pchips { gap: 8px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
-.pchip { all: unset; flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 12px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 0.875rem; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.pchip:hover { border-color: var(--muted); color: var(--text); }
-.pchip:active { background: var(--panel-2); }
-.pchip[aria-pressed="true"] { background: var(--pink); border-color: var(--pink); color: var(--pink-ink); font-weight: 600; }
-.pchip span { font-size: 0.625rem; }
-.pchip:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+.sortsel.psort, .pcards { display: none; }
 /* the cards reuse the keeper card (.kcard, .khead, .kstats); only the player-specific parts live here */
 .pcards { list-style: none; margin: 0; padding: 0; gap: 12px; }
 .pcard { container-type: inline-size; color: var(--text); }
@@ -195,8 +195,10 @@ tr.click:focus-visible { outline: none; }
 .pcard.kcard:hover, .pcard.kcard:focus-within { box-shadow: var(--edge), var(--shadow); }
 @media (max-width: 639px) {
   #p-spelers .tablewrap, .desk { display: none; }
-  .mob { display: inline; }
-  .pchips { display: flex; }
+  .sortsel.psort { display: flex; }
+  #p-spelers .ptool { flex-wrap: nowrap; } /* sort dropdown and + on one line; the dropdown gives way */
+  /* next to the + there's no room for "Sorteren op" and "Gemiddelde per Wedstrijd": the label stays for screen readers only */
+  .psort > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .pcards { display: grid; }
 }
 
@@ -246,7 +248,7 @@ tr.click:focus-visible { outline: none; }
 .mfsearch button:hover, .mfsearch button:focus-visible { color: var(--pink); }
 .mfpanel .check-row { flex: none; }
 /* Shared tab-page toolbar: same row, same spot for the "+" action on every tab. */
-.ptool { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 16px; min-height: 44px; }
+.ptool { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 16px; min-height: 44px; min-width: 0; }
 .ptool > .note { flex: 1 1 200px; align-self: center; }
 .addbtn { flex: none; margin-left: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 @media (max-width: 639px) {
@@ -311,8 +313,9 @@ mark.hl { background: none; color: var(--pink); font-weight: 700; }
 .kcard h3 span { color: var(--muted); font-weight: 600; }
 .kcard .k { color: var(--muted); font-size: 0.875rem; }
 /* sort picker in the Keepers toolbar */
-.sortsel { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--muted); }
-.sortsel select { min-height: 44px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); color: var(--text); }
+.sortsel { flex: 0 1 auto; display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 0.875rem; color: var(--muted); }
+.sortsel > span { flex: none; }
+.sortsel .select { flex: 0 1 auto; font-size: 1rem; }
 /* injury: a little plaster, plus a strip on Spelers listing who's out */
 .inj-ic { display: inline-block; width: 18px; height: 18px; margin-left: 8px; vertical-align: -3px; background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(-45 12 12)'%3E%3Crect x='1.5' y='7.5' width='21' height='9' rx='4.5' fill='%23f2c9a0'/%3E%3Crect x='8' y='7.5' width='8' height='9' fill='%23d99a68'/%3E%3Ccircle cx='10.3' cy='10' r='.8' fill='%23a8693f'/%3E%3Ccircle cx='13.7' cy='10' r='.8' fill='%23a8693f'/%3E%3Ccircle cx='10.3' cy='14' r='.8' fill='%23a8693f'/%3E%3Ccircle cx='13.7' cy='14' r='.8' fill='%23a8693f'/%3E%3C/g%3E%3C/svg%3E"); }
 .injbar { display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--yellow); border-radius: var(--r-md); }
@@ -851,8 +854,10 @@ function renderPlayers(stats) {
   const pw = s => s.gp ? s.gpg.toFixed(2).replace('.', ',') : '–';
   const stat = (k, v) => `<div><span class="v${k === key ? ' hot' : ''}">${v}</span><span class="k">${lbl(k)}</span></div>`;
   const share = (n, s) => (s.pts ? n / s.pts * 100 : 0).toFixed(1);
-  const cards = `<div class="pchips" role="group" aria-label="Sorteren op">${['pts', 'g', 'a', 'gpg', 'gp', 'att'].map(k => `<button type="button" class="pchip" data-sort="${k}" aria-pressed="${k === key}" aria-label="${LBL[k][0]}">${LBL[k][1]}${k === key ? `<span aria-hidden="true">${dir === 'asc' ? '▲' : '▼'}</span>` : ''}</button>`).join('')}</div>
-    <ol class="pcards">${rows.map((s, i) => `<li class="kcard pcard${s.gp ? '' : ' idle'}">
+  // Phones sort with the same dropdown as the Keepers tab (desktop: the column headers); highest first, name A-Z.
+  const PSORT = ['pts', 'g', 'a', 'gpg', 'gp', 'att'].map(k => [k, LBL[k][0]]).concat([['name', 'Naam']]);
+  const psort = `<label class="sortsel psort"><span>Sorteren op</span><select id="pSort" class="select">${PSORT.some(([k]) => k === key) ? '' : '<option value="" selected hidden>Kolom in de tabel</option>'}${PSORT.map(([k, l]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
+  const cards = `<ol class="pcards">${rows.map((s, i) => `<li class="kcard pcard${s.gp ? '' : ' idle'}">
       <div class="khead"><div class="pname"><h3><span class="rk">${i + 1}</span>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}</h3>${badges(s)}</div>${S.isAdmin ? `<button type="button" class="kmore pedit" data-player="${esc(s.p.id)}" aria-label="${esc(s.p.name)} bewerken">Bewerken ›</button>` : ''}</div>
       <div class="kstats">${stat('gp', s.gp)}${stat('att', Math.round(s.att) + '%')}${stat('pts', s.pts)}${stat('gpg', pw(s))}</div>
       <div class="pbox">
@@ -860,7 +865,7 @@ function renderPlayers(stats) {
         <span class="ga"><span><i class="dot g"></i>${s.g} ${s.g === 1 ? 'Goal' : 'Goals'}</span><span><i class="dot a"></i>${s.a} ${s.a === 1 ? 'Assist' : 'Assists'}</span></span>
       </div>
     </li>`).join('')}</ol>`;
-  el.innerHTML = `${bar(`<span class="desk">Tik op een kolomkop om te sorteren</span><span class="mob">Kies waarop je sorteert</span>${S.isAdmin ? '<span class="desk">, op een speler om te bewerken</span>' : ''}.`)}${cards}<div class="tablewrap"><table>
+  el.innerHTML = `${ptool(`<p class="note desk">Tik op een kolomkop om te sorteren${S.isAdmin ? ', op een speler om te bewerken' : ''}.</p>${psort}`, S.isAdmin && addBtn('addPlayer', 'Speler toevoegen'))}${cards}<div class="tablewrap"><table>
     <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>
     <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.isAdmin ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.isAdmin ? ' tabindex="0"' : ''}>
       <td class="num">${s.p.number ?? ''}</td>
@@ -1020,7 +1025,7 @@ function renderKeepers(stats, matches) {
   if (!ks.length) { el.innerHTML = emptyState('Nog geen keepers', 'Geef een speler de rol keeper, of kies de keeper bij een wedstrijd.'); return; }
   const key = KSORT[S.ksort] ? S.ksort : 'kgp';
   ks.sort((a, b) => (key !== 'name' && (!a.km.length - !b.km.length)) || KSORT[key][1](a, b) || b.s.kgp - a.s.kgp);
-  const sortSel = `<label class="sortsel"><span>Sorteren op</span><select id="kSort">${Object.entries(KSORT).map(([k, [l]]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
+  const sortSel = `<label class="sortsel"><span>Sorteren op</span><select id="kSort" class="select">${Object.entries(KSORT).map(([k, [l]]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
   // Compact card (2-3 fit on a phone screen); tap it for the detail dialog with chart and all matches.
   el.innerHTML = `${ptool(sortSel)}<div class="keepers">${ks.map(({ s, id, km, best }) => {
     const name = `<h3>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}${injuryIcon(s.p)}</h3>`;
@@ -1032,6 +1037,7 @@ function renderKeepers(stats, matches) {
     </article>`; }).join('')}</div>${rulesLink}`;
 }
 $('#p-keepers').addEventListener('change', e => { if (e.target.id === 'kSort') { S.ksort = e.target.value; render(); } });
+$('#p-spelers').addEventListener('change', e => { if (e.target.id === 'pSort' && e.target.value) { const k = e.target.value; S.sort = { key: k, dir: k === 'name' ? 'asc' : 'desc' }; render(); } });
 
 function render() {
   if (!S.ready) return;

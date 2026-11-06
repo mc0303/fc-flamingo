@@ -300,7 +300,10 @@ fieldset.plain legend { padding: 0; margin-bottom: 4px; font-size: 0.875rem; col
 .sponsor a { color: var(--pink); font-size: 0.875rem; overflow-wrap: anywhere; }
 
 /* dialogs */
-dialog { width: min(640px, calc(100% - 24px)); max-height: calc(100% - 24px); padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); color: var(--text); }
+/* While a dialog is open the page behind stays put; swipes scroll the dialog, not the table under it.
+   html, not body: html's overflow-x clip makes html the page scroller. dvh = visible height with the phone toolbar. */
+html:has(dialog:modal) { overflow: hidden; }
+dialog { width: min(640px, calc(100% - 24px)); max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); color: var(--text); }
 dialog::backdrop { background: var(--scrim); }
 dialog form { display: grid; gap: 16px; padding: 20px; }
 dialog h2 { font-size: 1.75rem; text-transform: uppercase; color: var(--pink); }

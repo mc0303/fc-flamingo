@@ -155,6 +155,42 @@ tr.click { cursor: pointer; }
 tr.click:hover td, tr.click:focus-visible td { background: var(--panel-2); box-shadow: var(--select); }
 tr.click:hover td:nth-child(2), tr.click:focus-visible td:nth-child(2) { box-shadow: var(--select), inset -1px 0 var(--line); }
 tr.click:focus-visible { outline: none; }
+/* players on phones: sort chips + compact cards (name / goals+assists bar with G+A / details) instead of the table */
+.pchips, .pcards, .mob { display: none; }
+.pchips { gap: 8px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.pchip { all: unset; flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 12px; box-sizing: border-box; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 0.875rem; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.pchip:hover { border-color: var(--muted); color: var(--text); }
+.pchip:active { background: var(--panel-2); }
+.pchip[aria-pressed="true"] { background: var(--pink); border-color: var(--pink); color: var(--pink-ink); font-weight: 600; }
+.pchip span { font-size: 0.625rem; }
+.pchip:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+.pcards { list-style: none; margin: 0; padding: 0; gap: 8px; }
+.pcard { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; grid-template-areas: "rk nm att" ". bar tot" ". ga pw"; gap: 4px 12px; align-items: center; padding: 8px 12px; line-height: 1.25; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); font-variant-numeric: tabular-nums; }
+.pcard .rk { grid-area: rk; color: var(--muted); font: 800 1rem/1 var(--font-display); }
+.pcard .nm { grid-area: nm; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.pcard .nm small { color: var(--muted); font-weight: 400; margin-right: 4px; }
+.pcard .att { grid-area: att; justify-self: end; display: flex; gap: 8px; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.pcard .gabar { grid-area: bar; display: flex; height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+.gabar .g { background: var(--pink); }
+.gabar .a { background: var(--yellow); }
+.pcard .tot { grid-area: tot; justify-self: end; font: 800 1.5rem/1 var(--font-display); }
+.pcard .tot small { font: 400 0.75rem var(--font-body); color: var(--muted); margin-left: 4px; }
+.pcard .ga { grid-area: ga; display: flex; gap: 12px; font-size: 0.75rem; color: var(--muted); }
+.pcard .pw { grid-area: pw; justify-self: end; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.pcard .dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+.pcard .dot.g { background: var(--pink); }
+.pcard .dot.a { background: var(--yellow); }
+.pcard .on, .pcard .tot.on { color: var(--pink); font-weight: 600; }
+.pcard.idle .nm, .pcard.idle .tot { color: var(--muted); }
+.pcard.click { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.pcard.click:active { background: var(--panel-2); }
+.pcard.click:hover, .pcard.click:focus-visible { box-shadow: var(--select); outline: none; }
+@media (max-width: 639px) {
+  #p-spelers .tablewrap, .desk { display: none; }
+  .mob { display: inline; }
+  .pchips { display: flex; }
+  .pcards { display: grid; }
+}
 
 /* matches */
 .matches { display: grid; gap: 8px; list-style: none; margin: 0; padding: 0; }
@@ -747,7 +783,7 @@ function renderSummary(matches, stats) {
   const gf = matches.reduce((t, m) => t + (+m.gf || 0), 0), ga = matches.reduce((t, m) => t + (+m.ga || 0), 0), diff = gf - ga;
   const pct = x => n ? Math.round(x / n * 100) : 0, bar = x => n ? (x / n * 100).toFixed(2) : 0;
   const ppg = n ? ((w * 3 + d) / n).toFixed(2).replace('.', ',') : '0';
-  const top = key => { const best = [...stats].sort((a, b) => b[key] - a[key])[0]; return best && best[key] > 0 ? best : null; };
+  const top = key => { const best = [...stats].sort(byStat(key))[0]; return best && best[key] > 0 ? best : null; };
   const ts = top('g'), ta = top('a');
   const form = matches.slice(0, 5).reverse();
   const none = t => `<span class="v"><small>${t}</small></span>`;
@@ -776,6 +812,11 @@ const COLS = [
   { key: 'r', label: '<span class="cardglyph r"></span>Rood' },
 ];
 const sortVal = (s, k) => k === 'name' ? (s.p.name || '').toLowerCase() : k === 'num' ? (s.p.number ?? 999) : s[k];
+// One ranking rule for the dashboard and the players list: on a tie, better return (G+A per match) first, then more G+A, then name.
+const byStat = (key, dir = 'desc') => (a, b) => {
+  const x = sortVal(a, key), y = sortVal(b, key);
+  return (x > y ? 1 : x < y ? -1 : 0) * (dir === 'asc' ? 1 : -1) || b.gpg - a.gpg || b.pts - a.pts || a.p.name.localeCompare(b.p.name);
+};
 
 // Every tab starts with the same toolbar: page controls left, its one "+" action right (icon-only on phones).
 const PLUS = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
@@ -789,15 +830,29 @@ function renderPlayers(stats) {
   const el = $('#p-spelers');
   const bar = note => ptool((note ? `<p class="note">${note}</p>` : ''), S.canEdit && addBtn('addPlayer', 'Speler toevoegen'));
   if (!S.players.length) { el.innerHTML = bar('') + emptyState('Nog geen spelers', S.canEdit ? 'Voeg eerst de selectie toe. Daarna kun je wedstrijden invoeren.' : 'De selectie is nog niet ingevoerd.'); return; }
-  const { key, dir } = S.sort, f = dir === 'asc' ? 1 : -1;
-  const rows = [...stats].sort((a, b) => { const x = sortVal(a, key), y = sortVal(b, key); return (x > y ? 1 : x < y ? -1 : 0) * f || b.g - a.g || a.p.name.localeCompare(b.p.name); });
+  const { key, dir } = S.sort;
+  const rows = [...stats].sort(byStat(key, dir));
   const hurt = sortedPlayers().filter(p => p.injury);
   const injBar = hurt.length ? `<div class="injbar"><span class="inj-ic" aria-hidden="true"></span><div><strong>Geblesseerd</strong><ul>${hurt.map(p => `<li>${esc(p.name)}${p.injury !== 'geblesseerd' ? ` <span class="note">· ${esc(p.injury)}</span>` : ''}</li>`).join('')}</ul></div></div>` : '';
-  el.innerHTML = `${bar(`Tik op een kolomkop om te sorteren${S.canEdit ? ', op een speler om te bewerken' : ''}.`)}<div class="tablewrap"><table>
+  const badges = s => `${injuryIcon(s.p)}${hasRole(s.p, 'captain') || s.cap ? `<span class="cap" title="Captain${s.cap ? ', ' + s.cap + 'x deze periode' : ''}">C</span>` : ''}${s.p.position === 'keeper' ? '<span class="pos">keeper</span>' : ''}${hasRole(s.p, 'manager') || s.mgr ? `<span class="pos" title="Manager${s.mgr ? ', ' + s.mgr + 'x deze periode' : ''}">manager</span>` : ''}`;
+  // Phones get cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
+  const pw = s => s.gp ? s.gpg.toFixed(2).replace('.', ',') : '–', top = Math.max(1, ...rows.map(s => s.pts)), on = k => k === key ? ' class="on"' : '';
+  const CHIPS = [['pts', 'G+A'], ['g', 'Goals'], ['a', 'Assists'], ['gpg', 'p.w.'], ['gp', 'Wedstr.'], ['att', 'Aanw.']];
+  const cards = `<div class="pchips" role="group" aria-label="Sorteren op">${CHIPS.map(([k, l]) => `<button type="button" class="pchip" data-sort="${k}" aria-pressed="${k === key}">${l}${k === key ? `<span aria-hidden="true">${dir === 'asc' ? '▲' : '▼'}</span>` : ''}</button>`).join('')}</div>
+    <ol class="pcards">${rows.map((s, i) => `<li class="pcard${s.gp ? '' : ' idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
+      <span class="rk">${i + 1}</span>
+      <span class="nm">${s.p.number != null ? `<small>${s.p.number}</small>` : ''}${esc(s.p.name)}${badges(s)}</span>
+      <span class="att"><span${on('gp')}>${s.gp} wedstr.</span><span${on('att')}>${Math.round(s.att)}% aanw.</span></span>
+      <span class="gabar" role="img" aria-label="${s.g} goals, ${s.a} assists"><span class="g" style="width:${s.g / top * 100}%"></span><span class="a" style="width:${s.a / top * 100}%"></span></span>
+      <strong class="tot${key === 'pts' ? ' on' : ''}">${s.pts}<small>G+A</small></strong>
+      <span class="ga"><span${on('g')}><i class="dot g"></i>${s.g} ${s.g === 1 ? 'goal' : 'goals'}</span><span${on('a')}><i class="dot a"></i>${s.a} ${s.a === 1 ? 'assist' : 'assists'}</span></span>
+      <span class="pw${key === 'gpg' ? ' on' : ''}">${pw(s)} p.w.</span>
+    </li>`).join('')}</ol>`;
+  el.innerHTML = `${bar(`<span class="desk">Tik op een kolomkop om te sorteren</span><span class="mob">Kies waarop je sorteert</span>${S.canEdit ? ', tik op een speler om te bewerken' : ''}.`)}${cards}<div class="tablewrap"><table>
     <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>
     <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
       <td class="num">${s.p.number ?? ''}</td>
-      <td>${esc(s.p.name)}${injuryIcon(s.p)}${hasRole(s.p, 'captain') || s.cap ? `<span class="cap" title="Captain${s.cap ? ', ' + s.cap + 'x deze periode' : ''}">C</span>` : ''}${s.p.position === 'keeper' ? '<span class="pos">keeper</span>' : ''}${hasRole(s.p, 'manager') || s.mgr ? `<span class="pos" title="Manager${s.mgr ? ', ' + s.mgr + 'x deze periode' : ''}">manager</span>` : ''}</td>
+      <td>${esc(s.p.name)}${badges(s)}</td>
       <td class="${key === 'gp' ? 'sorted' : ''}">${s.gp}</td>
       <td class="${key === 'att' ? 'sorted' : ''}" title="${s.gp} van ${stats.n}">${s.att.toFixed(2).replace('.', ',')}%</td>
       ${['g', 'a', 'pts'].map(k => `<td class="${k === key ? 'sorted' : ''}">${s[k]}</td>`).join('')}

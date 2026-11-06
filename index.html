@@ -186,9 +186,13 @@ tr.click:focus-visible { outline: none; }
   .pcard .ls { display: none; }
 }
 .pcard.idle h3, .pcard.idle .kstats .v { color: var(--muted); }
-.pcard.click { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.pcard.click:active { background-color: var(--panel-2); }
-.pcard.click:focus-visible { outline: none; }
+/* Bewerken: the only way into the player editor on a card; 44px tall hit area, text stays small */
+.pedit { all: unset; flex: none; display: inline-flex; align-items: center; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border-radius: var(--r-sm); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.pedit:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pedit:active { background: var(--panel-2); }
+.pedit:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: -2px; }
+/* the cards themselves are not clickable: no hover selection */
+.pcard.kcard:hover, .pcard.kcard:focus-within { box-shadow: var(--edge), var(--shadow); }
 @media (max-width: 639px) {
   #p-spelers .tablewrap, .desk { display: none; }
   .mob { display: inline; }
@@ -832,8 +836,8 @@ function emptyState(title, text, btn, allowed = S.canEdit) {
 
 function renderPlayers(stats) {
   const el = $('#p-spelers');
-  const bar = note => ptool((note ? `<p class="note">${note}</p>` : ''), S.canEdit && addBtn('addPlayer', 'Speler toevoegen'));
-  if (!S.players.length) { el.innerHTML = bar('') + emptyState('Nog geen spelers', S.canEdit ? 'Voeg eerst de selectie toe. Daarna kun je wedstrijden invoeren.' : 'De selectie is nog niet ingevoerd.'); return; }
+  const bar = note => ptool((note ? `<p class="note">${note}</p>` : ''), S.isAdmin && addBtn('addPlayer', 'Speler toevoegen'));
+  if (!S.players.length) { el.innerHTML = bar('') + emptyState('Nog geen spelers', S.isAdmin ? 'Voeg eerst de selectie toe. Daarna kun je wedstrijden invoeren.' : 'De selectie is nog niet ingevoerd.'); return; }
   const { key, dir } = S.sort;
   const rows = [...stats].sort(byStat(key, dir));
   const hurt = sortedPlayers().filter(p => p.injury);
@@ -848,17 +852,17 @@ function renderPlayers(stats) {
   const stat = (k, v) => `<div><span class="v${k === key ? ' hot' : ''}">${v}</span><span class="k">${lbl(k)}</span></div>`;
   const share = (n, s) => (s.pts ? n / s.pts * 100 : 0).toFixed(1);
   const cards = `<div class="pchips" role="group" aria-label="Sorteren op">${['pts', 'g', 'a', 'gpg', 'gp', 'att'].map(k => `<button type="button" class="pchip" data-sort="${k}" aria-pressed="${k === key}" aria-label="${LBL[k][0]}">${LBL[k][1]}${k === key ? `<span aria-hidden="true">${dir === 'asc' ? '▲' : '▼'}</span>` : ''}</button>`).join('')}</div>
-    <ol class="pcards">${rows.map((s, i) => `<li class="kcard pcard${s.gp ? '' : ' idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
-      <div class="khead"><div class="pname"><h3><span class="rk">${i + 1}</span>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}</h3>${badges(s)}</div>${S.canEdit ? '<span class="kmore" aria-hidden="true">Bewerken ›</span>' : ''}</div>
+    <ol class="pcards">${rows.map((s, i) => `<li class="kcard pcard${s.gp ? '' : ' idle'}">
+      <div class="khead"><div class="pname"><h3><span class="rk">${i + 1}</span>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}</h3>${badges(s)}</div>${S.isAdmin ? `<button type="button" class="kmore pedit" data-player="${esc(s.p.id)}" aria-label="${esc(s.p.name)} bewerken">Bewerken ›</button>` : ''}</div>
       <div class="kstats">${stat('gp', s.gp)}${stat('att', Math.round(s.att) + '%')}${stat('pts', s.pts)}${stat('gpg', pw(s))}</div>
       <div class="pbox">
         <span class="gabar" role="img" aria-label="${s.g} goals en ${s.a} assists">${s.pts ? `<span class="g" style="width:${share(s.g, s)}%"></span><span class="a" style="width:${share(s.a, s)}%"></span>` : ''}</span>
         <span class="ga"><span><i class="dot g"></i>${s.g} ${s.g === 1 ? 'Goal' : 'Goals'}</span><span><i class="dot a"></i>${s.a} ${s.a === 1 ? 'Assist' : 'Assists'}</span></span>
       </div>
     </li>`).join('')}</ol>`;
-  el.innerHTML = `${bar(`<span class="desk">Tik op een kolomkop om te sorteren</span><span class="mob">Kies waarop je sorteert</span>${S.canEdit ? ', tik op een speler om te bewerken' : ''}.`)}${cards}<div class="tablewrap"><table>
+  el.innerHTML = `${bar(`<span class="desk">Tik op een kolomkop om te sorteren</span><span class="mob">Kies waarop je sorteert</span>${S.isAdmin ? '<span class="desk">, op een speler om te bewerken</span>' : ''}.`)}${cards}<div class="tablewrap"><table>
     <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>
-    <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
+    <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.isAdmin ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.isAdmin ? ' tabindex="0"' : ''}>
       <td class="num">${s.p.number ?? ''}</td>
       <td>${esc(s.p.name)}${badges(s)}</td>
       <td class="${key === 'gp' ? 'sorted' : ''}">${s.gp}</td>
@@ -1109,8 +1113,9 @@ document.addEventListener('click', e => {
   if (!S.canPost) return;
   const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a') && Date.now() - justDragged > 400) { openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor)); return; }
   const lr = e.target.closest('[data-logo]'); if (lr) { openLogo(S.logos.find(l => l.id === lr.dataset.logo)); return; }
-  if (!S.canEdit) return;
+  // Editing a player: Bewerken on phones, the table row on desktop (openPlayer checks the role).
   const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
+  if (!S.canEdit) return;
   const mr = e.target.closest('[data-match]'); if (mr) openMatch(S.matches.find(m => m.id === mr.dataset.match));
 });
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-sponsor].click, [data-logo].click, .kcard[data-act]')) e.target.click(); });
@@ -1147,7 +1152,9 @@ async function showLog(el, tbl, id) {
 /* player dialog */
 let editPlayer = null;
 $('#pInj').addEventListener('input', () => { $('#pInjRow').hidden = !$('#pInj').checked; if ($('#pInj').checked) $('#pInjNote').focus(); });
+// Players are added, edited and deleted by captain and manager only (is_admin; player-admin.sql enforces it in the database).
 function openPlayer(p) {
+  if (!S.isAdmin) return;
   editPlayer = p || null;
   $('#dlgPlayerTitle').textContent = p ? 'Speler bewerken' : 'Speler toevoegen';
   $('#pName').value = p?.name || ''; $('#pNum').value = p?.number ?? '';

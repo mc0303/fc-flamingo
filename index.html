@@ -164,27 +164,31 @@ tr.click:focus-visible { outline: none; }
 .pchip[aria-pressed="true"] { background: var(--pink); border-color: var(--pink); color: var(--pink-ink); font-weight: 600; }
 .pchip span { font-size: 0.625rem; }
 .pchip:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
-.pcards { list-style: none; margin: 0; padding: 0; gap: 8px; }
-.pcard { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; grid-template-areas: "rk nm att" ". bar tot" ". ga pw"; gap: 4px 12px; align-items: center; padding: 8px 12px; line-height: 1.25; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); font-variant-numeric: tabular-nums; }
-.pcard .rk { grid-area: rk; color: var(--muted); font: 800 1rem/1 var(--font-display); }
-.pcard .nm { grid-area: nm; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
-.pcard .nm small { color: var(--muted); font-weight: 400; margin-right: 4px; }
-.pcard .att { grid-area: att; justify-self: end; display: flex; gap: 8px; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
-.pcard .gabar { grid-area: bar; display: flex; height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+/* the cards reuse the keeper card (.kcard, .khead, .kstats); only the player-specific parts live here */
+.pcards { list-style: none; margin: 0; padding: 0; gap: 12px; }
+.pcard { container-type: inline-size; color: var(--text); }
+.pname { display: flex; align-items: baseline; flex-wrap: wrap; min-width: 0; }
+.pcard h3 .rk { margin-right: 8px; }
+.pcard .kstats .v.hot { color: var(--pink); }
+.pbox { display: grid; gap: 8px; padding: 8px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); }
+/* goals vs assists of this player: the bar is always full, pink = goals share, yellow = assists share */
+.gabar { display: flex; height: 8px; border-radius: 4px; background: var(--bg); overflow: hidden; }
 .gabar .g { background: var(--pink); }
 .gabar .a { background: var(--yellow); }
-.pcard .tot { grid-area: tot; justify-self: end; font: 800 1.5rem/1 var(--font-display); }
-.pcard .tot small { font: 400 0.75rem var(--font-body); color: var(--muted); margin-left: 4px; }
-.pcard .ga { grid-area: ga; display: flex; gap: 12px; font-size: 0.75rem; color: var(--muted); }
-.pcard .pw { grid-area: pw; justify-self: end; font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+.pcard .ga { display: flex; justify-content: space-between; gap: 12px; font-size: 0.75rem; color: var(--muted); }
 .pcard .dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
 .pcard .dot.g { background: var(--pink); }
 .pcard .dot.a { background: var(--yellow); }
-.pcard .on, .pcard .tot.on { color: var(--pink); font-weight: 600; }
-.pcard.idle .nm, .pcard.idle .tot { color: var(--muted); }
+.pcard .lf { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* 336px = four columns of 77px ("Goals + Assists", the widest label) plus the gaps; below that the abbreviations */
+@container (min-width: 336px) {
+  .pcard .lf { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+  .pcard .ls { display: none; }
+}
+.pcard.idle h3, .pcard.idle .kstats .v { color: var(--muted); }
 .pcard.click { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.pcard.click:active { background: var(--panel-2); }
-.pcard.click:hover, .pcard.click:focus-visible { box-shadow: var(--select); outline: none; }
+.pcard.click:active { background-color: var(--panel-2); }
+.pcard.click:focus-visible { outline: none; }
 @media (max-width: 639px) {
   #p-spelers .tablewrap, .desk { display: none; }
   .mob { display: inline; }
@@ -836,17 +840,21 @@ function renderPlayers(stats) {
   const injBar = hurt.length ? `<div class="injbar"><span class="inj-ic" aria-hidden="true"></span><div><strong>Geblesseerd</strong><ul>${hurt.map(p => `<li>${esc(p.name)}${p.injury !== 'geblesseerd' ? ` <span class="note">· ${esc(p.injury)}</span>` : ''}</li>`).join('')}</ul></div></div>` : '';
   const badges = s => `${injuryIcon(s.p)}${hasRole(s.p, 'captain') || s.cap ? `<span class="cap" title="Captain${s.cap ? ', ' + s.cap + 'x deze periode' : ''}">C</span>` : ''}${s.p.position === 'keeper' ? '<span class="pos">keeper</span>' : ''}${hasRole(s.p, 'manager') || s.mgr ? `<span class="pos" title="Manager${s.mgr ? ', ' + s.mgr + 'x deze periode' : ''}">manager</span>` : ''}`;
   // Phones get cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
-  const pw = s => s.gp ? s.gpg.toFixed(2).replace('.', ',') : '–', top = Math.max(1, ...rows.map(s => s.pts)), on = k => k === key ? ' class="on"' : '';
-  const CHIPS = [['pts', 'G+A'], ['g', 'Goals'], ['a', 'Assists'], ['gpg', 'p.w.'], ['gp', 'Wedstr.'], ['att', 'Aanw.']];
-  const cards = `<div class="pchips" role="group" aria-label="Sorteren op">${CHIPS.map(([k, l]) => `<button type="button" class="pchip" data-sort="${k}" aria-pressed="${k === key}">${l}${k === key ? `<span aria-hidden="true">${dir === 'asc' ? '▲' : '▼'}</span>` : ''}</button>`).join('')}</div>
-    <ol class="pcards">${rows.map((s, i) => `<li class="pcard${s.gp ? '' : ' idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
-      <span class="rk">${i + 1}</span>
-      <span class="nm">${s.p.number != null ? `<small>${s.p.number}</small>` : ''}${esc(s.p.name)}${badges(s)}</span>
-      <span class="att"><span${on('gp')}>${s.gp} wedstr.</span><span${on('att')}>${Math.round(s.att)}% aanw.</span></span>
-      <span class="gabar" role="img" aria-label="${s.g} goals, ${s.a} assists"><span class="g" style="width:${s.g / top * 100}%"></span><span class="a" style="width:${s.a / top * 100}%"></span></span>
-      <strong class="tot${key === 'pts' ? ' on' : ''}">${s.pts}<small>G+A</small></strong>
-      <span class="ga"><span${on('g')}><i class="dot g"></i>${s.g} ${s.g === 1 ? 'goal' : 'goals'}</span><span${on('a')}><i class="dot a"></i>${s.a} ${s.a === 1 ? 'assist' : 'assists'}</span></span>
-      <span class="pw${key === 'gpg' ? ' on' : ''}">${pw(s)} p.w.</span>
+  // Phones: keeper-style cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
+  // Labels: full name, or the abbreviation when the card is narrow (container query; the full name stays for screen readers).
+  const LBL = { gp: ['Wedstrijden', 'Wedstr.'], att: ['Aanwezigheid', 'Aanw.'], pts: ['Goals + Assists', 'G + A'], gpg: ['Gemiddelde per Wedstrijd', 'Gem. p. Wedstr.'], g: ['Goals', 'Goals'], a: ['Assists', 'Assists'] };
+  const lbl = k => LBL[k][0] === LBL[k][1] ? LBL[k][0] : `<span class="lf">${LBL[k][0]}</span><span class="ls" aria-hidden="true">${LBL[k][1]}</span>`;
+  const pw = s => s.gp ? s.gpg.toFixed(2).replace('.', ',') : '–';
+  const stat = (k, v) => `<div><span class="v${k === key ? ' hot' : ''}">${v}</span><span class="k">${lbl(k)}</span></div>`;
+  const share = (n, s) => (s.pts ? n / s.pts * 100 : 0).toFixed(1);
+  const cards = `<div class="pchips" role="group" aria-label="Sorteren op">${['pts', 'g', 'a', 'gpg', 'gp', 'att'].map(k => `<button type="button" class="pchip" data-sort="${k}" aria-pressed="${k === key}" aria-label="${LBL[k][0]}">${LBL[k][1]}${k === key ? `<span aria-hidden="true">${dir === 'asc' ? '▲' : '▼'}</span>` : ''}</button>`).join('')}</div>
+    <ol class="pcards">${rows.map((s, i) => `<li class="kcard pcard${s.gp ? '' : ' idle'}${S.canEdit ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.canEdit ? ' tabindex="0"' : ''}>
+      <div class="khead"><div class="pname"><h3><span class="rk">${i + 1}</span>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}</h3>${badges(s)}</div>${S.canEdit ? '<span class="kmore" aria-hidden="true">Bewerken ›</span>' : ''}</div>
+      <div class="kstats">${stat('gp', s.gp)}${stat('att', Math.round(s.att) + '%')}${stat('pts', s.pts)}${stat('gpg', pw(s))}</div>
+      <div class="pbox">
+        <span class="gabar" role="img" aria-label="${s.g} goals en ${s.a} assists">${s.pts ? `<span class="g" style="width:${share(s.g, s)}%"></span><span class="a" style="width:${share(s.a, s)}%"></span>` : ''}</span>
+        <span class="ga"><span><i class="dot g"></i>${s.g} ${s.g === 1 ? 'Goal' : 'Goals'}</span><span><i class="dot a"></i>${s.a} ${s.a === 1 ? 'Assist' : 'Assists'}</span></span>
+      </div>
     </li>`).join('')}</ol>`;
   el.innerHTML = `${bar(`<span class="desk">Tik op een kolomkop om te sorteren</span><span class="mob">Kies waarop je sorteert</span>${S.canEdit ? ', tik op een speler om te bewerken' : ''}.`)}${cards}<div class="tablewrap"><table>
     <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>

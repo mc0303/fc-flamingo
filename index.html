@@ -197,8 +197,6 @@ tr.click:focus-visible { outline: none; }
   #p-spelers .tablewrap, .desk { display: none; }
   .sortsel.psort { display: flex; }
   #p-spelers .ptool { flex-wrap: nowrap; } /* sort dropdown and + on one line; the dropdown gives way */
-  /* next to the + there's no room for "Sorteren op" and "Gemiddelde per Wedstrijd": the label stays for screen readers only */
-  .psort > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .pcards { display: grid; }
 }
 
@@ -314,7 +312,8 @@ mark.hl { background: none; color: var(--pink); font-weight: 700; }
 .kcard .k { color: var(--muted); font-size: 0.875rem; }
 /* sort picker in the Keepers toolbar */
 .sortsel { flex: 0 1 auto; display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 0.875rem; color: var(--muted); }
-.sortsel > span { flex: none; }
+/* "Sorteren op" is for screen readers only; the dropdown speaks for itself */
+.sortsel > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .sortsel .select { flex: 0 1 auto; font-size: 1rem; }
 /* injury: a little plaster, plus a strip on Spelers listing who's out */
 .inj-ic { display: inline-block; width: 18px; height: 18px; margin-left: 8px; vertical-align: -3px; background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(-45 12 12)'%3E%3Crect x='1.5' y='7.5' width='21' height='9' rx='4.5' fill='%23f2c9a0'/%3E%3Crect x='8' y='7.5' width='8' height='9' fill='%23d99a68'/%3E%3Ccircle cx='10.3' cy='10' r='.8' fill='%23a8693f'/%3E%3Ccircle cx='13.7' cy='10' r='.8' fill='%23a8693f'/%3E%3Ccircle cx='10.3' cy='14' r='.8' fill='%23a8693f'/%3E%3Ccircle cx='13.7' cy='14' r='.8' fill='%23a8693f'/%3E%3C/g%3E%3C/svg%3E"); }

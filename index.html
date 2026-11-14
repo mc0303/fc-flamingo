@@ -7,7 +7,7 @@
 <style id="noframe">html { display: none !important; }</style>
 <script>if (self === top) document.getElementById('noframe').remove(); else top.location = self.location.href;</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>FC Flamingo Stats</title>
+<title>FC Flamingo 4</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#0b090a">
@@ -1210,6 +1210,9 @@ function filterPlayers() {
     const p = S.players.find(p => p.id === x.dataset.pinfo), hit = S.ptypes.has(ptype(p)) && (!q || norm(p?.name).includes(q) || String(p?.number ?? '') === q);
     (x.closest('li') || x).hidden = !hit; if (hit && x.closest('li')) n++;
   });
+  // Ranks follow what's visible: the first shown card is 1, then 2, ... (search and type filter both count).
+  let rk = 0; el.querySelectorAll('.pcards > li:not([hidden]) .rk').forEach(r => { r.textContent = ++rk; });
+  const sub = el.querySelector('.phead .note'); if (sub) sub.textContent = n === S.players.length ? `${n} in de selectie` : `${n} van ${S.players.length} spelers`;
   if (!$('#pNone')) return;
   $('#pNone').hidden = n > 0; $('#pNone').textContent = q ? `Geen speler gevonden voor "${S.pq}".` : 'Geen spelers met dit filter. Zet een soort speler aan.';
   $('#pfToggle')?.classList.toggle('on', S.ptypes.size < 3);
@@ -2214,7 +2217,7 @@ function applySettings() {
   showLogo($('#barLogoImg'), $('#barLogoSvg'), t.logo);
   $('#teamSub').textContent = ['Futsal', t.klasse].filter(Boolean).join(', ') + '.' + (t.home_base ? ' Thuisbasis ' + t.home_base + '.' : '');
   $('#teamTag').textContent = t.hashtag || ''; $('#teamTag').hidden = !t.hashtag;
-  document.title = t.team_name + ' Stats';
+  document.title = teamFull(); // browser tab: club + team number, e.g. FC Flamingo 4
   showLogo($('#teamLogoImg'), $('#teamLogoSvg'), t.logo);
   $('label[for="mGF"]').textContent = 'Goals ' + t.team_name;
   if (!$('#poPlace').value) $('#poPlace').value = t.home_base || '';

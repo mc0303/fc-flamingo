@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>FC Flamingo Stats</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -41,6 +41,10 @@
   --edge: inset 0 1px 0 rgb(255 255 255 / .06);
   /* selection: two pink lines, top and bottom (same look as the selected row in Spelers) */
   --select: inset 0 2px 0 var(--pink-hi), inset 0 -2px 0 var(--pink-hi);
+  /* motion (Emil Kowalski's curves): strong ease-out for UI, iOS drawer curve for sheets */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   color-scheme: dark;
 }
 html, body { overflow-x: clip; }
@@ -51,7 +55,6 @@ html, body { overflow-x: clip; }
 ::-webkit-scrollbar-thumb { background: var(--loss); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--pink); }
 [hidden] { display: none !important; }
-:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body { margin: 0; }
 body { background: radial-gradient(900px 420px at 0% 0%, var(--glow), transparent 70%) no-repeat, var(--bg); color: var(--text); font: 400 16px/1.5 var(--font-body); }
 .wrap { max-width: 1120px; margin: 0 auto; padding-block: 24px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
@@ -60,24 +63,48 @@ h1, h2, h3 { font-family: var(--font-display); font-weight: 800; line-height: 1;
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
 
-/* masthead */
-.mast { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding-bottom: 20px; border-bottom: 2px solid var(--pink); }
-.mast .logo { width: 72px; height: 90px; flex: none; object-fit: contain; }
+/* app shell: sticky top bar (logo, season, settings, login) + one nav: top tabs on desktop, bottom tab bar on phones */
+html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+button, a, [role="button"], label, summary { touch-action: manipulation; }
+button, [role="button"], .tab, summary { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.top { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+.appbar { max-width: 1120px; margin: 0 auto; box-sizing: border-box; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
+.appbar .logo { width: 30px; height: 38px; flex: none; object-fit: contain; }
+.appname { flex: 1 1 auto; min-width: 0; font: 800 1.375rem/1 var(--font-display); text-transform: uppercase; color: var(--pink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.appbar .tools { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.appbar .select { max-width: 46vw; }
+@media (max-width: 479px) { .appname { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .appbar .tools { flex: 1; justify-content: flex-end; } .appbar .select { flex: 0 1 auto; max-width: none; } }
 .st-logo { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .st-logo img, .st-logo svg { width: 64px; height: 80px; object-fit: contain; flex: none; }
 .st-logo .field { flex: 1 1 200px; }
-.mast .id { flex: 1 1 220px; min-width: 0; }
-.mast h1 { font-size: clamp(2.25rem, 7vw, 3.75rem); text-transform: uppercase; color: var(--pink); }
-.mast p { margin: 4px 0 0; color: var(--muted); font-size: 0.9375rem; }
-.mast .tag { color: var(--pink); font: 600 1.125rem/1 var(--font-display); margin-top: 8px; }
-.mast .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+/* hero (Overzicht): club identity + the latest result, one tap to the match */
+.hero { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 16px; align-items: center; padding: 20px; border-radius: 20px; border: 1px solid rgb(232 103 155 / .35); background: radial-gradient(120% 140% at 0% 0%, rgb(232 103 155 / .28), transparent 60%), var(--panel); box-shadow: var(--edge), var(--shadow); }
+.hero .logo { grid-row: span 3; width: 64px; height: 80px; object-fit: contain; }
+@media (max-width: 359px) { .hero { padding: 16px; } .hero .logo { width: 44px; height: 56px; } }
+.hero h1 { font-size: clamp(2rem, 9vw, 3.5rem); text-transform: uppercase; color: var(--pink); letter-spacing: -0.01em; }
+.hero p { margin: 0; color: var(--muted); font-size: 0.9375rem; }
+.hero .tag { color: var(--pink); font: 600 1.125rem/1 var(--font-display); }
+.last { grid-column: 1 / -1; margin-top: 16px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 2px 14px; align-items: center; width: 100%; box-sizing: border-box; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: rgb(0 0 0 / .35); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.last .lbl { grid-column: 2; font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.last strong { grid-column: 2; font: 800 1.375rem/1.1 var(--font-display); text-transform: uppercase; overflow-wrap: anywhere; }
+.last .when { grid-column: 2; font-size: .8125rem; color: var(--muted); }
+.last .res { grid-row: 1 / span 3; width: 40px; height: 40px; font-size: 1.375rem; }
+.last .score { grid-column: 3; grid-row: 1 / span 3; font: 800 2.5rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.last.W .score { color: var(--pink); }
+/* page header on every screen: title + one line of context */
+.phead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.phead h2 { font-size: 2rem; text-transform: uppercase; letter-spacing: -0.01em; }
+.phead .note { margin: 0; }
+.sect { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.sect h2 { font-size: 1.375rem; text-transform: uppercase; color: var(--muted); }
 
 .btn { min-height: 44px; padding: 0 16px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font-weight: 600; transition: background-color .15s ease, border-color .15s ease, transform .1s ease; touch-action: manipulation; }
-.btn:hover { border-color: var(--pink); }
+@media (hover: hover) and (pointer: fine) { .btn:hover { border-color: var(--pink); } }
 .btn:active { transform: scale(.97); }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn.primary { background: linear-gradient(180deg, var(--pink-hi), var(--pink)); border-color: var(--pink); color: var(--pink-ink); box-shadow: inset 0 1px 0 rgb(255 255 255 / .25), 0 4px 14px -4px rgb(232 103 155 / .55); }
-.btn.primary:hover { background: var(--pink-hi); border-color: var(--pink-hi); }
+@media (hover: hover) and (pointer: fine) { .btn.primary:hover { background: var(--pink-hi); border-color: var(--pink-hi); } }
 .btn.danger { border-color: var(--red); color: var(--red); background: transparent; }
 .btn.danger.armed { background: var(--red); color: var(--bg); }
 /* Dropdowns (season, sort) look like the buttons next to them. appearance: none because iOS Safari ignores
@@ -85,7 +112,7 @@ button, input, select { font: inherit; color: inherit; }
 .select { -webkit-appearance: none; appearance: none; box-sizing: border-box; height: 44px; min-width: 0; padding: 0 36px 0 16px; border-radius: var(--r-sm); border: 1px solid var(--line); color: var(--text); font-weight: 600; line-height: 42px; cursor: pointer; text-overflow: ellipsis; touch-action: manipulation; transition: border-color .15s ease;
   background: var(--panel-2) no-repeat; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
   background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size: 5px 5px; }
-.select:hover { border-color: var(--pink); }
+@media (hover: hover) and (pointer: fine) { .select:hover { border-color: var(--pink); } }
 .select:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
 .select option { background: var(--panel-2); color: var(--text); font-weight: 400; }
 
@@ -120,21 +147,28 @@ button, input, select { font: inherit; color: inherit; }
 .res.G { border: 1.5px solid var(--pink); color: var(--pink); }
 .res.V { background: var(--panel-2); color: var(--muted); border: 1px solid var(--line); }
 
-/* tabs */
-/* One row that scrolls sideways only. overflow-y hidden + no negative margin = no up/down wiggle on phones. */
-.tabbar { position: relative; }
-.tabs { display: flex; gap: 4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain; box-shadow: inset 0 -1px var(--line); }
-.tabs::-webkit-scrollbar { display: none; }
-.tab { flex: none; min-height: 44px; padding: 0 16px; border: 0; background: none; cursor: pointer; color: var(--muted); font: 800 1.375rem/1 var(--font-display); text-transform: uppercase; border-bottom: 3px solid transparent; transition: color .15s ease, border-color .15s ease; }
-@media (max-width: 639px) { .tab { padding: 0 12px; font-size: 1.25rem; } }
-/* Faint arrows show there are more tabs that way; tapping one moves to the next tab. */
-.tabnav { position: absolute; top: 0; bottom: 3px; z-index: 1; width: 40px; padding: 0; border: 0; cursor: pointer; color: rgb(247 238 242 / .55); font: 800 2rem/1 var(--font-display); touch-action: manipulation; }
-.tabnav.prev { left: 0; text-align: left; background: linear-gradient(90deg, var(--bg) 35%, transparent); }
-.tabnav.next { right: 0; text-align: right; background: linear-gradient(270deg, var(--bg) 35%, transparent); }
-.tabnav:hover, .tabnav:focus-visible { color: var(--pink); }
-.tab:hover { color: var(--text); }
-.tab[aria-selected="true"] { color: var(--pink); border-bottom-color: var(--pink); }
-.panel { display: grid; gap: 16px; padding-top: 24px; }
+/* nav: desktop = tab row under the app bar; phones = fixed bottom tab bar with icons (thumb reach, like a native app) */
+.tabs { max-width: 1120px; margin: 0 auto; box-sizing: border-box; display: flex; gap: 4px; padding: 0 max(8px, env(safe-area-inset-right, 0px)) 0 max(8px, env(safe-area-inset-left, 0px)); }
+.tab { flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 12px; border: 0; background: none; cursor: pointer; color: var(--muted); font: 800 1.25rem/1 var(--font-display); text-transform: uppercase; box-shadow: inset 0 -3px transparent; transition: color .15s ease, box-shadow .2s var(--ease-out); }
+.tab svg { width: 20px; height: 20px; flex: none; }
+.tab[aria-selected="true"] { color: var(--pink); }
+.tabs { position: relative; }
+.tabind { position: absolute; left: 0; bottom: 0; width: 100px; height: 3px; border-radius: 3px; background: var(--pink); transform-origin: 0 0; pointer-events: none; transition: transform .26s var(--ease-in-out); }
+.tab:active { color: var(--text); }
+@media (max-width: 767px) {
+  .tabs { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; max-width: none; gap: 0; padding: 6px max(4px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px)); background: rgb(21 17 19 / .97); border-top: 1px solid var(--line); }
+  .tab { flex: 1 1 0; min-width: 0; flex-direction: column; justify-content: center; gap: 3px; min-height: 52px; padding: 0 2px; font: 600 .6875rem/1 var(--font-body); text-transform: none; box-shadow: none; border-radius: 12px; }
+  .tab svg { width: 24px; height: 24px; transition: transform .16s var(--ease-out); }
+  .tab:active svg { transform: scale(.88); }
+  .tab[aria-selected="true"] { box-shadow: none; }
+  .tabind { top: 0; bottom: auto; height: 3px; border-radius: 0 0 3px 3px; }
+  .tab[aria-selected="true"] svg { fill: rgb(232 103 155 / .2); }
+  .wrap { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+}
+.panel { display: grid; gap: 16px; }
+/* switching screens: content fades in (opacity only; tabs are used many times a visit, so nothing moves) */
+.panel:not([hidden]) { animation: fadein .18s var(--ease-out); }
+@keyframes fadein { from { opacity: 0; } }
 
 /* table */
 .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel); }
@@ -159,45 +193,32 @@ tr.idle td { color: var(--muted); }
 .cap { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: 8px; border: 1.5px solid var(--pink); border-radius: 50%; color: var(--pink); font: 800 0.75rem/1 var(--font-display); vertical-align: 1px; }
 .pos { font-size: 0.8125rem; color: var(--muted); font-weight: 400; margin-left: 8px; }
 tr.click { cursor: pointer; }
-tr.click:hover td, tr.click:focus-visible td { background: var(--panel-2); box-shadow: var(--select); }
-tr.click:hover td:nth-child(2), tr.click:focus-visible td:nth-child(2) { box-shadow: var(--select), inset -1px 0 var(--line); }
+tr.click:focus-visible td, tr.click:active td { background: var(--panel-2); box-shadow: var(--select); }
+tr.click:focus-visible td:nth-child(2), tr.click:active td:nth-child(2) { box-shadow: var(--select), inset -1px 0 var(--line); }
+@media (hover: hover) and (pointer: fine) { tr.click:hover td { background: var(--panel-2); box-shadow: var(--select); } tr.click:hover td:nth-child(2) { box-shadow: var(--select), inset -1px 0 var(--line); } }
 tr.click:focus-visible { outline: none; }
-/* players on phones: sort chips + compact cards (name / goals+assists bar with G+A / details) instead of the table */
-.sortsel.psort, .pcards { display: none; }
-/* the cards reuse the keeper card (.kcard, .khead, .kstats); only the player-specific parts live here */
-.pcards { list-style: none; margin: 0; padding: 0; gap: 12px; }
-.pcard { container-type: inline-size; color: var(--text); }
-.pname { display: flex; align-items: baseline; flex-wrap: wrap; min-width: 0; }
-.pcard h3 .rk { margin-right: 8px; }
-.pcard .kstats .v.hot { color: var(--pink); }
+/* players on phones: cards instead of the wide table (desktop keeps the table); the card itself is shared with Keepers */
+.sortsel.psort, .cards.pcards { display: none; }
 .pbox { display: grid; gap: 8px; padding: 8px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); }
 /* goals vs assists of this player: the bar is always full, pink = goals share, yellow = assists share */
 .gabar { display: flex; height: 8px; border-radius: 4px; background: var(--bg); overflow: hidden; }
-.gabar .g { background: var(--pink); }
-.gabar .a { background: var(--yellow); }
-.pcard .ga { display: flex; justify-content: space-between; gap: 12px; font-size: 0.75rem; color: var(--muted); }
-.pcard .dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
-.pcard .dot.g { background: var(--pink); }
-.pcard .dot.a { background: var(--yellow); }
-.pcard .lf { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.gabar .g, .lbar .g { background: var(--pink); }
+.gabar .a, .lbar .a { background: var(--yellow); }
+.kcard .ga { display: flex; justify-content: space-between; gap: 12px; font-size: 0.75rem; color: var(--muted); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; }
+.dot.g { background: var(--pink); }
+.dot.a { background: var(--yellow); }
+.kcard .lf { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* 336px = four columns of 77px ("Goals + Assists", the widest label) plus the gaps; below that the abbreviations */
 @container (min-width: 336px) {
-  .pcard .lf { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
-  .pcard .ls { display: none; }
+  .kcard .lf { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; }
+  .kcard .ls { display: none; }
 }
-.pcard.idle h3, .pcard.idle .kstats .v { color: var(--muted); }
-/* Bewerken: the only way into the player editor on a card; 44px tall hit area, text stays small */
-.pedit { all: unset; flex: none; display: inline-flex; align-items: center; min-height: 44px; margin: -12px -8px -12px 0; padding: 0 8px; border-radius: var(--r-sm); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-.pedit:hover { text-decoration: underline; text-underline-offset: 3px; }
-.pedit:active { background: var(--panel-2); }
-.pedit:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: -2px; }
-/* the cards themselves are not clickable: no hover selection */
-.pcard.kcard:hover, .pcard.kcard:focus-within { box-shadow: var(--edge), var(--shadow); }
 @media (max-width: 639px) {
-  #p-spelers .tablewrap, .desk { display: none; }
+  .ptable, .desk { display: none; }
   .sortsel.psort { display: flex; }
   #p-spelers .ptool { flex-wrap: nowrap; } /* sort dropdown and + on one line; the dropdown gives way */
-  .pcards { display: grid; }
+  .cards.pcards { display: grid; }
 }
 
 /* matches */
@@ -243,7 +264,7 @@ tr.click:focus-visible { outline: none; }
 .mfsearch input:focus { outline: none; border-color: var(--pink); }
 .mfsearch input::-webkit-search-cancel-button { display: none; }
 .mfsearch button { all: unset; position: absolute; right: 0; top: 0; width: 44px; height: 100%; display: grid; place-items: center; color: var(--muted); font-size: 1.5rem; cursor: pointer; }
-.mfsearch button:hover, .mfsearch button:focus-visible { color: var(--pink); }
+@media (hover: hover) and (pointer: fine) { .mfsearch button:hover, .mfsearch button:focus-visible { color: var(--pink); } }
 .mfpanel .check-row { flex: none; }
 /* Shared tab-page toolbar: same row, same spot for the "+" action on every tab. */
 .ptool { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px 16px; min-height: 44px; min-width: 0; }
@@ -268,14 +289,27 @@ mark.hl { background: none; color: var(--pink); font-weight: 700; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* keepers */
-.keepers { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); margin-bottom: 12px; }
-.kcard { display: grid; gap: 10px; align-content: start; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
-.kcard[data-act] { cursor: pointer; }
-.khead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.kmore { flex: none; font-size: 0.8125rem; color: var(--pink); }
+/* shared card list (Spelers on phones, Keepers everywhere) */
+.cards { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+.cards > li { display: grid; min-width: 0; }
+.kcard { container-type: inline-size; display: grid; gap: 12px; align-content: start; width: 100%; box-sizing: border-box; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; color: var(--text); font: inherit; text-align: left; }
+button.kcard { cursor: pointer; transition: transform .14s var(--ease-out), box-shadow .15s ease, border-color .15s ease; }
+button.kcard:active { transform: scale(.98); }
+.khead { display: flex; align-items: center; gap: 12px; min-width: 0; }
+/* shirt: the rugnummer (or initials) in a round badge, same in every list and sheet */
+.shirt { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--panel-2); border: 1.5px solid var(--pink); color: var(--pink); font: 800 1.125rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.kname { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 0; }
+.kname strong { font: 800 1.375rem/1.05 var(--font-display); text-transform: uppercase; overflow-wrap: anywhere; margin-right: 4px; }
+.kname .rk { color: var(--muted); margin-right: 8px; }
+.kmeta { display: inline-flex; align-items: center; }
+.kmeta > :first-child { margin-left: 0; }
+.go { flex: none; margin-left: auto; color: var(--pink); font: 800 1.5rem/1 var(--font-display); }
+.kcard.idle strong, .kcard.idle .kstats .v { color: var(--muted); }
+.kcard.idle .shirt { border-color: var(--line); color: var(--muted); }
+.kstats .v.hot { color: var(--pink); }
 /* four key numbers in one row; labels may wrap to two lines */
 .kstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.kstats div { display: grid; gap: 2px; align-content: start; }
+.kstats > span { display: grid; gap: 2px; align-content: start; }
 .kstats .v { font: 800 1.625rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
 .kcard .kstats .k { font-size: 0.75rem; line-height: 1.25; }
 /* best match: result badge | opponent + date/score | points */
@@ -306,9 +340,7 @@ mark.hl { background: none; color: var(--pink); font-weight: 700; }
 .kchart .kpt.on .dot, .kchart .kpt:focus-visible .dot { r: 6; fill: var(--pink-hi); }
 .kchart .kpt.on .vline { stroke: var(--muted); }
 .kchart .vline { stroke: transparent; stroke-width: 1; }
-#kCap { min-height: 2.6em; margin: 0; font-size: 0.875rem; }
-.kcard h3 { font: 800 1.375rem/1 var(--font-display); text-transform: uppercase; }
-.kcard h3 span { color: var(--muted); font-weight: 600; }
+.kcap { min-height: 2.6em; margin: 0; font-size: 0.875rem; }
 .kcard .k { color: var(--muted); font-size: 0.875rem; }
 /* sort picker in the Keepers toolbar */
 .sortsel { flex: 0 1 auto; display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 0.875rem; color: var(--muted); }
@@ -408,8 +440,11 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
 .tog:has(input:focus-visible) { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
 /* cards: shadow + shine; clickable cards (and keeper cards) show the two-line selection */
 .tile, .match, .kcard, .sponsor, .tablewrap, .injbar, .post-form, .empty { box-shadow: var(--edge), var(--shadow); background-image: var(--shine); }
-.match.click, .sponsor, .kcard { transition: box-shadow .15s ease; }
-.match.click:hover, .match.click:focus-visible, .sponsor:hover, .sponsor:focus-visible, .kcard:hover, .kcard:focus-within { box-shadow: var(--select), var(--edge), var(--shadow); outline: none; }
+.match.click, .sponsor { transition: box-shadow .15s ease, transform .14s var(--ease-out); }
+/* press feedback the moment a finger lands (touch has no hover) */
+.match.click:active, .sponsor:active { transform: scale(.98); }
+.match.click:focus-visible, .sponsor:focus-visible, button.kcard:focus-visible, button.tile:focus-visible { box-shadow: var(--select), var(--edge), var(--shadow); outline: none; }
+@media (hover: hover) and (pointer: fine) { .match.click:hover, .sponsor:hover, button.kcard:hover, button.tile:hover { box-shadow: var(--select), var(--edge), var(--shadow); } }
 .match .by { grid-column: 2 / -1; order: 9; font-size: 0.8125rem; color: var(--muted); }
 dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 /* Stays at the top of the scrolling body while you fill in step 3. */
@@ -437,47 +472,247 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 .sk-rows { display: grid; gap: 16px; padding: 16px; }
 @keyframes sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .sk { animation: none; } }
+/* ---------- dashboard ---------- */
+.lastwrap { grid-column: 1 / -1; }
+@media (min-width: 860px) {
+  .hero { grid-template-columns: auto minmax(0, 1fr) minmax(300px, 380px); }
+  .lastwrap { grid-column: 3; grid-row: 1 / span 3; }
+  .last { margin-top: 0; }
+}
+button.tile, .last { font: inherit; color: inherit; text-align: left; cursor: pointer; width: 100%; box-sizing: border-box; transition: transform .14s var(--ease-out), box-shadow .15s ease; }
+button.tile:active, .last:active { transform: scale(.98); }
+.last:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+.tile > .k:first-child { display: flex; justify-content: space-between; gap: 8px; }
+.tile .go { font-size: 1.25rem; line-height: .7; }
+.tile .hi { color: var(--pink); font: 800 1.25rem/1 var(--font-display); }
+.tile .v .inj-ic { width: 26px; height: 26px; vertical-align: -2px; }
+.tile .form { max-width: 210px; }
+.tile .form .res { max-width: 38px; }
+button.res { border: 0; padding: 0; cursor: pointer; color: inherit; transition: transform .14s var(--ease-out); }
+button.res:active { transform: scale(.9); }
+#dash { display: grid; gap: 16px 24px; align-items: start; }
+#dash:empty { display: none; }
+.dcol { display: grid; gap: 12px; min-width: 0; }
+@media (min-width: 960px) { #dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.sect { margin-top: 4px; }
+.sect .linkbtn { font-size: .875rem; min-height: 32px; }
+.lead { list-style: none; margin: 0; padding: 6px; display: grid; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--edge), var(--shadow); background-image: var(--shine); }
+.lead li + li { border-top: 1px solid var(--line); }
+.lead button { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; grid-template-areas: "rk nm pt" "rk bar pt"; gap: 6px 12px; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer; transition: background-color .15s ease, transform .14s var(--ease-out); }
+.lead button:active { transform: scale(.98); background: var(--panel-2); }
+.lead button:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) { .lead button:hover { background: var(--panel-2); } .tab:hover { color: var(--text); } }
+.lead .rk { grid-area: rk; text-align: center; font: 800 1.25rem/1 var(--font-display); color: var(--muted); }
+.lead li:first-child .rk { color: var(--pink); }
+.lead .nm { grid-area: nm; font-weight: 600; overflow-wrap: anywhere; }
+.lbar { grid-area: bar; display: flex; height: 6px; border-radius: 3px; background: var(--bg); overflow: hidden; }
+.lead .pt { grid-area: pt; font: 800 1.5rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.lead .pt small { font: 400 .75rem/1 var(--font-body); color: var(--muted); }
+.legend { display: flex; align-items: center; gap: 4px; margin: -4px 0 0; }
+.legend .dot + * , .legend .dot.a { margin-left: 12px; }
+.kchart .bf { fill: var(--pink); }
+.kchart .ba { fill: var(--muted); opacity: .45; }
+.kchart .kpt.on .bf, .kchart .kpt:focus-visible .bf { fill: var(--pink-hi); }
+.kchart .kpt.on .ba { opacity: .8; }
+.kchart .kpt.on .hit { fill: rgb(255 255 255 / .04); }
+.kcap .linkbtn { font-size: inherit; }
+
+/* ---------- motion ---------- */
+/* first load: hero leads, tiles and cards follow 35ms apart (once per visit) */
+.enter .hero { animation: rise .5s var(--ease-out) both; }
+.enter .tile, .enter .dcard { animation: rise .45s var(--ease-out) both; animation-delay: calc(90ms + var(--i, 0) * 35ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+/* charts draw in when a sheet opens */
+.kchart .line { stroke-dasharray: 1; animation: draw .7s var(--ease-out) both; }
+@keyframes draw { from { stroke-dashoffset: 1; } }
+.kchart .bf, .kchart .ba { transform-box: fill-box; animation: grow .45s var(--ease-out) both; }
+.kchart .bf { transform-origin: 50% 100%; }
+.kchart .ba { transform-origin: 50% 0; }
+@keyframes grow { from { transform: scaleY(0); } }
+.btn.icon[aria-pressed="true"] { border-color: var(--pink); color: var(--pink); background: var(--glow); }
+
+/* dialogs: centred card that fades + settles on desktop; bottom sheet that slides up on phones (iOS drawer curve) */
+.dhead { display: flex; align-items: center; gap: 12px; position: sticky; top: -20px; z-index: 2; margin: -20px -20px 0; padding: 20px 20px 12px; background: var(--panel); }
+.dhead h2 { flex: 1; min-width: 0; }
+.dhead .btn.icon { margin: -6px -8px -6px 0; border-color: transparent; background: transparent; color: var(--muted); }
+dialog h2 .sub { color: var(--muted); font-weight: 600; }
+/* every popup: title, then its actions (Bewerken), then close, all in the header */
+.dhead .btn.sm { flex: none; min-height: 40px; padding: 0 14px; font-size: .9375rem; border-color: var(--pink); color: var(--pink); background: transparent; }
+.dhead .btn.sm:active { background: var(--glow); }
+.mfbar > .note.desk { flex: 1 1 auto; margin: 0; }
+.mfbar .sortsel.psort { margin-left: auto; }
+.mfbar .sortsel.psort + .addbtn { margin-left: 0; }
+/* segmented choice (Soort speler): one tap, no keyboard */
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.seg label { position: relative; display: grid; place-items: center; min-height: 44px; padding: 0 6px; border-radius: 9px; cursor: pointer; text-align: center; font-size: .9375rem; font-weight: 600; color: var(--muted); line-height: 1.15; transition: background-color .15s ease, color .15s ease; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg { position: relative; }
+.seg::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 16px) / 3); border-radius: 9px; background: var(--pink); transition: transform .25s var(--ease-in-out); }
+.seg:has(label:nth-child(2) input:checked)::before { transform: translateX(calc(100% + 4px)); }
+.seg:has(label:nth-child(3) input:checked)::before { transform: translateX(calc(200% + 8px)); }
+.seg label:has(input:checked) { color: var(--pink-ink); }
+.seg label:has(input:focus-visible) { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+.seg label:active { transform: scale(.97); }
+.sp-logo.dark { background: var(--poster); }
+/* saving: the label makes way for a spinner, which becomes a check mark on success (same spot, same size) */
+.btn { position: relative; }
+.btn.busy, .btn.ok { color: transparent !important; pointer-events: none; opacity: 1 !important; cursor: progress; }
+.btn.busy::after, .btn.ok::after { content: ""; position: absolute; inset: 0; margin: auto; box-sizing: border-box; }
+.btn.busy::after { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid rgb(28 6 17 / .25); border-top-color: var(--pink-ink); animation: spin .7s linear infinite; }
+.btn.ok::after { width: 8px; height: 15px; margin-top: 11px; border: solid var(--pink-ink); border-width: 0 2.5px 2.5px 0; transform: translateY(-4px) rotate(45deg); animation: tick .32s var(--ease-out) both; }
+@keyframes spin { to { transform: rotate(1turn); } }
+@keyframes tick { from { opacity: 0; transform: translateY(-4px) rotate(45deg) scale(.4); } }
+/* just saved: a pink ring that fades out where the item now sits */
+.saved { animation: saved 1.3s var(--ease-out) .3s both; }
+tr.saved td { animation: savedrow 1.3s var(--ease-out) .3s both; }
+@keyframes saved { from { box-shadow: 0 0 0 3px var(--pink), 0 0 24px 4px rgb(232 103 155 / .45), var(--shadow); } }
+@keyframes savedrow { from { background-color: rgb(232 103 155 / .25); } }
+/* search field opens with a short slide from the icon */
+.mfpanel:not([hidden]) { animation: reveal .2s var(--ease-out); }
+@keyframes reveal { from { opacity: 0; transform: translateX(-8px); } }
+@media (prefers-reduced-motion: reduce) {
+  .btn.busy::after { animation-duration: 1.6s; }
+  .saved, tr.saved td, .mfpanel:not([hidden]) { animation-name: fadein; }
+  .tabind, .seg::before { transition: none; }
+}
+/* login */
+.login-id { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px; background: radial-gradient(120% 140% at 0% 0%, rgb(232 103 155 / .2), transparent 60%), var(--panel-2); border: 1px solid var(--line); }
+.login-id svg { flex: none; width: 40px; height: 50px; }
+.login-id p { margin: 0; color: var(--muted); font-size: .9375rem; }
+.pw { position: relative; }
+.field .pw input { padding-right: 52px; }
+.pw-eye { position: absolute; top: 0; right: 0; width: 48px; height: 100%; display: grid; place-items: center; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; border-radius: var(--r-sm); }
+.pw-eye[aria-pressed="true"] { color: var(--pink); }
+.pw-eye:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: -2px; }
+.pw-eye .eye-off, .pw-eye[aria-pressed="true"] .eye-on { display: none; }
+.pw-eye[aria-pressed="true"] .eye-off { display: block; }
+#capsHint, .login-err { margin: 0; }
+.login-go { width: 100%; min-height: 48px; font-size: 1.0625rem; }
+.login-help { text-align: center; }
+.field input:focus { outline: none; border-color: var(--pink); box-shadow: 0 0 0 3px var(--glow); }
+.ptype { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--yellow); color: var(--yellow); font: 600 .75rem/1.4 var(--font-body); text-transform: none; vertical-align: 2px; white-space: nowrap; }
+#pNone { margin: 0; }
+
+/* match summary */
+.mi-board { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; gap: 8px; padding: 20px 12px 16px; border-radius: 16px; border: 1px solid var(--line); background: radial-gradient(90% 120% at 50% 0%, rgb(232 103 155 / .22), transparent 70%), var(--panel-2); }
+.mi-board.V { background: radial-gradient(90% 120% at 50% 0%, rgb(169 154 161 / .14), transparent 70%), var(--panel-2); }
+.mi-team { display: grid; justify-items: center; gap: 8px; text-align: center; min-width: 0; }
+.mi-crest { display: grid; place-items: center; width: 56px; height: 56px; }
+.mi-crest img, .mi-crest svg { width: 100%; height: 100%; object-fit: contain; }
+.mi-crest.logo { background: var(--logo-bg); border-radius: 12px; padding: 6px; box-sizing: border-box; }
+.mi-crest > span { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid var(--muted); color: var(--muted); font: 800 1.25rem/1 var(--font-display); }
+.mi-name { font: 800 1rem/1.1 var(--font-display); text-transform: uppercase; overflow-wrap: break-word; max-width: 100%; }
+.mi-score { display: grid; justify-items: center; gap: 6px; padding-top: 6px; }
+.mi-score .sc { font: 800 3.25rem/1 var(--font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mi-score .sc i { font-style: normal; color: var(--muted); margin: 0 4px; }
+.mi-board.W .sc { color: var(--pink); }
+/* the score lands just after the sheet arrives (an occasional moment, so a little celebration is allowed) */
+.mi-score .sc, .mi-tags .pill { animation: pop .45s var(--ease-out) both; animation-delay: .14s; }
+.mi-tags .pill { animation-delay: .24s; }
+@keyframes pop { from { opacity: 0; transform: scale(.85); } }
+@media (prefers-reduced-motion: reduce) { .mi-score .sc, .mi-tags .pill { animation-name: fadein; } }
+.mi-res { padding: 4px 10px; border-radius: 999px; font: 600 .75rem/1 var(--font-body); text-transform: uppercase; letter-spacing: .06em; background: var(--line); color: var(--text); }
+.mi-board.W .mi-res { background: var(--pink); color: var(--pink-ink); }
+.mi-tags, .mi-chips, .pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.pill { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-2); font-size: .8125rem; font-weight: 600; white-space: nowrap; }
+.pill.g { border-color: var(--pink); color: var(--pink); }
+.pill.a { border-color: var(--yellow); color: var(--yellow); }
+.pill.tag { background: var(--glow); border-color: rgb(232 103 155 / .5); color: var(--pink-hi); }
+.pill.chip { min-height: 36px; color: var(--text); font: inherit; font-size: .875rem; cursor: pointer; transition: transform .14s var(--ease-out); }
+.pill.chip:active { transform: scale(.95); }
+.pill.chip b { color: var(--muted); font: 800 .875rem/1 var(--font-display); margin-right: 2px; }
+.pill .cap { margin-left: 2px; }
+.mi-mvp { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid rgb(242 196 67 / .45); background: linear-gradient(120deg, rgb(242 196 67 / .16), transparent 70%), var(--panel-2); color: inherit; font: inherit; text-align: left; cursor: pointer; transition: transform .14s var(--ease-out); }
+.mi-mvp:active { transform: scale(.98); }
+.mi-mvp > span:nth-child(2) { display: grid; gap: 2px; min-width: 0; }
+.mi-mvp .shirt { border-color: var(--yellow); color: var(--yellow); width: 48px; height: 48px; font-size: 1.375rem; }
+.mi-mvp .lbl { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--yellow); font-weight: 600; }
+.mi-mvp strong { font: 800 1.5rem/1.05 var(--font-display); text-transform: uppercase; }
+.mi-mvp .note { font-size: .8125rem; }
+.mi-list { list-style: none; margin: 0; padding: 0; display: grid; border: 1px solid var(--line); border-radius: 12px; background: var(--panel-2); overflow: hidden; }
+.mi-list li + li { border-top: 1px solid var(--line); }
+.mi-who { all: unset; box-sizing: border-box; width: 100%; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; cursor: pointer; }
+span.mi-who { cursor: default; }
+button.mi-who:active { background: var(--panel); }
+button.mi-who:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: -2px; }
+.mi-who .nm { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.shirt.sm { width: 30px; height: 30px; font-size: .875rem; border-width: 1px; }
+.kdlg h3 .note { font: 400 .875rem/1 var(--font-body); text-transform: none; margin-left: 6px; }
+@media (hover: hover) and (pointer: fine) { button.mi-who:hover, .pill.chip:hover { background: var(--panel); } .mi-mvp:hover { border-color: var(--yellow); } }
+dialog { opacity: 0; transform: scale(.97); transition: opacity .2s var(--ease-out), transform .25s var(--ease-out), overlay .25s allow-discrete, display .25s allow-discrete; }
+dialog[open] { opacity: 1; transform: none; }
+@starting-style { dialog[open] { opacity: 0; transform: scale(.97); } }
+dialog::backdrop { opacity: 0; transition: opacity .25s var(--ease-out), overlay .25s allow-discrete, display .25s allow-discrete; }
+dialog[open]::backdrop { opacity: 1; }
+@starting-style { dialog[open]::backdrop { opacity: 0; } }
+@media (max-width: 639px) {
+  dialog { opacity: 1; transform: translateY(100%); transition: transform .4s var(--ease-drawer), overlay .4s allow-discrete, display .4s allow-discrete; }
+  dialog[open] { transform: none; }
+  @starting-style { dialog[open] { opacity: 1; transform: translateY(100%); } }
+  dialog:not(#dlgMatch) { width: 100%; max-width: 100%; margin: auto 0 0; max-height: calc(100dvh - 32px - env(safe-area-inset-top, 0px)); border: 0; border-top: 1px solid var(--line); border-radius: 20px 20px 0 0; }
+  dialog:not(#dlgMatch) form { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+  /* grab handle: drag the header down to close */
+  .dhead { padding-top: 28px; touch-action: none; }
+  .dhead::before { content: ""; position: absolute; top: 10px; left: 50%; width: 36px; height: 5px; margin-left: -18px; border-radius: 3px; background: var(--line); }
+}
+
+/* toast: rises from the bottom and leaves the same way; sits above the tab bar on phones */
+.toast { opacity: 0; transform: translate(-50%, 12px); transition: opacity .2s var(--ease-out), transform .3s var(--ease-out), overlay .3s allow-discrete, display .3s allow-discrete; }
+.toast:popover-open { opacity: 1; transform: translate(-50%, 0); }
+@starting-style { .toast:popover-open { opacity: 0; transform: translate(-50%, 12px); } }
+@media (max-width: 767px) { .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-property: opacity, color, background-color, border-color, box-shadow !important; }
+  .sk, .enter .hero, .enter .tile, .enter .dcard, .kchart .line, .kchart .bf, .kchart .ba{ animation: none; }
+  dialog, dialog[open] { transform: none !important; }
+}
 </style>
 
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="fcf" viewBox="13 13 142 176"><path fill="currentColor" fill-rule="evenodd" d="M24.5 20.9L21.1 23.1L18.9 25.4L17.1 28.0L15.1 34.0L14.9 38.8L15.6 42.4L18.1 46.9L21.5 49.9L26.2 51.9L35.0 51.2L36.1 50.8L41.5 46.2L42.5 44.4L43.2 41.0L43.2 38.0L42.1 35.6L40.4 34.5L37.6 34.5L35.5 35.5L34.2 37.2L34.5 40.6L33.8 42.5L31.9 43.6L30.8 43.6L29.2 42.9L27.2 40.9L26.4 38.6L26.5 34.1L27.8 30.4L32.6 25.8L34.4 25.0L42.4 23.8L45.4 24.8L46.5 26.1L46.9 39.6L46.4 42.5L46.6 51.1L46.1 52.2L44.5 53.4L41.1 52.9L37.2 53.1L32.6 55.0L29.0 58.0L27.0 62.6L26.9 66.6L28.2 70.8L30.8 73.0L33.8 73.8L35.1 73.2L36.2 71.5L36.2 69.4L34.8 66.0L34.6 63.4L35.1 61.8L37.0 59.1L38.8 57.9L42.6 56.9L44.5 57.0L46.4 58.8L46.5 90.6L45.5 92.2L40.9 93.6L40.0 95.1L40.2 96.2L41.8 97.4L44.1 97.9L54.1 97.6L62.5 98.4L63.6 100.5L63.9 108.5L66.2 115.5L70.0 122.0L75.5 127.6L78.8 129.4L86.8 132.1L95.8 132.6L100.6 132.2L102.2 133.2L102.6 140.4L101.5 142.2L100.6 142.6L95.0 142.4L89.5 143.8L86.9 145.4L84.5 148.0L82.8 152.6L83.4 158.4L85.6 161.1L87.6 162.4L91.0 162.1L92.0 161.0L92.4 159.1L90.4 155.2L90.4 152.4L91.0 150.5L92.9 148.5L96.1 147.0L98.8 146.4L101.2 146.6L102.4 148.0L102.9 175.8L102.5 178.9L101.1 181.4L97.1 182.5L96.1 183.2L95.8 184.1L96.1 186.0L98.2 187.0L123.0 187.2L124.1 186.9L125.2 185.2L124.6 183.6L122.9 182.6L119.4 181.9L118.1 180.1L118.1 152.5L119.8 151.2L125.9 152.1L135.2 151.9L143.0 148.6L143.9 147.5L144.2 145.0L144.0 143.6L143.2 142.6L141.2 142.1L137.6 142.6L132.4 145.8L124.6 145.8L119.5 144.9L118.6 144.2L118.0 142.0L118.2 118.8L119.1 117.2L120.4 116.8L128.6 117.5L137.0 116.8L143.1 114.5L146.6 112.4L149.6 108.5L152.1 103.4L152.4 98.6L151.4 93.5L147.6 89.0L142.1 86.2L135.4 85.4L129.8 86.6L125.4 89.4L124.1 91.1L122.5 96.2L122.6 99.8L123.6 101.5L126.0 103.2L127.5 103.4L129.4 102.6L130.8 101.5L131.5 100.1L131.2 95.0L132.0 93.2L134.5 92.0L137.1 92.4L140.0 96.6L140.4 100.5L139.1 105.0L136.6 108.4L133.1 110.6L130.2 111.1L120.2 110.6L116.6 109.5L113.4 109.6L111.0 109.0L105.8 109.1L103.9 110.4L102.8 113.0L102.6 123.8L101.2 125.9L98.5 126.8L91.6 126.5L86.0 124.5L80.5 119.0L77.9 114.2L76.1 109.1L75.9 100.9L76.6 94.0L80.6 83.8L83.8 80.9L85.9 77.8L91.5 74.9L94.9 73.9L100.0 74.0L102.0 74.5L104.5 76.2L107.5 80.1L110.1 80.2L111.4 79.2L112.6 76.1L112.5 73.1L112.0 71.9L111.0 71.0L105.2 70.6L100.2 68.8L92.8 68.6L88.1 69.4L84.6 70.5L78.9 73.1L73.6 77.2L67.8 84.8L64.8 91.0L63.6 92.0L62.8 91.9L62.1 90.8L61.8 86.1L62.2 62.2L63.1 61.6L74.5 62.6L82.0 61.6L84.1 60.8L87.6 58.4L88.8 56.8L88.9 55.5L87.8 53.5L85.1 52.6L82.5 53.1L78.0 55.6L74.9 56.4L71.4 56.5L63.8 55.5L62.9 54.6L61.8 51.6L61.8 30.0L62.5 28.2L64.1 27.2L70.9 27.8L79.0 27.6L85.5 25.9L88.9 24.0L91.5 21.6L92.8 18.9L92.5 16.8L91.5 15.8L89.6 15.1L86.2 15.2L83.8 16.4L78.6 20.5L74.2 21.6L65.1 21.4L60.1 20.1L44.2 18.0L33.2 18.4L28.6 19.2Z"/></symbol></svg>
 
-<div class="wrap">
-  <header class="mast">
-    <svg class="logo" id="teamLogoSvg" role="img" aria-label="Clublogo" style="color: var(--pink)"><use href="#fcf"/></svg>
-    <img class="logo" id="teamLogoImg" alt="Clublogo" hidden>
-    <div class="id">
-      <h1 id="teamName">FC Flamingo 4</h1>
-      <p id="teamSub">Futsal, 3e klasse KNVB. Thuisbasis De Kannebuis.</p>
-      <p class="tag" id="teamTag">#FCFlamingo</p>
-    </div>
+<div class="top">
+  <header class="appbar">
+    <svg class="logo" id="barLogoSvg" aria-hidden="true" style="color: var(--pink)"><use href="#fcf"/></svg>
+    <img class="logo" id="barLogoImg" alt="" hidden>
+    <span class="appname" id="appName">FC Flamingo 4</span>
     <div class="tools">
       <select id="season" class="select" aria-label="Seizoen"></select>
       <button id="settingsBtn" class="btn icon" type="button" title="Instellingen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sr-only">Instellingen</span></button>
-      <button id="login" class="btn" type="button">Inloggen</button>
+      <button id="login" class="btn icon" type="button" aria-label="Inloggen" title="Inloggen voor coaches en aanvoerders"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
     </div>
   </header>
+  <nav class="tabs" role="tablist" aria-label="Onderdelen">
+    <span class="tabind" aria-hidden="true"></span>
+    <button class="tab" role="tab" id="t-overzicht" aria-controls="p-overzicht" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Overzicht</button>
+    <button class="tab" role="tab" id="t-spelers" aria-controls="p-spelers" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M16 4.2a4 4 0 0 1 0 7.6M22 21a7 7 0 0 0-4-6.3"/></svg>Spelers</button>
+    <button class="tab" role="tab" id="t-wedstrijden" aria-controls="p-wedstrijden" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Wedstrijden</button>
+    <button class="tab" role="tab" id="t-keepers" aria-controls="p-keepers" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/></svg>Keepers</button>
+    <button class="tab" role="tab" id="t-posts" aria-controls="p-posts" aria-selected="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg>Instagram</button>
+    <button class="tab" role="tab" id="t-sponsors" aria-controls="p-sponsors" aria-selected="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>Sponsors</button>
+  </nav>
+</div>
 
+<main class="wrap">
   <p id="status" class="status" role="status">Statistieken laden…</p>
 
-  <section class="summary" id="summary" aria-label="Seizoensoverzicht"><div class="tile wide" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div></section>
-
-  <section>
-    <div class="tabbar">
-    <button type="button" class="tabnav prev" id="tabPrev" hidden><span aria-hidden="true">‹</span><span class="sr-only">Vorige tab</span></button>
-    <button type="button" class="tabnav next" id="tabNext" hidden><span aria-hidden="true">›</span><span class="sr-only">Volgende tab</span></button>
-    <div class="tabs" role="tablist">
-      <button class="tab" role="tab" id="t-spelers" aria-controls="p-spelers" aria-selected="true">Spelers</button>
-      <button class="tab" role="tab" id="t-wedstrijden" aria-controls="p-wedstrijden" aria-selected="false">Wedstrijden</button>
-      <button class="tab" role="tab" id="t-keepers" aria-controls="p-keepers" aria-selected="false">Keepers</button>
-      <button class="tab" role="tab" id="t-posts" aria-controls="p-posts" aria-selected="false" hidden>Instagram</button>
-      <button class="tab" role="tab" id="t-sponsors" aria-controls="p-sponsors" aria-selected="false" hidden>Sponsors</button>
+    <div class="panel" id="p-overzicht" role="tabpanel" aria-labelledby="t-overzicht">
+      <section class="hero" aria-label="Club">
+        <svg class="logo" id="teamLogoSvg" role="img" aria-label="Clublogo" style="color: var(--pink)"><use href="#fcf"/></svg>
+        <img class="logo" id="teamLogoImg" alt="Clublogo" hidden>
+        <h1 id="teamName">FC Flamingo 4</h1>
+        <p id="teamSub">Futsal, 3e klasse KNVB. Thuisbasis De Kannebuis.</p>
+        <p class="tag" id="teamTag">#FCFlamingo</p>
+        <div id="heroLast" class="lastwrap"></div>
+      </section>
+      <section class="summary" id="summary" aria-label="Seizoensoverzicht"><div class="tile wide" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div><div class="tile" aria-hidden="true"><span class="sk short"></span><span class="sk big"></span><span class="sk"></span></div></section>
+      <div id="dash"></div>
     </div>
-    </div>
-    <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers"><div class="tablewrap sk-rows" aria-hidden="true"><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div>
+    <div class="panel" id="p-spelers" role="tabpanel" aria-labelledby="t-spelers" hidden><div class="tablewrap sk-rows" aria-hidden="true"><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span><span class="sk"></span></div></div>
     <div class="panel" id="p-wedstrijden" role="tabpanel" aria-labelledby="t-wedstrijden" hidden>
+      <div class="phead"><h2>Wedstrijden</h2><p class="note" id="mCount"></p></div>
       <div class="mfbar">
         <button type="button" class="btn icon" id="mfToggle" aria-expanded="false" aria-controls="mfPanel" title="Zoeken op speler"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span class="sr-only">Zoeken op speler</span></button>
         <div class="mfpanel" id="mfPanel" hidden>
@@ -493,6 +728,7 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
     <div class="panel" id="p-keepers" role="tabpanel" aria-labelledby="t-keepers" hidden></div>
     <div class="panel" id="p-sponsors" role="tabpanel" aria-labelledby="t-sponsors" hidden></div>
     <div class="panel" id="p-posts" role="tabpanel" aria-labelledby="t-posts" hidden>
+      <div class="phead"><h2>Instagram</h2></div>
       <div class="ptool">
         <div class="subnav" role="group" aria-label="Instagram"><button type="button" class="btn" data-sub="postGrid" aria-pressed="true">Post maken</button><button type="button" class="btn" data-sub="logoPane" aria-pressed="false">Logo's</button></div>
         <button class="btn primary addbtn" type="button" id="addLogo" data-act="addLogo" aria-label="Logo toevoegen" title="Logo toevoegen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lbl">Logo toevoegen</span></button>
@@ -529,18 +765,20 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
         <div class="post-preview"><canvas id="poCanvas" width="1080" height="1920" role="img" aria-label="Voorbeeld van de Instagram-post"></canvas></div>
       </div>
     </div>
-  </section>
-</div>
+</main>
 
 <dialog id="dlgPlayer" aria-labelledby="dlgPlayerTitle">
   <form id="formPlayer">
-    <h2 id="dlgPlayerTitle">Speler</h2>
+    <div class="dhead"><h2 id="dlgPlayerTitle">Speler</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div class="fields">
       <div class="field"><label for="pName">Naam</label><input id="pName" required maxlength="40" autocomplete="off"></div>
       <div class="field"><label for="pNum">Rugnummer</label><input id="pNum" type="number" min="0" max="99" inputmode="numeric"></div>
     </div>
     <fieldset class="plain"><legend class="lbl">Rollen</legend>
       <div class="checks"><label class="check-row"><input type="checkbox" id="pKeeper"> Keeper</label><label class="check-row"><input type="checkbox" id="pCaptain"> Captain</label><label class="check-row"><input type="checkbox" id="pManager"> Manager</label></div>
+    </fieldset>
+    <fieldset class="plain"><legend class="lbl">Soort speler</legend>
+      <div class="seg" id="pType"><label><input type="radio" name="pType" value="vast" checked><span>Vaste speler</span></label><label><input type="radio" name="pType" value="gast"><span>Gastspeler</span></label><label><input type="radio" name="pType" value="invaller"><span>Invaller</span></label></div>
     </fieldset>
     <fieldset class="plain"><legend class="lbl">Fit of geblesseerd?</legend>
       <label class="check-row"><input type="checkbox" id="pInj"> Geblesseerd <span class="inj-ic" aria-hidden="true"></span></label>
@@ -558,7 +796,7 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 
 <dialog id="dlgSettings" aria-labelledby="dlgSettingsTitle">
   <form id="formSettings">
-    <h2 id="dlgSettingsTitle">Instellingen</h2>
+    <div class="dhead"><h2 id="dlgSettingsTitle">Instellingen</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <p class="note">Alleen captain- en manager-accounts kunnen dit wijzigen.</p>
     <div class="fields">
       <div class="field"><label for="stName">Teamnaam</label><input id="stName" required maxlength="40" autocomplete="off"></div>
@@ -582,7 +820,7 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 
 <dialog id="dlgSeason" aria-labelledby="dlgSeasonTitle">
   <form id="formSeason">
-    <h2 id="dlgSeasonTitle">Nieuw seizoen</h2>
+    <div class="dhead"><h2 id="dlgSeasonTitle">Nieuw seizoen</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div class="field"><label for="sName">Naam</label><input id="sName" required maxlength="20" placeholder="2026/27" autocomplete="off"></div>
     <div class="actions">
       <button type="button" class="btn" data-close>Annuleren</button>
@@ -593,7 +831,7 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 
 <dialog id="dlgSponsor" aria-labelledby="dlgSponsorTitle">
   <form id="formSponsor">
-    <h2 id="dlgSponsorTitle">Sponsor</h2>
+    <div class="dhead"><h2 id="dlgSponsorTitle">Sponsor</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div class="fields">
       <div class="field"><label for="spName">Naam</label><input id="spName" required maxlength="60" autocomplete="off"></div>
       <div class="field" id="spPosField"><label for="spPos">Plek in de volgorde</label><select id="spPos"></select></div>
@@ -613,33 +851,44 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
   </form>
 </dialog>
 
+<dialog id="dlgPlayerInfo" aria-labelledby="dlgPlayerInfoTitle">
+  <form method="dialog">
+    <div class="dhead"><h2 id="dlgPlayerInfoTitle">Speler</h2><button type="button" class="btn sm" id="piEdit" data-player="" hidden>Bewerken</button><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
+    <div id="piBody" class="kdlg"></div>
+  </form>
+</dialog>
+
+<dialog id="dlgMatchInfo" aria-labelledby="dlgMatchInfoTitle">
+  <form method="dialog">
+    <div class="dhead"><h2 id="dlgMatchInfoTitle">Wedstrijd</h2><button type="button" class="btn sm" id="miEdit" data-match="" hidden>Bewerken</button><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
+    <div id="miBody" class="kdlg"></div>
+  </form>
+</dialog>
+
 <dialog id="dlgKeeperRules" aria-labelledby="dlgKeeperRulesTitle">
   <form method="dialog">
-    <h2 id="dlgKeeperRulesTitle">Keepers-punten</h2>
+    <div class="dhead"><h2 id="dlgKeeperRulesTitle">Keepers-punten</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div id="krBody" class="kdlg"></div>
-    <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Sluiten</button></div>
   </form>
 </dialog>
 
 <dialog id="dlgKeeperList" aria-labelledby="dlgKeeperListTitle">
   <form method="dialog">
-    <h2 id="dlgKeeperListTitle">Keepers-punten</h2>
+    <div class="dhead"><h2 id="dlgKeeperListTitle">Keepers-punten</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div id="klBody" class="kdlg"></div>
-    <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Sluiten</button></div>
   </form>
 </dialog>
 
 <dialog id="dlgKeeperCalc" aria-labelledby="dlgKeeperCalcTitle">
   <form method="dialog">
-    <h2 id="dlgKeeperCalcTitle">Keepers-punten</h2>
+    <div class="dhead"><h2 id="dlgKeeperCalcTitle">Keepers-punten</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div id="kcBody" class="kdlg"></div>
-    <div class="actions"><span class="spacer"></span><button type="submit" class="btn primary">Terug</button></div>
   </form>
 </dialog>
 
 <dialog id="dlgLogo" aria-labelledby="dlgLogoTitle">
   <form id="formLogo">
-    <h2 id="dlgLogoTitle">Logo</h2>
+    <div class="dhead"><h2 id="dlgLogoTitle">Logo</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div class="fields">
       <div class="field"><label for="lgClub">Club</label><input id="lgClub" required maxlength="80" list="lgClubs" autocomplete="off" placeholder="Cluzona '74"><datalist id="lgClubs"></datalist></div>
       <div class="field"><label for="lgTeam">Team (optioneel)</label><input id="lgTeam" maxlength="80" list="poOpps" autocomplete="off" placeholder="Cluzona '74 2"></div>
@@ -648,7 +897,7 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
     <div class="field">
       <label for="lgFile">Logo</label>
       <div class="logo-row"><input id="lgFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"></div>
-      <label class="check-row"><input type="checkbox" id="lgCut"> Witte achtergrond om het logo heen verwijderen</label>
+      <label class="check-row"><input type="checkbox" id="lgCut"> Achtergrond en witte rand om het logo verwijderen</label>
       <div class="sp-logo" id="lgPreview" hidden></div>
     </div>
     <div class="actions">
@@ -663,7 +912,7 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 <dialog id="dlgMatch" aria-labelledby="dlgMatchTitle">
   <form id="formMatch" novalidate>
     <div class="wiz-head">
-      <div class="wiz-top"><h2 id="dlgMatchTitle">Wedstrijd</h2><button type="button" class="btn icon" data-close><span aria-hidden="true">×</span><span class="sr-only">Sluiten</span></button></div>
+      <div class="wiz-top"><h2 id="dlgMatchTitle">Wedstrijd</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
       <ol class="wiz-steps" aria-label="Stappen"><li><button type="button" data-goto="0" aria-label="Stap 1: Wedstrijd"></button></li><li><button type="button" data-goto="1" aria-label="Stap 2: Wie speelde"></button></li><li><button type="button" data-goto="2" aria-label="Stap 3: Goals en assists"></button></li><li><button type="button" data-goto="3" aria-label="Stap 4: Keeper"></button></li><li><button type="button" data-goto="4" aria-label="Stap 5: Captain, manager en kaarten"></button></li></ol>
       <p id="mStepLbl" aria-live="polite"></p>
     </div>
@@ -722,15 +971,16 @@ dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 
 <dialog id="dlgLogin" aria-labelledby="dlgLoginTitle">
   <form id="formLogin">
-    <h2 id="dlgLoginTitle">Inloggen</h2>
-    <p class="note">Voor coaches en aanvoerders. Na het inloggen kun je wedstrijden, uitslagen en spelers toevoegen en bewerken.</p>
-    <div class="field"><label for="lEmail">Gebruikersnaam</label><input id="lEmail" type="text" required autocomplete="username" autocapitalize="none" spellcheck="false"></div>
-    <div class="field"><label for="lPass">Wachtwoord</label><input id="lPass" type="password" required autocomplete="current-password"></div>
-    <p class="check off" id="loginError" role="alert" hidden></p>
-    <div class="actions">
-      <button type="button" class="btn" data-close>Annuleren</button>
-      <button type="submit" class="btn primary" id="loginSubmit">Inloggen</button>
+    <div class="dhead"><h2 id="dlgLoginTitle">Inloggen</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
+    <div class="login-id"><svg aria-hidden="true" style="color: var(--pink)"><use href="#fcf"/></svg><p>Voor coaches, aanvoerders en socials. Ingelogd kun je wedstrijden, spelers en posts bijwerken.</p></div>
+    <div class="field"><label for="lEmail">Gebruikersnaam</label><input id="lEmail" type="text" required autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="bijv. coach"></div>
+    <div class="field"><label for="lPass">Wachtwoord</label>
+      <div class="pw"><input id="lPass" type="password" required autocomplete="current-password" enterkeyhint="go"><button type="button" id="lShow" class="pw-eye" aria-pressed="false" aria-label="Wachtwoord tonen" title="Wachtwoord tonen"><svg class="eye-on" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.6 3.4M6.6 6.6C3.7 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/></svg></button></div>
+      <p class="check off" id="capsHint" hidden>Caps Lock staat aan.</p>
     </div>
+    <p class="check off login-err" id="loginError" role="alert" hidden></p>
+    <button type="submit" class="btn primary login-go" id="loginSubmit">Inloggen</button>
+    <p class="note login-help">Wachtwoord vergeten? Vraag het aan de captain of manager.</p>
   </form>
 </dialog>
 
@@ -743,13 +993,18 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
-const S = { db: null, canEdit: false, canPost: false, seasons: [], players: [], matches: [], sponsors: [], logos: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'spelers', loaded: new Set() };
+// Motion helper (WAAPI): skipped entirely for people who asked for reduced motion.
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const anim = (el, frames, opts) => el && !calm() ? el.animate(frames, { easing: 'cubic-bezier(0.23, 1, 0.32, 1)', ...opts }) : null;
+const S = { db: null, canEdit: false, canPost: false, seasons: [], players: [], matches: [], sponsors: [], logos: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'overzicht', loaded: new Set() };
 
 /* ---------- stats ---------- */
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
 const seasonMatches = () => S.matches.filter(m => S.season === 'all' || m.season === S.season).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
 // Player roles (captain, manager) live in players.roles; keeper stays players.position.
+// Soort speler: 'vast' is the default and gets no badge; guests and substitutes do.
+const PTYPE = { gast: 'gastspeler', invaller: 'invaller' };
 const hasRole = (p, r) => !!p && (p.roles || []).includes(r);
 // A plaster icon next to injured players; the note shows on hover and in the injury strip on Spelers.
 const injuryIcon = p => p?.injury ? `<span class="inj-ic" role="img" aria-label="Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}" title="Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}"></span>` : '';
@@ -797,15 +1052,45 @@ function renderSummary(matches, stats) {
   const ts = top('g'), ta = top('a');
   const form = matches.slice(0, 5).reverse();
   const none = t => `<span class="v"><small>${t}</small></span>`;
+  const go = '<span class="go" aria-hidden="true">›</span>';
+  // Best keeper = most clean sheets, then fewest conceded per match (S.kp is filled by renderKeepers first).
+  const kb = Object.entries(S.kp?.byId || {}).map(([id, k]) => ({ id, ...k })).sort((a, b) => b.s.cs - a.s.cs || a.s.conc / a.s.kgp - b.s.conc / b.s.kgp)[0];
+  const hurt = S.players.filter(p => p.injury).length;
+  const last = matches[0];
+  $('#heroLast').innerHTML = last ? `<button type="button" class="last ${result(last)}" data-show="${esc(last.id)}"><span class="res ${result(last)}" aria-hidden="true">${result(last)}</span><span class="lbl">Laatste wedstrijd</span><strong>${esc(last.opponent)}</strong><span class="when">${last.home ? 'Thuis' : 'Uit'} · ${esc(fmtDate(last.date))}</span><span class="score" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(last)]} ${last.gf} tegen ${last.ga}">${last.gf}-${last.ga}</span></button>` : '';
+  let i = 0; const I = () => `style="--i:${i++}"`;
   $('#summary').innerHTML = `
-    <div class="tile wide"><span class="k">${n} ${n === 1 ? 'wedstrijd' : 'wedstrijden'}</span>
+    <button type="button" class="tile wide" data-go="wedstrijden" ${I()}><span class="k">${n} ${n === 1 ? 'wedstrijd' : 'wedstrijden'}${go}</span>
       <span class="v rec"><span>${w}<small>W</small></span><span>${d}<small>G</small></span><span>${l}<small>V</small></span></span>
-      <div class="ratio" role="img" aria-label="${pct(w)}% gewonnen, ${pct(d)}% gelijk, ${pct(l)}% verloren"><span class="W" style="width:${bar(w)}%"></span><span class="G" style="width:${bar(d)}%"></span><span class="V" style="width:${bar(l)}%"></span></div>
-      <span class="k">${pct(w)}% gewonnen<br>${pct(d)}% gelijk<br>${pct(l)}% verloren<br>${ppg} punten per wedstrijd</span></div>
-    <div class="tile"><span class="k">Doelsaldo</span><span class="v">${diff > 0 ? '+' : ''}${diff}</span><span class="k">${gf} voor<br>${ga} tegen</span></div>
-    <div class="tile"><span class="k">Vorm, laatste 5</span>${form.length ? `<div class="form">${form.map(m => `<span class="res ${result(m)}" title="${esc(m.opponent)} ${m.gf}-${m.ga}">${result(m)}</span>`).join('')}</div>` : none('Nog geen wedstrijden')}</div>
-    <div class="tile"><span class="k">Topscorer</span>${ts ? `<span class="v name">${esc(ts.p.name)}</span><span class="k">${ts.g} goals</span>` : none('Nog niemand')}</div>
-    <div class="tile"><span class="k">Meeste assists</span>${ta ? `<span class="v name">${esc(ta.p.name)}</span><span class="k">${ta.a} assists</span>` : none('Nog niemand')}</div>`;
+      <span class="ratio" role="img" aria-label="${pct(w)}% gewonnen, ${pct(d)}% gelijk, ${pct(l)}% verloren"><span class="W" style="width:${bar(w)}%"></span><span class="G" style="width:${bar(d)}%"></span><span class="V" style="width:${bar(l)}%"></span></span>
+      <span class="k">${pct(w)}% gewonnen · ${pct(d)}% gelijk · ${pct(l)}% verloren<br><strong class="hi">${ppg}</strong> punten per wedstrijd</span></button>
+    <button type="button" class="tile" data-go="wedstrijden" ${I()}><span class="k">Doelsaldo${go}</span><span class="v">${diff > 0 ? '+' : ''}${diff}</span><span class="k">${gf} voor · ${ga} tegen</span></button>
+    <div class="tile" ${I()}><span class="k">Vorm, laatste 5</span>${form.length ? `<div class="form">${form.map(m => `<button type="button" class="res ${result(m)}" data-show="${esc(m.id)}" title="${esc(m.opponent)} ${m.gf}-${m.ga}" aria-label="${esc(m.opponent)} ${m.gf}-${m.ga}">${result(m)}</button>`).join('')}</div><span class="k">Tik voor de wedstrijd</span>` : none('Nog geen wedstrijden')}</div>
+    ${ts ? `<button type="button" class="tile" data-pinfo="${esc(ts.p.id)}" ${I()}><span class="k">Topscorer${go}</span><span class="v name">${esc(ts.p.name)}</span><span class="k">${ts.g} goals</span></button>` : `<div class="tile" ${I()}><span class="k">Topscorer</span>${none('Nog niemand')}</div>`}
+    ${ta ? `<button type="button" class="tile" data-pinfo="${esc(ta.p.id)}" ${I()}><span class="k">Meeste assists${go}</span><span class="v name">${esc(ta.p.name)}</span><span class="k">${ta.a} assists</span></button>` : `<div class="tile" ${I()}><span class="k">Meeste assists</span>${none('Nog niemand')}</div>`}
+    ${kb ? `<button type="button" class="tile" data-act="keeperList" data-keeper="${esc(kb.id)}" ${I()}><span class="k">Keeper${go}</span><span class="v name">${esc(kb.name)}</span><span class="k">${kb.s.cs}x de nul · ${dec(kb.s.conc / kb.s.kgp)} tegen gem.</span></button>` : ''}
+    ${hurt ? `<button type="button" class="tile" data-go="spelers" ${I()}><span class="k">Geblesseerd${go}</span><span class="v">${hurt}<span class="inj-ic" aria-hidden="true"></span></span><span class="k">${hurt === 1 ? 'speler' : 'spelers'} uit de roulatie</span></button>` : ''}`;
+  // Leaders (top 5 G+A) and the season in bars: both tap through to the detail.
+  const lead = stats.filter(s => s.pts > 0).sort(byStat('pts')).slice(0, 5), max = lead[0]?.pts || 1;
+  $('#dash').innerHTML = !n ? '' : `<section class="dcol">
+    <div class="sect"><h2>Toppers</h2><button type="button" class="linkbtn" data-go="spelers">Alle spelers</button></div>
+    ${lead.length ? `<ol class="lead dcard" style="--i:${i++}">${lead.map((s, r) => `<li><button type="button" data-pinfo="${esc(s.p.id)}"><span class="rk">${r + 1}</span><span class="nm">${esc(s.p.name)}</span><span class="lbar" aria-hidden="true"><span class="g" style="width:${(s.g / max * 100).toFixed(1)}%"></span><span class="a" style="width:${(s.a / max * 100).toFixed(1)}%"></span></span><span class="pt">${s.pts}<small> G+A</small></span></button></li>`).join('')}</ol>
+    <p class="note legend"><i class="dot g"></i>Goals <i class="dot a"></i>Assists</p>` : '<p class="note">Nog geen goals of assists.</p>'}</section>
+    <section class="dcol"><div class="sect"><h2>Seizoen in beeld</h2><button type="button" class="linkbtn" data-go="wedstrijden">Alle wedstrijden</button></div>
+    <div class="kchart dcard" style="--i:${i++}"><h3>Goals voor en tegen per wedstrijd</h3>${seasonChart(matches)}<p class="kcap note" aria-live="polite">Tik op een wedstrijd.</p></div></section>`;
+}
+
+// Bars per match, oldest left: goals for up (pink), against down. Same tap-to-read caption as the keeper chart.
+function seasonChart(ms) {
+  const list = [...ms].reverse(), n = list.length, W = 320, H = 150, L = 34, R = 4, mid = 75, h = 62;
+  const hi = Math.max(1, ...list.map(m => Math.max(+m.gf || 0, +m.ga || 0))), bw = (W - L - R) / n, s = h / hi;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Goals voor en tegen per wedstrijd, ${n} wedstrijden">
+    <text class="axis" x="0" y="${mid - h + 8}">voor</text><text class="axis" x="0" y="${mid + h}">tegen</text>
+    <line class="grid" x1="${L}" x2="${W - R}" y1="${mid}" y2="${mid}"/>
+    ${list.map((m, i) => { const x = L + i * bw, bx = x + bw * .18, w = Math.max(2, bw * .64), gf = (+m.gf || 0) * s, ga = (+m.ga || 0) * s;
+      const cap = `<strong>${esc(m.opponent)}</strong> · ${esc(fmtDate(m.date))}<br><span class="res ${result(m)}">${result(m)}</span> ${m.gf} - ${m.ga} · <button type="button" class="linkbtn" data-show="${esc(m.id)}">Bekijk wedstrijd</button>`;
+      return `<g class="kpt" tabindex="0" data-cap="${esc(cap)}"><rect class="hit" x="${x}" y="0" width="${bw}" height="${H}"/><rect class="bf" x="${bx}" y="${mid - gf}" width="${w}" height="${gf}" rx="1.5"/><rect class="ba" x="${bx}" y="${mid + 1}" width="${w}" height="${ga}" rx="1.5"/></g>`; }).join('')}
+  </svg>`;
 }
 
 const COLS = [
@@ -829,44 +1114,57 @@ const byStat = (key, dir = 'desc') => (a, b) => {
 };
 
 // Every tab starts with the same toolbar: page controls left, its one "+" action right (icon-only on phones).
+const SEARCH_IC = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 const PLUS = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>';
 const addBtn = (act, label) => `<button class="btn primary addbtn" type="button" data-act="${act}" aria-label="${label}" title="${label}">${PLUS}<span class="lbl">${label}</span></button>`;
 const ptool = (left, action) => left || action ? `<div class="ptool">${left || ''}${action || ''}</div>` : '';
 function emptyState(title, text, btn, allowed = S.canEdit) {
   return `<div class="empty"><h3>${title}</h3><p class="note">${text}</p>${btn && allowed ? btn : ''}</div>`;
 }
+const phead = (title, sub) => `<div class="phead"><h2>${title}</h2>${sub ? `<p class="note">${sub}</p>` : ''}</div>`;
+const initials = n => (n || '?').split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const kstat = (v, k, hot) => `<span><span class="v${hot ? ' hot' : ''}">${v}</span><span class="k">${k}</span></span>`;
+// One card for players and keepers: shirt number, name + badges, four numbers, one footer strip. Tap = detail sheet.
+function card({ attrs, rank, p, badges = '', stats = '', foot = '', idle }) {
+  const tag = attrs ? 'button' : 'div';
+  return `<li><${tag}${attrs ? ' type="button"' : ''} class="kcard${idle ? ' idle' : ''}" ${attrs || ''}>
+    <span class="khead"><span class="shirt" aria-hidden="true">${p.number ?? esc(initials(p.name))}</span><span class="kname"><strong>${rank ? `<span class="rk">${rank}</span>` : ''}${esc(p.name)}</strong>${badges ? `<span class="kmeta">${badges}</span>` : ''}</span>${attrs ? '<span class="go" aria-hidden="true">›</span>' : ''}</span>
+    ${stats ? `<span class="kstats">${stats}</span>` : ''}${foot}</${tag}></li>`;
+}
 
 function renderPlayers(stats) {
   const el = $('#p-spelers');
   const bar = note => ptool((note ? `<p class="note">${note}</p>` : ''), S.isAdmin && addBtn('addPlayer', 'Speler toevoegen'));
-  if (!S.players.length) { el.innerHTML = bar('') + emptyState('Nog geen spelers', S.isAdmin ? 'Voeg eerst de selectie toe. Daarna kun je wedstrijden invoeren.' : 'De selectie is nog niet ingevoerd.'); return; }
+  if (!S.players.length) { el.innerHTML = phead('Spelers') + bar('') + emptyState('Nog geen spelers', S.isAdmin ? 'Voeg eerst de selectie toe. Daarna kun je wedstrijden invoeren.' : 'De selectie is nog niet ingevoerd.'); return; }
   const { key, dir } = S.sort;
   const rows = [...stats].sort(byStat(key, dir));
   const hurt = sortedPlayers().filter(p => p.injury);
   const injBar = hurt.length ? `<div class="injbar"><span class="inj-ic" aria-hidden="true"></span><div><strong>Geblesseerd</strong><ul>${hurt.map(p => `<li>${esc(p.name)}${p.injury !== 'geblesseerd' ? ` <span class="note">· ${esc(p.injury)}</span>` : ''}</li>`).join('')}</ul></div></div>` : '';
-  const badges = s => `${injuryIcon(s.p)}${hasRole(s.p, 'captain') || s.cap ? `<span class="cap" title="Captain${s.cap ? ', ' + s.cap + 'x deze periode' : ''}">C</span>` : ''}${s.p.position === 'keeper' ? '<span class="pos">keeper</span>' : ''}${hasRole(s.p, 'manager') || s.mgr ? `<span class="pos" title="Manager${s.mgr ? ', ' + s.mgr + 'x deze periode' : ''}">manager</span>` : ''}`;
+  const badges = s => `${injuryIcon(s.p)}${hasRole(s.p, 'captain') || s.cap ? `<span class="cap" title="Captain${s.cap ? ', ' + s.cap + 'x deze periode' : ''}">C</span>` : ''}${s.p.position === 'keeper' ? '<span class="pos">keeper</span>' : ''}${PTYPE[s.p.player_type] ? `<span class="ptype">${PTYPE[s.p.player_type]}</span>` : ''}${hasRole(s.p, 'manager') || s.mgr ? `<span class="pos" title="Manager${s.mgr ? ', ' + s.mgr + 'x deze periode' : ''}">manager</span>` : ''}`;
   // Phones get cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
   // Phones: keeper-style cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
   // Labels: full name, or the abbreviation when the card is narrow (container query; the full name stays for screen readers).
   const LBL = { gp: ['Wedstrijden', 'Wedstr.'], att: ['Aanwezigheid', 'Aanw.'], pts: ['Goals + Assists', 'G + A'], gpg: ['Gemiddelde per Wedstrijd', 'Gem. p. Wedstr.'], g: ['Goals', 'Goals'], a: ['Assists', 'Assists'] };
   const lbl = k => LBL[k][0] === LBL[k][1] ? LBL[k][0] : `<span class="lf">${LBL[k][0]}</span><span class="ls" aria-hidden="true">${LBL[k][1]}</span>`;
   const pw = s => s.gp ? s.gpg.toFixed(2).replace('.', ',') : '–';
-  const stat = (k, v) => `<div><span class="v${k === key ? ' hot' : ''}">${v}</span><span class="k">${lbl(k)}</span></div>`;
+  const stat = (k, v) => kstat(v, lbl(k), k === key);
   const share = (n, s) => (s.pts ? n / s.pts * 100 : 0).toFixed(1);
   // Phones sort with the same dropdown as the Keepers tab (desktop: the column headers); highest first, name A-Z.
   const PSORT = ['pts', 'g', 'a', 'gpg', 'gp', 'att'].map(k => [k, LBL[k][0]]).concat([['name', 'Naam']]);
   const psort = `<label class="sortsel psort"><span>Sorteren op</span><select id="pSort" class="select">${PSORT.some(([k]) => k === key) ? '' : '<option value="" selected hidden>Kolom in de tabel</option>'}${PSORT.map(([k, l]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
-  const cards = `<ol class="pcards">${rows.map((s, i) => `<li class="kcard pcard${s.gp ? '' : ' idle'}">
-      <div class="khead"><div class="pname"><h3><span class="rk">${i + 1}</span>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}</h3>${badges(s)}</div>${S.isAdmin ? `<button type="button" class="kmore pedit" data-player="${esc(s.p.id)}" aria-label="${esc(s.p.name)} bewerken">Bewerken ›</button>` : ''}</div>
-      <div class="kstats">${stat('gp', s.gp)}${stat('att', Math.round(s.att) + '%')}${stat('pts', s.pts)}${stat('gpg', pw(s))}</div>
-      <div class="pbox">
+  // Same toolbar as Wedstrijden: search icon (opens the field), sort (phones), "+" on the right.
+  const tbar = `<div class="mfbar"><button type="button" class="btn icon" id="pToggle" aria-expanded="${!!S.psOpen}" aria-controls="pPanel" title="Zoek speler">${SEARCH_IC}<span class="sr-only">Zoek speler</span></button>
+    <div class="mfpanel" id="pPanel"${S.psOpen ? '' : ' hidden'}><div class="mfsearch"><input id="pSearch" type="search" placeholder="Naam of rugnummer" autocomplete="off" enterkeyhint="search" aria-label="Zoek speler" value="${esc(S.pq || '')}"><button type="button" id="pClear" title="Wissen" hidden><span aria-hidden="true">×</span><span class="sr-only">Wissen</span></button></div></div>
+    ${S.psOpen ? '' : '<p class="note desk">Tik op een kolomkop om te sorteren, op een speler voor de details.</p>'}${psort}${S.isAdmin ? addBtn('addPlayer', 'Speler toevoegen') : ''}</div><p class="note" id="pNone" aria-live="polite" hidden></p>`;
+  const cards = `<ol class="cards pcards">${rows.map((s, i) => card({ attrs: `data-pinfo="${esc(s.p.id)}" aria-label="Details van ${esc(s.p.name)}"`, rank: i + 1, p: s.p, badges: badges(s), idle: !s.gp,
+      stats: stat('gp', s.gp) + stat('att', Math.round(s.att) + '%') + stat('pts', s.pts) + stat('gpg', pw(s)),
+      foot: `<span class="pbox">
         <span class="gabar" role="img" aria-label="${s.g} goals en ${s.a} assists">${s.pts ? `<span class="g" style="width:${share(s.g, s)}%"></span><span class="a" style="width:${share(s.a, s)}%"></span>` : ''}</span>
         <span class="ga"><span><i class="dot g"></i>${s.g} ${s.g === 1 ? 'Goal' : 'Goals'}</span><span><i class="dot a"></i>${s.a} ${s.a === 1 ? 'Assist' : 'Assists'}</span></span>
-      </div>
-    </li>`).join('')}</ol>`;
-  el.innerHTML = `${ptool(`<p class="note desk">Tik op een kolomkop om te sorteren${S.isAdmin ? ', op een speler om te bewerken' : ''}.</p>${psort}`, S.isAdmin && addBtn('addPlayer', 'Speler toevoegen'))}${cards}<div class="tablewrap"><table>
+      </span>` })).join('')}</ol>`;
+  el.innerHTML = `${phead('Spelers', `${S.players.length} in de selectie`)}${tbar}${cards}<div class="tablewrap ptable"><table>
     <thead><tr>${COLS.map(c => `<th scope="col"${c.key === key ? ` aria-sort="${dir === 'asc' ? 'ascending' : 'descending'}"` : ''}><button type="button" data-sort="${c.key}"${c.title ? ` title="${c.title}"` : ''}>${c.label}<span class="arrow" aria-hidden="true">${c.key === key ? (dir === 'asc' ? '▲' : '▼') : ''}</span></button></th>`).join('')}</tr></thead>
-    <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'}${S.isAdmin ? ' click' : ''}" data-player="${esc(s.p.id)}"${S.isAdmin ? ' tabindex="0"' : ''}>
+    <tbody>${rows.map(s => `<tr class="${s.gp ? '' : 'idle'} click" data-pinfo="${esc(s.p.id)}" tabindex="0">
       <td class="num">${s.p.number ?? ''}</td>
       <td>${esc(s.p.name)}${badges(s)}</td>
       <td class="${key === 'gp' ? 'sorted' : ''}">${s.gp}</td>
@@ -875,7 +1173,25 @@ function renderPlayers(stats) {
       <td class="${key === 'gpg' ? 'sorted' : ''}">${s.gp ? s.gpg.toFixed(2).replace('.', ',') : '–'}</td>
       ${['mvp', 'y', 'r'].map(k => `<td class="${k === key ? 'sorted' : ''}">${s[k]}</td>`).join('')}
     </tr>`).join('')}</tbody></table></div>${injBar}`;
+  filterPlayers();
 }
+// Search on Spelers: hides cards and table rows whose name (or rugnummer) doesn't match; no re-render, so typing keeps focus.
+function filterPlayers() {
+  const q = norm(S.pq), el = $('#p-spelers'); let n = 0;
+  el.querySelectorAll('[data-pinfo]').forEach(x => {
+    const p = S.players.find(p => p.id === x.dataset.pinfo), hit = !q || norm(p?.name).includes(q) || String(p?.number ?? '') === q;
+    (x.closest('li') || x).hidden = !hit; if (hit && x.closest('li')) n++;
+  });
+  if (!$('#pNone')) return;
+  $('#pNone').hidden = !q || n > 0; $('#pNone').textContent = `Geen speler gevonden voor "${S.pq}".`;
+  $('#pClear').hidden = !q;
+}
+$('#p-spelers').addEventListener('input', e => { if (e.target.id === 'pSearch') { S.pq = e.target.value; filterPlayers(); } });
+$('#p-spelers').addEventListener('click', e => {
+  if (e.target.closest('#pClear')) { S.pq = ''; $('#pSearch').value = ''; filterPlayers(); $('#pSearch').focus(); return; }
+  // Toggle like Wedstrijden: opening focuses the field (you asked to search); closing clears the search.
+  if (e.target.closest('#pToggle')) { S.psOpen = !S.psOpen; if (!S.psOpen) S.pq = ''; render(); if (S.psOpen) $('#pSearch').focus(); }
+});
 
 // Player filter: exact name, or the only name that starts with what was typed.
 function filterPlayer() {
@@ -886,6 +1202,7 @@ function filterPlayer() {
 
 function renderMatches(all) {
   const el = $('#matchList'), note = $('#mfNote'), p = filterPlayer(), wantG = $('#mfGoals').checked, wantA = $('#mfAssists').checked;
+  $('#mCount').textContent = all.length ? `${all.length} ${all.length === 1 ? 'wedstrijd' : 'wedstrijden'}` : '';
   $('#mfPlayers').innerHTML = sortedPlayers().map(x => `<option value="${esc(x.name)}"></option>`).join('');
   $('#mfToggle').hidden = !all.length;
   const matches = p ? all.filter(m => (wantG && +m.goals?.[p.id] > 0) || (wantA && +m.assists?.[p.id] > 0)) : all;
@@ -897,7 +1214,7 @@ function renderMatches(all) {
   const list = (obj) => Object.entries(obj || {}).filter(([, n]) => +n > 0).sort((a, b) => b[1] - a[1]).map(([id, n]) => hl(id)(esc(playerName(id)) + (n > 1 ? ' ' + n + 'x' : ''))).join(', ');
   el.innerHTML = `<ul class="matches">${matches.map(m => {
     const og = +m.own_goals || 0, g = [list(m.goals), og && 'eigen goal' + (og > 1 ? ' ' + og + 'x' : '')].filter(Boolean).join(', '), a = list(m.assists);
-    return `<li class="match ${result(m)}${S.canEdit ? ' click' : ''}" data-match="${esc(m.id)}"${S.canEdit ? ' tabindex="0" role="button" aria-label="Bewerk wedstrijd tegen ' + esc(m.opponent) + '"' : ''}>
+    return `<li class="match ${result(m)} click" data-show="${esc(m.id)}" tabindex="0" role="button" aria-label="Samenvatting wedstrijd tegen ${esc(m.opponent)}">
       <span class="res ${result(m)}" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(m)]}">${result(m)}</span>
       <span class="when"><span class="venue ${m.home ? 'home' : 'away'}">${m.home ? 'Thuis' : 'Uit'}</span>${fmtDate(m.date)}</span>
       <span class="opp">${m.home ? esc(teamFull()) + ' vs ' + esc(m.opponent) : esc(m.opponent) + ' vs ' + esc(teamFull())}</span>
@@ -905,6 +1222,7 @@ function renderMatches(all) {
       ${S.mlog?.[m.id] ? `<span class="by">${[S.mlog[m.id].add && 'Ingevuld door ' + esc(who(S.mlog[m.id].add)), S.mlog[m.id].edit && 'bewerkt door ' + esc(who(S.mlog[m.id].edit)) + ' op ' + shortWhen(S.mlog[m.id].edit.at)].filter(Boolean).join(' · ')}</span>` : ''}
       ${g || a || m.mvp ? `<span class="detail">${[g && 'Goals: ' + g, a && 'Assists: ' + a, m.mvp && 'MVP: ' + hl(m.mvp)(esc(playerName(m.mvp)))].filter(Boolean).join('<br>')}</span>` : ''}
     </li>`; }).join('')}</ul>`;
+  markSaved();
 }
 
 const mfRefresh = () => { $('#mfClear').hidden = !$('#mfPlayer').value; renderMatches(seasonMatches()); };
@@ -952,29 +1270,29 @@ function openKeeperRules(keeper) {
 
 // Line chart of goals conceded per match (oldest -> newest) with the team average as a dashed reference.
 // One series, so no legend: the heading names it. Tap/hover a point to read that match below the chart.
-function keeperChart(id, scores, avg) {
-  const ms = [...scores].reverse(), n = ms.length, W = 320, H = 150, L = 24, R = 12, T = 14, B = 24;
-  const vals = ms.map(sc => conceded(sc.m, id)), hi = Math.max(1, ...vals, avg);
+// pts: [{ m, v, cap }] oldest -> newest; cap = the HTML shown under the chart for that point.
+function lineChart(pts, avg, avgLbl, label) {
+  const ms = pts, n = ms.length, W = 320, H = 150, L = 24, R = 12, T = 14, B = 24;
+  const vals = ms.map(p => p.v), hi = Math.max(1, ...vals, avg);
   const step = hi <= 6 ? 2 : hi <= 15 ? 5 : 10, top = Math.ceil(hi / step) * step;
   const x = i => n === 1 ? (L + W - R) / 2 : L + i * (W - L - R) / (n - 1), y = v => T + (H - T - B) * (1 - v / top);
   const ticks = []; for (let v = 0; v <= top; v += step) ticks.push(v);
   const short = d => d ? new Date(d + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) : '';
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tegendoelpunten per wedstrijd, ${n} wedstrijden">
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}, ${n} wedstrijden">
     ${ticks.map(v => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${v}</text>`).join('')}
-    <line class="avgl" x1="${L}" x2="${W - R}" y1="${y(avg)}" y2="${y(avg)}"/><text class="avgt" x="${W - R}" y="${y(avg) - 5}" text-anchor="end">gem. team ${dec(avg)}</text>
-    ${n > 1 ? `<path class="line" d="${vals.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ')}"/>` : ''}
+    <line class="avgl" x1="${L}" x2="${W - R}" y1="${y(avg)}" y2="${y(avg)}"/><text class="avgt" x="${W - R}" y="${y(avg) - 5}" text-anchor="end">${esc(avgLbl)} ${dec(avg)}</text>
+    ${n > 1 ? `<path class="line" pathLength="1" d="${vals.map((v, i) => (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ')}"/>` : ''}
     <text class="axis" x="${x(0)}" y="${H - 6}" text-anchor="${n === 1 ? 'middle' : 'start'}">${esc(short(ms[0]?.m.date))}</text>
     ${n > 1 ? `<text class="axis" x="${x(n - 1)}" y="${H - 6}" text-anchor="end">${esc(short(ms[n - 1].m.date))}</text>` : ''}
-    ${ms.map((sc, i) => `<g class="kpt" tabindex="0" data-i="${i}"><line class="vline" x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}"/><circle class="hit" cx="${x(i)}" cy="${y(vals[i])}" r="14"/><circle class="dot" cx="${x(i)}" cy="${y(vals[i])}" r="4"/></g>`).join('')}
+    ${ms.map((p, i) => `<g class="kpt" tabindex="0" data-cap="${esc(p.cap)}"><line class="vline" x1="${x(i)}" x2="${x(i)}" y1="${T}" y2="${H - B}"/><circle class="hit" cx="${x(i)}" cy="${y(vals[i])}" r="14"/><circle class="dot" cx="${x(i)}" cy="${y(vals[i])}" r="4"/></g>`).join('')}
   </svg>`;
 }
-let kChartData = [];
-function kPick(g) {
-  document.querySelectorAll('#klBody .kpt').forEach(p => p.classList.toggle('on', p === g));
-  const sc = kChartData[+g.dataset.i]; if (!sc) return;
-  $('#kCap').innerHTML = `<strong>${esc(vs(sc.m))}</strong> · ${esc(fmtDate(sc.m.date))}<br><span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga} · ${sc.conc} tegen · ${dec(sc.pts)} keepers-punten`;
-}
-['pointerover', 'click', 'focusin'].forEach(t => $('#klBody').addEventListener(t, e => { const g = e.target.closest('.kpt'); if (g) kPick(g); }));
+// Every chart: hover, tap or focus a point to read it in the caption under that chart.
+['pointerover', 'click', 'focusin'].forEach(t => document.addEventListener(t, e => {
+  const g = e.target.closest?.('.kpt'), c = g?.closest('.kchart'); if (!c) return;
+  c.querySelectorAll('.kpt').forEach(p => p.classList.toggle('on', p === g));
+  c.querySelector('.kcap').innerHTML = g.dataset.cap;
+}));
 
 // Detail per keeper: key numbers, the chart, best/worst match and every match with its points.
 function openKeeperList(keeper) {
@@ -983,7 +1301,8 @@ function openKeeperList(keeper) {
   const n = r => km.filter(m => result(m) === r).length, sum = f => km.reduce((t, m) => t + f(m), 0);
   const g = sum(m => +(m.goals?.[id] || 0)), a = sum(m => +(m.assists?.[id] || 0)), motm = km.filter(m => m.mvp === id).length;
   const ppm = scores.reduce((t, x) => t + x.pts, 0) / scores.length, subs = km.filter(m => m.keeper2 && keepersOf(m).includes(id)).length;
-  kChartData = [...scores].reverse().map(sc => ({ ...sc, conc: conceded(sc.m, id) }));
+  const pts = [...scores].reverse().map(sc => ({ m: sc.m, v: conceded(sc.m, id),
+    cap: `<strong>${esc(vs(sc.m))}</strong> · ${esc(fmtDate(sc.m.date))}<br><span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga} · ${conceded(sc.m, id)} tegen · ${dec(sc.pts)} keepers-punten` }));
   const stat = (v, k) => `<div><span class="v">${v}</span><p class="k">${k}</p></div>`;
   const mrow = (label, sc) => `<div class="kb r3"><span class="res ${result(sc.m)}">${result(sc.m)}</span><span class="lbl">${label}</span><strong>${esc(vs(sc.m))}</strong><span class="when">${esc(fmtDate(sc.m.date))} · ${sc.m.gf} - ${sc.m.ga} · ${conceded(sc.m, id)} tegen</span><span class="pts">${dec(sc.pts)}<small>keepers-punten</small></span></div>`;
   $('#dlgKeeperListTitle').textContent = kp.name;
@@ -991,7 +1310,7 @@ function openKeeperList(keeper) {
       ${stat(s.kgp, 'Wedstrijden')}${stat(dec(s.conc / s.kgp), 'Gemiddeld tegen per wedstrijd')}${stat(s.cs + 'x', 'De nul gehouden')}${stat(dec(best.pts), 'Hoogste keepers-punten')}
       ${stat(dec(ppm), 'Keepers-punten per wedstrijd')}${stat(s.conc, 'Tegendoelpunten totaal')}${stat(`${n('W')}-${n('G')}-${n('V')}`, 'Winst - gelijk - verlies')}${stat(`${g} / ${a}`, 'Goals / assists')}${motm ? stat(motm + 'x', 'Man of the match') : ''}${subs ? stat(subs + 'x', 'Met tweede keeper') : ''}
     </div>
-    <div class="kchart"><h3>Tegendoelpunten per wedstrijd</h3>${keeperChart(id, scores, S.kp.avg)}<p id="kCap" class="note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
+    <div class="kchart"><h3>Tegendoelpunten per wedstrijd</h3>${lineChart(pts, S.kp.avg, 'gem. team', 'Tegendoelpunten per wedstrijd')}<p class="kcap note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
     ${mrow('Beste wedstrijd', best)}${scores.length > 1 ? mrow('Minste wedstrijd', worst) : ''}
     <p class="note">Alle wedstrijden. Tik op een wedstrijd voor de berekening.</p>
     ${table(['Wedstrijd', 'Uitslag', 'Keepers-<br>punten'], scores.map(sc => [
@@ -999,6 +1318,65 @@ function openKeeperList(keeper) {
       `<span class="nw"><span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga}</span>`,
       `<strong>${dec(sc.pts)}</strong>` + (sc === best ? '<br><span class="kstar">Beste</span>' : '')]))}${rulesLink}`;
   $('#dlgKeeperList').showModal();
+}
+
+// Player detail: same layout as the keeper detail (numbers, chart, best match, all matches); editors get Bewerken.
+function openPlayerInfo(id) {
+  const all = seasonMatches(), s = playerStats(all).find(x => x.p.id === id); if (!s) return;
+  const p = s.p, ms = all.filter(m => (m.played || []).includes(id)), ga = m => +(m.goals?.[id] || 0) + +(m.assists?.[id] || 0);
+  const line = m => [+m.goals?.[id] && `${m.goals[id]} ${+m.goals[id] === 1 ? 'goal' : 'goals'}`, +m.assists?.[id] && `${m.assists[id]} ${+m.assists[id] === 1 ? 'assist' : 'assists'}`, m.mvp === id && 'MOTM'].filter(Boolean).join(' · ') || 'geen goals of assists';
+  const best = [...ms].sort((a, b) => ga(b) - ga(a) || (b.mvp === id) - (a.mvp === id))[0];
+  const pts = [...ms].reverse().map(m => ({ m, v: ga(m), cap: `<strong>${esc(vs(m))}</strong> · ${esc(fmtDate(m.date))}<br><span class="res ${result(m)}">${result(m)}</span> ${m.gf} - ${m.ga} · ${esc(line(m))}` }));
+  const stat = (v, k) => `<div><span class="v">${v}</span><p class="k">${k}</p></div>`;
+  $('#dlgPlayerInfoTitle').innerHTML = `${esc(p.name)}${p.number != null ? ` <span class="sub">#${p.number}</span>` : ''}${PTYPE[p.player_type] ? ` <span class="ptype">${PTYPE[p.player_type]}</span>` : ''}`;
+  $('#piEdit').hidden = !S.isAdmin; $('#piEdit').dataset.player = id;
+  $('#piBody').innerHTML = !ms.length ? `<p class="note">${esc(p.name)} heeft in deze periode nog niet gespeeld.</p>${p.injury ? `<p class="note">Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}.</p>` : ''}` : `
+    ${p.injury ? `<p class="note"><span class="inj-ic" aria-hidden="true"></span> Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}</p>` : ''}
+    <div class="kgrid">${stat(s.gp, 'Wedstrijden')}${stat(Math.round(s.att) + '%', 'Aanwezigheid')}${stat(s.g, 'Goals')}${stat(s.a, 'Assists')}${stat(s.pts, 'Goals + assists')}${stat(dec(s.gpg), 'G+A per wedstrijd')}${s.mvp ? stat(s.mvp + 'x', 'Man of the match') : ''}${s.y || s.r ? stat(`${s.y} / ${s.r}`, 'Geel / rood') : ''}${s.kgp ? stat(s.kgp + 'x', 'Gekeept') : ''}</div>
+    <div class="kchart"><h3>Goals + assists per wedstrijd</h3>${lineChart(pts, s.gpg, 'gem.', 'Goals plus assists per wedstrijd')}<p class="kcap note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
+    ${ga(best) ? `<div class="kb r3"><span class="res ${result(best)}">${result(best)}</span><span class="lbl">Beste wedstrijd</span><strong>${esc(vs(best))}</strong><span class="when">${esc(fmtDate(best.date))} · ${best.gf} - ${best.ga}</span><span class="pts">${ga(best)}<small>G+A</small></span></div>` : ''}
+    <p class="note">Alle wedstrijden</p>
+    ${table(['Wedstrijd', 'Uitslag', 'G+A'], ms.map(m => [`<button type="button" class="linkbtn" data-show="${esc(m.id)}">${esc(vs(m))}</button><br><span class="note">${esc(fmtDate(m.date))} · ${esc(line(m))}</span>`, `<span class="nw"><span class="res ${result(m)}">${result(m)}</span> ${m.gf} - ${m.ga}</span>`, `<strong>${ga(m)}</strong>`]))}`;
+  $('#dlgPlayerInfo').showModal();
+}
+
+// Match summary for everyone: scoreboard, highlights, man of the match, who scored and assisted, keeper, cards, line-up.
+function openMatchInfo(id) {
+  const m = S.matches.find(x => x.id === id); if (!m) return;
+  const r = result(m), t = team(), P = pid => S.players.find(p => p.id === pid) || { id: pid, name: playerName(pid) };
+  const us = `<span class="mi-crest">${safeLogo(t.logo) ? `<img src="${esc(t.logo)}" alt="">` : '<svg aria-hidden="true" style="color: var(--pink)"><use href="#fcf"/></svg>'}</span><span class="mi-name">${esc(teamFull())}</span>`;
+  const ol = logoRow(m.opponent)?.logo;
+  const them = `<span class="mi-crest${ol ? ' logo' : ''}">${ol ? `<img src="${esc(ol)}" alt="">` : `<span>${esc(initials(m.opponent))}</span>`}</span><span class="mi-name">${esc(m.opponent).replace(/\//g, '/<wbr>')}</span>`;
+  const [l, rr] = m.home ? [us, them] : [them, us], [sl, sr] = m.home ? [m.gf, m.ga] : [m.ga, m.gf];
+  const g = id => +(m.goals?.[id] || 0), a = id => +(m.assists?.[id] || 0);
+  const scorers = (m.played || []).filter(id => g(id) || a(id)).sort((x, y) => g(y) - g(x) || a(y) - a(x));
+  const og = +m.own_goals || 0, keepers = keepersOf(m), mvp = m.mvp && P(m.mvp);
+  const pill = (n, one, many, cls) => n ? `<span class="pill ${cls}">${n} ${n === 1 ? one : many}</span>` : '';
+  const who = pid => `<button type="button" class="mi-who" data-pinfo="${esc(pid)}"><span class="shirt sm" aria-hidden="true">${P(pid).number ?? esc(initials(P(pid).name))}</span><span class="nm">${esc(P(pid).name)}</span>`;
+  // Highlights: the small facts worth a cheer.
+  const tags = [
+    r === 'W' && (m.gf - m.ga >= 5 ? 'Ruime zege' : m.home ? 'Thuiszege' : 'Uitzege'),
+    +m.ga === 0 && 'De nul gehouden',
+    ...scorers.filter(id => g(id) >= 3).map(id => g(id) === 3 ? `Hattrick ${P(id).name}` : `${g(id)} goals van ${P(id).name}`),
+    m.gf >= 8 && `${m.gf} goals gemaakt`,
+  ].filter(Boolean);
+  $('#dlgMatchInfoTitle').innerHTML = `Uitslag <span class="sub">${m.home ? 'thuis' : 'uit'} · ${esc(new Date(m.date + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }))}</span>`;
+  $('#miEdit').hidden = !S.canEdit; $('#miEdit').dataset.match = id;
+  $('#miBody').innerHTML = `
+    <div class="mi-board ${r}">
+      <div class="mi-team">${l}</div>
+      <div class="mi-score"><span class="sc">${sl}<i>-</i>${sr}</span><span class="mi-res">${{ W: 'Gewonnen', G: 'Gelijkspel', V: 'Verloren' }[r]}</span></div>
+      <div class="mi-team">${rr}</div>
+    </div>
+    ${tags.length ? `<p class="mi-tags">${tags.map(x => `<span class="pill tag">${esc(x)}</span>`).join('')}</p>` : ''}
+    ${mvp ? `<button type="button" class="mi-mvp" data-pinfo="${esc(mvp.id)}"><span class="shirt" aria-hidden="true">${mvp.number ?? esc(initials(mvp.name))}</span><span><span class="lbl">Man of the match</span><strong>${esc(mvp.name)}</strong><span class="note">${[g(mvp.id) && `${g(mvp.id)} ${g(mvp.id) === 1 ? 'goal' : 'goals'}`, a(mvp.id) && `${a(mvp.id)} ${a(mvp.id) === 1 ? 'assist' : 'assists'}`, keepers.includes(mvp.id) && 'in het doel'].filter(Boolean).join(' · ')}</span></span><span class="go" aria-hidden="true">›</span></button>` : ''}
+    <h3>Goals en assists</h3>
+    ${scorers.length || og ? `<ul class="mi-list">${scorers.map(id => `<li>${who(id)}<span class="pills">${pill(g(id), 'goal', 'goals', 'g')}${pill(a(id), 'assist', 'assists', 'a')}</span></button></li>`).join('')}${og ? `<li><span class="mi-who"><span class="shirt sm" aria-hidden="true">EG</span><span class="nm">Eigen goal tegenstander</span><span class="pills">${pill(og, 'goal', 'goals', 'g')}</span></span></li>` : ''}</ul>` : `<p class="note">${m.gf ? 'Geen doelpuntenmakers ingevuld.' : 'Geen goals voor ons deze keer.'}</p>`}
+    ${keepers.length ? `<h3>Keeper</h3><ul class="mi-list">${keepers.map(k => `<li>${who(k)}<span class="pills"><span class="pill${conceded(m, k) ? '' : ' tag'}">${conceded(m, k) ? conceded(m, k) + ' tegen' : 'De nul'}</span></span></button></li>`).join('')}</ul>` : ''}
+    ${(m.yellow || []).length || (m.red || []).length ? `<h3>Kaarten</h3><ul class="mi-list">${[...(m.yellow || []).map(k => [k, 'y', 'Geel']), ...(m.red || []).map(k => [k, 'r', 'Rood'])].map(([k, c, lbl]) => `<li>${who(k)}<span class="pills"><span class="pill"><span class="cardglyph ${c}"></span>${lbl}</span></span></button></li>`).join('')}</ul>` : ''}
+    ${(m.played || []).length ? `<h3>Opstelling <span class="note">${m.played.length} spelers</span></h3><p class="mi-chips">${sortedPlayers().filter(p => m.played.includes(p.id)).map(p => `<button type="button" class="pill chip" data-pinfo="${esc(p.id)}">${p.number != null ? `<b>${p.number}</b>` : ''}${esc(p.name)}${p.id === m.captain ? ' <span class="cap" title="Captain">C</span>' : ''}</button>`).join('')}</p>` : ''}
+    ${m.manager ? `<p class="note">Manager: ${esc(playerName(m.manager))}</p>` : ''}`;
+  $('#dlgMatchInfo').showModal();
 }
 
 function openKeeperCalc(keeper, match) {
@@ -1021,29 +1399,45 @@ function renderKeepers(stats, matches) {
     if (best) S.kp.byId[id] = { name: s.p.name, s, scores, best, worst };
     return { s, id, km, best, top: best ? best.pts : -Infinity, avg: s.kgp ? s.conc / s.kgp : Infinity };
   });
-  if (!ks.length) { el.innerHTML = emptyState('Nog geen keepers', 'Geef een speler de rol keeper, of kies de keeper bij een wedstrijd.'); return; }
+  if (!ks.length) { el.innerHTML = phead('Keepers') + emptyState('Nog geen keepers', 'Geef een speler de rol keeper, of kies de keeper bij een wedstrijd.'); return; }
   const key = KSORT[S.ksort] ? S.ksort : 'kgp';
   ks.sort((a, b) => (key !== 'name' && (!a.km.length - !b.km.length)) || KSORT[key][1](a, b) || b.s.kgp - a.s.kgp);
-  const sortSel = `<label class="sortsel"><span>Sorteren op</span><select id="kSort" class="select">${Object.entries(KSORT).map(([k, [l]]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
+  const sortSel = `<p class="note desk">Tik op een kolomkop om te sorteren, op een keeper voor de details.</p><label class="sortsel psort"><span>Sorteren op</span><select id="kSort" class="select">${Object.entries(KSORT).map(([k, [l]]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
+  // Desktop: the same table as Spelers (phones get the cards); headers sort with the KSORT rules.
+  const KCOLS = [['', '#'], ['name', 'Keeper'], ['kgp', 'Wedstr.'], ['avg', 'Gem. tegen'], ['cs', 'De nul'], ['', 'Tegen totaal'], ['', 'Punten p. wedstr.'], ['pts', 'Hoogste punten'], ['', 'Beste wedstrijd']];
+  const ktable = `<div class="tablewrap ptable"><table><thead><tr>${KCOLS.map(([k, l]) => `<th scope="col"${k === key ? ` aria-sort="${k === 'name' || k === 'avg' ? 'ascending' : 'descending'}"` : ''}>${k ? `<button type="button" data-ksort="${k}" title="${KSORT[k][0]}">${l}<span class="arrow" aria-hidden="true">${k === key ? (k === 'name' || k === 'avg' ? '▲' : '▼') : ''}</span></button>` : l}</th>`).join('')}</tr></thead>
+    <tbody>${ks.map(({ s, id, km, best }) => { const c = k => k === key ? ' class="sorted"' : '';
+      if (!km.length) return `<tr class="idle"><td class="num">${s.p.number ?? ''}</td><td>${esc(s.p.name)}${injuryIcon(s.p)}</td><td colspan="7" class="note">Nog niet in het doel gestaan</td></tr>`;
+      const ppm = S.kp.byId[id].scores.reduce((t, x) => t + x.pts, 0) / km.length;
+      return `<tr class="click" data-act="keeperList" data-keeper="${esc(id)}" tabindex="0"><td class="num">${s.p.number ?? ''}</td><td>${esc(s.p.name)}${injuryIcon(s.p)}</td>
+        <td${c('kgp')}>${s.kgp}</td><td${c('avg')}>${dec(s.conc / s.kgp)}</td><td${c('cs')}>${s.cs}x</td><td>${s.conc}</td><td>${dec(ppm)}</td><td${c('pts')}>${dec(best.pts)}</td>
+        <td><span class="nw"><span class="res ${result(best.m)}">${result(best.m)}</span> ${esc(vs(best.m))} · ${best.m.gf}-${best.m.ga}</span></td></tr>`; }).join('')}</tbody></table></div>`;
   // Compact card (2-3 fit on a phone screen); tap it for the detail dialog with chart and all matches.
-  el.innerHTML = `${ptool(sortSel)}<div class="keepers">${ks.map(({ s, id, km, best }) => {
-    const name = `<h3>${esc(s.p.name)}${s.p.number != null ? ` <span>#${s.p.number}</span>` : ''}${injuryIcon(s.p)}</h3>`;
-    if (!km.length) return `<article class="kcard">${name}<p class="note">Nog niet in het doel gestaan.</p></article>`;
-    return `<article class="kcard" data-act="keeperList" data-keeper="${esc(id)}" tabindex="0" role="button" aria-label="Details van ${esc(s.p.name)}">
-      <div class="khead">${name}<span class="kmore" aria-hidden="true">Details ›</span></div>
-      <div class="kstats"><div><span class="v">${s.kgp}</span><span class="k">Wedstrijden</span></div><div><span class="v">${dec(s.conc / s.kgp)}</span><span class="k">Gem. tegen per wedstrijd</span></div><div><span class="v">${s.cs}x</span><span class="k">De nul</span></div><div><span class="v">${dec(best.pts)}</span><span class="k">Hoogste keepers-punten</span></div></div>
-      <div class="kb"><span class="res ${result(best.m)}">${result(best.m)}</span><strong>${esc(vs(best.m))}</strong><span class="when">Beste · ${esc(fmtDate(best.m.date))} · ${best.m.gf} - ${best.m.ga}</span><span class="pts">${dec(best.pts)}<small>punten</small></span></div>
-    </article>`; }).join('')}</div>${rulesLink}`;
+  el.innerHTML = `${phead('Keepers', `${ks.length} ${ks.length === 1 ? 'keeper' : 'keepers'} · gemiddeld ${dec(avg)} tegen per wedstrijd`)}${ptool(sortSel)}${ktable}<ol class="cards pcards">${ks.map(({ s, id, km, best }, i) => {
+    if (!km.length) return card({ p: s.p, badges: injuryIcon(s.p), idle: true, foot: '<span class="note">Nog niet in het doel gestaan.</span>' });
+    return card({ attrs: `data-act="keeperList" data-keeper="${esc(id)}" aria-label="Details van ${esc(s.p.name)}"`, rank: i + 1, p: s.p, badges: injuryIcon(s.p),
+      stats: kstat(s.kgp, 'Wedstrijden', key === 'kgp') + kstat(dec(s.conc / s.kgp), 'Gem. tegen', key === 'avg') + kstat(s.cs + 'x', 'De nul', key === 'cs') + kstat(dec(best.pts), 'Hoogste punten', key === 'pts'),
+      foot: `<span class="kb"><span class="res ${result(best.m)}">${result(best.m)}</span><strong>${esc(vs(best.m))}</strong><span class="when">Beste · ${esc(fmtDate(best.m.date))} · ${best.m.gf} - ${best.m.ga}</span><span class="pts">${dec(best.pts)}<small>punten</small></span></span>` }); }).join('')}</ol>${rulesLink}`;
 }
 $('#p-keepers').addEventListener('change', e => { if (e.target.id === 'kSort') { S.ksort = e.target.value; render(); } });
 $('#p-spelers').addEventListener('change', e => { if (e.target.id === 'pSort' && e.target.value) { const k = e.target.value; S.sort = { key: k, dir: k === 'name' ? 'asc' : 'desc' }; render(); } });
 
+// Re-renders (the audit log reloads the match list) re-apply it for a moment, so the glow isn't lost.
+function markSaved() {
+  if (!S.saved) return; if (!S.savedAt) S.savedAt = Date.now(); if (Date.now() - S.savedAt > 1500) { S.saved = S.savedAt = null; return; }
+  const id = CSS.escape(S.saved);
+  document.querySelectorAll(`.kcard[data-pinfo="${id}"], tr[data-pinfo="${id}"], .match[data-show="${id}"], [data-sponsor="${id}"], [data-logo="${id}"]`).forEach(el => el.classList.add('saved'));
+}
 function render() {
   if (!S.ready) return;
   renderSeasons();
   const matches = seasonMatches(), stats = playerStats(matches);
-  renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderKeepers(stats, matches); renderSponsors(); renderLogos(); renderPostOptions();
+  renderKeepers(stats, matches); renderSummary(matches, stats); renderPlayers(stats); renderMatches(matches); renderSponsors(); renderLogos(); renderPostOptions();
   $('#addMatch').disabled = !S.players.length || !S.seasons.length;
+  // What was just saved glows once where it now sits (card, table row, match, sponsor or logo tile).
+  markSaved();
+  // First data render only: the dashboard rises in once (a rare moment, so it may move); later renders are instant.
+  if (!S.entered) { S.entered = true; const o = $('#p-overzicht'); o.classList.add('enter'); setTimeout(() => o.classList.remove('enter'), 900); }
 }
 
 /* ---------- interactions ---------- */
@@ -1054,8 +1448,16 @@ function toast(msg, ms = 3500) {
   t.showPopover(); clearTimeout(toast.t); toast.t = setTimeout(() => t.hidePopover(), ms);
 }
 async function save(fn, okMsg) {
-  try { await fn(); toast(okMsg); return true; }
+  const btn = document.querySelector('dialog[open] button[type="submit"]:not([hidden])');
+  btn?.classList.add('busy'); if (btn) btn.disabled = true;
+  try {
+    await fn(); toast(okMsg);
+    // Success: the spinner turns into a check mark, then the popup closes (the beat confirms it worked).
+    if (btn) { btn.classList.replace('busy', 'ok'); await new Promise(r => setTimeout(r, calm() ? 0 : 420)); }
+    return true;
+  }
   catch (e) {
+    anim(btn, [{ transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 320, easing: 'ease-out' });
     console.error('save failed', e);
     // PGRST204/42703 = the app sends a column the database doesn't have yet: an SQL file still needs to run.
     const col = ['PGRST204', '42703'].includes(e?.code) && (e.message.match(/'(\w+)' column|column "?(\w+)/) || []).slice(1).find(Boolean);
@@ -1064,6 +1466,7 @@ async function save(fn, okMsg) {
       : 'Opslaan lukte niet. Probeer het opnieuw.', 8000);
     return false;
   }
+  finally { if (btn) { btn.disabled = false; setTimeout(() => btn.classList.remove('busy', 'ok'), 450); } }
 }
 function armDelete(btn, action) {
   btn.classList.remove('armed'); btn.textContent = 'Verwijderen';
@@ -1085,32 +1488,34 @@ function selectTab(name) {
   if (name !== 'wedstrijden' && !$('#mfPanel').hidden) mfOpen(false);
   document.querySelectorAll('[role="tab"]').forEach(t => { const on = t.id === 't-' + name; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
   document.querySelectorAll('[role="tabpanel"]').forEach(p => p.hidden = p.id !== 'p-' + name);
-  const t = $('#t-' + name), bar = $('.tabs');
-  bar.scrollTo({ left: t.offsetLeft - (bar.clientWidth - t.offsetWidth) / 2, behavior: 'smooth' });
-  tabArrows();
+  // A new screen starts at the top, like switching tabs in a native app.
+  scrollTo({ top: 0 });
+  moveTabInd();
 }
-function tabArrows() {
-  // Only when the tabs don't fit; then an arrow shows while there's a tab (or hidden scroll) that way.
-  const bar = $('.tabs'), ts = visibleTabs(), i = ts.findIndex(t => t.id === 't-' + S.tab), fits = bar.scrollWidth <= bar.clientWidth + 2;
-  $('#tabPrev').hidden = fits || (i <= 0 && bar.scrollLeft <= 2);
-  $('#tabNext').hidden = fits || (i >= ts.length - 1 && bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 2);
+// One indicator slides to the active tab: an underline on desktop, a short pill above the icon on phones.
+// transform only (translate + scaleX of a 100px bar), so it never triggers layout.
+function moveTabInd(instant) {
+  const t = $('#t-' + S.tab), ind = $('.tabind'); if (!t || !ind || t.hidden) return;
+  const phone = matchMedia('(max-width: 767px)').matches, w = phone ? 28 : t.offsetWidth, x = phone ? t.offsetLeft + (t.offsetWidth - w) / 2 : t.offsetLeft;
+  if (instant) ind.style.transition = 'none';
+  ind.style.transform = `translateX(${x}px) scaleX(${w / 100})`;
+  if (instant) { ind.offsetWidth; ind.style.transition = ''; }
 }
-function visibleTabs() { return [...document.querySelectorAll('[role="tab"]')].filter(t => !t.hidden); }
-const shiftTab = d => { const ts = visibleTabs(), i = ts.findIndex(t => t.id === 't-' + S.tab), n = ts[Math.min(ts.length - 1, Math.max(0, i + d))]; selectTab(n.id.slice(2)); };
-$('#tabPrev').onclick = () => shiftTab(-1);
-$('#tabNext').onclick = () => shiftTab(1);
-$('.tabs').addEventListener('scroll', tabArrows, { passive: true });
-addEventListener('resize', tabArrows);
-selectTab('spelers');
+addEventListener('resize', () => moveTabInd(true));
+selectTab('overzicht'); moveTabInd(true);
 
 // "+ Nieuw seizoen…" lives in the season picker; it opens the dialog and keeps the current season selected.
 $('#season').addEventListener('change', e => {
   if (e.target.value === '__new') { e.target.value = S.season || 'all'; $('#formSeason').reset(); $('#dlgSeason').showModal(); return; }
   S.season = e.target.value; render();
+  anim($('main'), [{ opacity: 0.35 }, { opacity: 1 }], { duration: 220 });
 });
 document.addEventListener('click', e => {
+  const ksort = e.target.closest('[data-ksort]'); if (ksort) { S.ksort = ksort.dataset.ksort; render(); return; }
   const sort = e.target.closest('[data-sort]');
   if (sort) { const k = sort.dataset.sort; S.sort = { key: k, dir: S.sort.key === k ? (S.sort.dir === 'asc' ? 'desc' : 'asc') : (k === 'name' || k === 'num' ? 'asc' : 'desc') }; render(); return; }
+  const nav = e.target.closest('[data-go], [data-show], [data-pinfo]');
+  if (nav) { e.target.closest('dialog')?.close(); if (nav.dataset.go) selectTab(nav.dataset.go); else if (nav.dataset.show) openMatchInfo(nav.dataset.show); else openPlayerInfo(nav.dataset.pinfo); return; }
   const act = e.target.closest('[data-act]'); if (act) { ({ addPlayer: openPlayer, addMatch: openMatch, addSponsor: () => openSponsor(), addLogo: () => openLogo(), keeperRules: () => openKeeperRules(act.dataset.keeper), keeperList: () => openKeeperList(act.dataset.keeper), keeperCalc: () => openKeeperCalc(act.dataset.keeper, act.dataset.match) })[act.dataset.act](); return; }
   const sub = e.target.closest('[data-sub]');
   if (sub) { document.querySelectorAll('[data-sub]').forEach(b => { const on = b === sub; b.setAttribute('aria-pressed', on); $('#' + b.dataset.sub).hidden = !on; }); $('#addLogo').hidden = sub.dataset.sub !== 'logoPane'; if (sub.dataset.sub === 'postGrid') drawPost(); return; }
@@ -1119,16 +1524,34 @@ document.addEventListener('click', e => {
   const sr = e.target.closest('[data-sponsor]'); if (sr && !e.target.closest('a') && Date.now() - justDragged > 400) { openSponsor(S.sponsors.find(s => s.id === sr.dataset.sponsor)); return; }
   const lr = e.target.closest('[data-logo]'); if (lr) { openLogo(S.logos.find(l => l.id === lr.dataset.logo)); return; }
   // Editing a player: Bewerken on phones, the table row on desktop (openPlayer checks the role).
-  const pr = e.target.closest('[data-player]'); if (pr) { openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
+  const pr = e.target.closest('[data-player]'); if (pr) { e.target.closest('dialog')?.close(); openPlayer(S.players.find(p => p.id === pr.dataset.player)); return; }
   if (!S.canEdit) return;
-  const mr = e.target.closest('[data-match]'); if (mr) openMatch(S.matches.find(m => m.id === mr.dataset.match));
+  const mr = e.target.closest('[data-match]'); if (mr) { e.target.closest('dialog')?.close(); openMatch(S.matches.find(m => m.id === mr.dataset.match)); }
 });
-document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-player].click, [data-match].click, [data-sponsor].click, [data-logo].click, .kcard[data-act]')) e.target.click(); });
+// Every popup opens at its top. The autofocused close button gets focus while the sheet is still sliding in from
+// below the screen, and the browser scrolls the sheet to reach it; this undoes that for all callers at once.
+const showModal0 = HTMLDialogElement.prototype.showModal;
+HTMLDialogElement.prototype.showModal = function () { showModal0.call(this); this.scrollTop = 0; requestAnimationFrame(() => { this.scrollTop = 0; }); };
+// Bottom sheets (phones): drag the header down to close. Follows the finger; past 90px or a quick flick closes it.
+document.addEventListener('pointerdown', e => {
+  const head = e.target.closest('.dhead'), dlg = head?.closest('dialog');
+  if (!dlg || e.target.closest('button') || !matchMedia('(max-width: 639px)').matches) return;
+  const y0 = e.clientY, t0 = performance.now(); let dy = 0;
+  dlg.style.transition = 'none';
+  const move = ev => { dy = Math.max(0, ev.clientY - y0); dlg.style.transform = `translateY(${dy}px)`; };
+  const up = () => {
+    removeEventListener('pointermove', move); removeEventListener('pointerup', up); removeEventListener('pointercancel', up);
+    dlg.style.transition = dlg.style.transform = '';
+    if (dy > 90 || dy / (performance.now() - t0) > 0.6) dlg.close();
+  };
+  addEventListener('pointermove', move); addEventListener('pointerup', up); addEventListener('pointercancel', up);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('tr[data-pinfo], tr[data-keeper], li[data-show], [data-sponsor].click, [data-logo].click')) e.target.click(); });
 
 $('#addMatch').onclick = () => openMatch();
 
 /* who added / changed what: audit_log is filled by a database trigger (audit.sql) and only editors can read it */
-const LOG_FIELDS = { played: 'opstelling', goals: 'goals', assists: 'assists', own_goals: 'eigen goals', gf: 'uitslag', ga: 'uitslag', date: 'datum', opponent: 'tegenstander', home: 'thuis/uit', yellow: 'kaarten', red: 'kaarten', mvp: 'man of the match', keeper: 'keeper', keeper2: 'tweede keeper', keeper2_ga: 'tweede keeper', captain: 'captain', manager: 'manager', season: 'seizoen', name: 'naam', number: 'rugnummer', position: 'rollen', roles: 'rollen', injury: 'blessure' };
+const LOG_FIELDS = { played: 'opstelling', goals: 'goals', assists: 'assists', own_goals: 'eigen goals', gf: 'uitslag', ga: 'uitslag', date: 'datum', opponent: 'tegenstander', home: 'thuis/uit', yellow: 'kaarten', red: 'kaarten', mvp: 'man of the match', keeper: 'keeper', keeper2: 'tweede keeper', keeper2_ga: 'tweede keeper', captain: 'captain', manager: 'manager', season: 'seizoen', name: 'naam', number: 'rugnummer', position: 'rollen', roles: 'rollen', injury: 'blessure', player_type: 'soort speler' };
 // Who made a change: the account's role (audit-roles.sql); no account = a change made directly in SQL = Beheerder.
 const ROLE_LABEL = { captain: 'Captain', manager: 'Manager', coach: 'Coach', socials: 'Socials', beheerder: 'Beheerder' };
 const who = r => ROLE_LABEL[r.role] || (r.email ? shortName(r.email) : 'Beheerder');
@@ -1156,7 +1579,8 @@ async function showLog(el, tbl, id) {
 
 /* player dialog */
 let editPlayer = null;
-$('#pInj').addEventListener('input', () => { $('#pInjRow').hidden = !$('#pInj').checked; if ($('#pInj').checked) $('#pInjNote').focus(); });
+// No focus jump into the (optional) note: that would pop the phone keyboard open uninvited.
+$('#pInj').addEventListener('input', () => { $('#pInjRow').hidden = !$('#pInj').checked; });
 // Players are added, edited and deleted by captain and manager only (is_admin; player-admin.sql enforces it in the database).
 function openPlayer(p) {
   if (!S.isAdmin) return;
@@ -1164,6 +1588,7 @@ function openPlayer(p) {
   $('#dlgPlayerTitle').textContent = p ? 'Speler bewerken' : 'Speler toevoegen';
   $('#pName').value = p?.name || ''; $('#pNum').value = p?.number ?? '';
   $('#pKeeper').checked = p?.position === 'keeper'; $('#pCaptain').checked = hasRole(p, 'captain'); $('#pManager').checked = hasRole(p, 'manager');
+  document.querySelector(`#pType input[value="${PTYPE[p?.player_type] ? p.player_type : 'vast'}"]`).checked = true;
   $('#pInj').checked = !!p?.injury; $('#pInjNote').value = p?.injury && p.injury !== 'geblesseerd' ? p.injury : ''; $('#pInjRow').hidden = !p?.injury;
   $('#pDelete').hidden = !p; showLog($('#pLog'), 'players', p?.id);
   if (p) armDelete($('#pDelete'), async () => { if (await save(() => S.db.doc('players/' + p.id).delete(), p.name + ' verwijderd')) $('#dlgPlayer').close(); });
@@ -1176,7 +1601,11 @@ $('#formPlayer').addEventListener('submit', async e => {
     roles: ['captain', 'manager'].filter(r => $('#p' + r[0].toUpperCase() + r.slice(1)).checked),
     injury: $('#pInj').checked ? ($('#pInjNote').value.trim() || 'geblesseerd') : null };
   if (!data.name) return;
+  // Soort speler needs player-type.sql; until that ran, rows have no player_type and 'vast' is simply not sent.
+  const type = document.querySelector('#pType input:checked').value;
+  if (type !== 'vast' || S.players.some(x => 'player_type' in x)) data.player_type = type;
   const ref = editPlayer ? S.db.doc('players/' + editPlayer.id) : S.db.collection('players').doc();
+  S.saved = ref.id;
   if (await save(() => ref.set(data), data.name + ' opgeslagen')) $('#dlgPlayer').close();
 });
 
@@ -1221,7 +1650,7 @@ function openMatch(m) {
 }
 // Steps 3 and 5 only list who played (step 2); the data stays in the DOM until save.
 function goStep(n) {
-  mStep = n;
+  const from = mStep; mStep = n;
   const played = new Set([...document.querySelectorAll('#mPlayed .pl:checked')].map(i => i.value));
   document.querySelectorAll('#mStats [data-id], #mCards [data-id]').forEach(r => r.hidden = !played.has(r.dataset.id));
   document.querySelectorAll('#formMatch [data-empty]').forEach(e => e.hidden = played.size > 0);
@@ -1237,11 +1666,13 @@ function goStep(n) {
   $('#mBack').hidden = n === 0; $('#mNext').hidden = last; $('#mSave').hidden = !last;
   $('#formMatch .wiz-body').scrollTop = 0;
   checkGoals(); checkKeepers();
+  // Next/back: the new step slides in from the side you're heading to (spatial: steps sit side by side).
+  if ($('#dlgMatch').open && from !== n) anim(wsteps()[n], [{ opacity: 0, transform: `translateX(${n > from ? 24 : -24}px)` }, { opacity: 1, transform: 'none' }], { duration: 240 });
 }
 // Form is novalidate (hidden steps can't show a bubble), so each step checks itself.
 function stepValid(i) {
   const bad = [...wsteps()[i].querySelectorAll('input, select')].find(el => !el.checkValidity());
-  if (bad) { if (mStep !== i) goStep(i); bad.reportValidity(); }
+  if (bad) { if (mStep !== i) goStep(i); bad.reportValidity(); shake($('#mNext').hidden ? $('#mSave') : $('#mNext')); }
   return !bad;
 }
 $('#mNext').onclick = () => { if (stepValid(mStep)) goStep(mStep + 1); };
@@ -1261,6 +1692,7 @@ $('#formMatch').addEventListener('click', e => {
   const b = e.target.closest('[data-step]'); if (!b) return;
   const i = b.parentNode.querySelector('input'), v = Math.min(+i.max || 99, Math.max(0, (+i.value || 0) + +b.dataset.step));
   i.value = v; i.dispatchEvent(new Event('input', { bubbles: true }));
+  anim(i, [{ transform: `translateY(${+b.dataset.step > 0 ? -3 : 3}px) scale(1.12)` }, { transform: 'none' }], { duration: 180 });
 });
 // Second keeper concedes what's entered; the first keeper the rest.
 function checkKeepers() {
@@ -1296,6 +1728,7 @@ $('#formMatch').addEventListener('submit', async e => {
     keeper2: keeper2 || null, keeper2_ga: keeper2 ? +$('#mKeeper2GA').value || 0 : 0, own_goals: +$('#mOwn').value || 0,
   };
   const ref = editMatch ? S.db.doc('matches/' + editMatch.id) : S.db.collection('matches').doc();
+  S.saved = ref.id;
   if (await save(() => ref.set(data), 'Wedstrijd tegen ' + data.opponent + ' opgeslagen')) $('#dlgMatch').close();
 });
 
@@ -1320,21 +1753,89 @@ function imgFor(src) {
 }
 function oppLogo(name) { const src = logoRow(name)?.logo; return src ? imgFor(src) : null; }
 
-// Makes near-white pixels transparent, but only the ones connected to the image edge,
-// so white parts inside the logo (stripes, letters) stay.
+// Background remover (Logo's, "Achtergrond en witte rand verwijderen"). Works for logos on white, on black or on any
+// flat colour, already cut-out logos and screenshots with a frame. Three passes:
+//   1. background: see-through pixels, the border colour, or (on white) near-white, connected to the image edge;
+//   2. wrapper: a black/grey/white ring around the logo (sticker rim, leftover frame), only when it really wraps it;
+//   3. edge band (2 px): white mixed into the edge pixels becomes transparency, the logo colour stays.
 function removeWhite(img) {
   const c = document.createElement('canvas'), w = c.width = img.naturalWidth || img.width, h = c.height = img.naturalHeight || img.height;
   const x = c.getContext('2d'); x.drawImage(img, 0, 0);
-  const id = x.getImageData(0, 0, w, h), p = id.data, bg = new Uint8Array(w * h), stack = [];
-  const light = i => Math.min(p[i * 4], p[i * 4 + 1], p[i * 4 + 2]);
-  const push = i => { if (!bg[i] && (p[i * 4 + 3] === 0 || light(i) >= 225)) { bg[i] = 1; stack.push(i); } };
-  for (let i = 0; i < w; i++) { push(i); push((h - 1) * w + i); }
-  for (let j = 0; j < h; j++) { push(j * w); push(j * w + w - 1); }
-  while (stack.length) { const i = stack.pop(), col = i % w; if (col > 0) push(i - 1); if (col < w - 1) push(i + 1); if (i >= w) push(i - w); if (i < w * (h - 1)) push(i + w); }
-  for (let i = 0; i < w * h; i++) {
-    if (bg[i]) { p[i * 4 + 3] = 0; continue; }
-    const col = i % w, edge = (col > 0 && bg[i - 1]) || (col < w - 1 && bg[i + 1]) || (i >= w && bg[i - w]) || (i < w * (h - 1) && bg[i + w]);
-    if (edge && light(i) > 160) p[i * 4 + 3] = Math.round(p[i * 4 + 3] * (255 - light(i)) / 95);
+  const id = x.getImageData(0, 0, w, h), p = id.data, N = w * h;
+  const lo = i => Math.min(p[i * 4], p[i * 4 + 1], p[i * 4 + 2]), hi = i => Math.max(p[i * 4], p[i * 4 + 1], p[i * 4 + 2]);
+  const clear = i => p[i * 4 + 3] < 16, neutral = i => hi(i) - lo(i) <= 36;
+  // Border colour: per-channel median of the opaque pixels 3 px in from the edge (skips a 1-2 px frame).
+  const ring = [], k = Math.min(3, (Math.min(w, h) >> 1) - 1);
+  for (let i = k; i < w - k; i++) ring.push(k * w + i, (h - 1 - k) * w + i);
+  for (let j = k; j < h - k; j++) ring.push(j * w + k, j * w + w - 1 - k);
+  const opaque = ring.filter(i => !clear(i)), med = ch => { const v = opaque.map(i => p[i * 4 + ch]).sort((a, b) => a - b); return v[v.length >> 1] ?? 255; };
+  const bgc = [med(0), med(1), med(2)];
+  const nearBg = i => Math.max(Math.abs(p[i * 4] - bgc[0]), Math.abs(p[i * 4 + 1] - bgc[1]), Math.abs(p[i * 4 + 2] - bgc[2])) <= 40;
+  // Grows `seen` into neighbours that pass ok(); starts from the seeds that pass ok() plus everything already seen.
+  const flood = (seen, ok, seeds) => {
+    const st = []; for (let i = 0; i < N; i++) if (seen[i]) st.push(i);
+    for (const i of seeds) if (!seen[i] && ok(i)) { seen[i] = 1; st.push(i); }
+    while (st.length) { const i = st.pop(), col = i % w;
+      for (const n of [col > 0 && i - 1, col < w - 1 && i + 1, i >= w && i - w, i < N - w && i + w]) if (n !== false && !seen[n] && ok(n)) { seen[n] = 1; st.push(n); } }
+    return seen;
+  };
+  const edge = []; for (let d = 0; d <= k; d++) { for (let i = 0; i < w; i++) edge.push(d * w + i, (h - 1 - d) * w + i); for (let j = 0; j < h; j++) edge.push(j * w + d, j * w + w - 1 - d); }
+  // What is the background? Mostly see-through border = already cut out: only drop stray see-through pixels, keep
+  // every colour (white parts of a logo touching the edge are logo). White border = classic JPEG/PNG on white.
+  const kind = opaque.length < ring.length / 2 ? 'clear' : bgc.every(v => v >= 200) ? 'white' : 'colour';
+  // 1. background: see-through, the border colour, or (on white) any near-white, connected to the edge
+  let out = flood(new Uint8Array(N), i => clear(i) || (kind !== 'clear' && nearBg(i)) || (kind === 'white' && lo(i) >= 200 && neutral(i)), edge);
+  // 2. wrapper: black, grey or white layers up to 24 px around the logo (a sticker rim, a leftover screenshot frame).
+  //    Kept only when it really wraps the logo: behind it at least 85% of the outline must be colour. Logos whose own
+  //    black or white parts touch the edge (Kanja, NVS) fail that test and stay as they are.
+  const peel = out.slice(), depth = new Uint8Array(N), pq = []; let eaten = 0, left = 0;
+  for (let i = 0; i < N; i++) if (out[i]) pq.push(i); else left++;
+  // the image border counts as outside too (logos cropped tight against the edge)
+  for (let i = 0; i < w; i++) for (const e of [i, N - w + i]) if (!peel[e] && neutral(e)) { peel[e] = 1; pq.push(e); eaten++; }
+  for (let j = 1; j < h - 1; j++) for (const e of [j * w, j * w + w - 1]) if (!peel[e] && neutral(e)) { peel[e] = 1; pq.push(e); eaten++; }
+  for (let n = 0; n < pq.length; n++) {
+    const i = pq[n], col = i % w, d = depth[i] + 1; if (d > 24) continue;
+    for (const m of [col > 0 && i - 1, col < w - 1 && i + 1, i >= w && i - w, i < N - w && i + w])
+      if (m !== false && !peel[m] && neutral(m)) { peel[m] = 1; depth[m] = d; pq.push(m); eaten++; }
+  }
+  let front = 0, grey = 0;
+  for (let i = 0; i < N; i++) {
+    if (peel[i] || clear(i)) continue; const col = i % w;
+    if ((col > 0 && peel[i - 1]) || (col < w - 1 && peel[i + 1]) || (i >= w && peel[i - w]) || (i < N - w && peel[i + w])) { front++; if (neutral(i)) grey++; }
+  }
+  const wrapped = eaten > 0 && front > 0 && grey / front < 0.15 && eaten < left * 0.35;
+  if (wrapped) {
+    out = peel;
+    // Loose black/grey/white crumbs of that frame that are not attached to the logo (< 1.5% of it) go as well.
+    const comp = new Int32Array(N).fill(-1), sizes = [], greys = []; let total = 0;
+    for (let s0 = 0; s0 < N; s0++) {
+      if (out[s0] || comp[s0] >= 0) continue;
+      const id0 = sizes.length, st = [s0]; let n = 0, g0 = 0; comp[s0] = id0;
+      while (st.length) { const i = st.pop(), col = i % w; n++; if (neutral(i)) g0++;
+        for (const m of [col > 0 && i - 1, col < w - 1 && i + 1, i >= w && i - w, i < N - w && i + w]) if (m !== false && !out[m] && comp[m] < 0) { comp[m] = id0; st.push(m); } }
+      sizes.push(n); greys.push(g0); total += n;
+    }
+    for (let i = 0; i < N; i++) { const k0 = comp[i]; if (k0 >= 0 && sizes[k0] < total * 0.015 && greys[k0] > sizes[k0] * 0.9) out[i] = 1; }
+  }
+  else if (kind === 'clear') return c; // already cut out and nothing wraps it: leave the logo alone
+  // 3. edge band, 2 px, un-mixed from white
+  const BAND = 2, dist = new Uint8Array(N).fill(255), q = [];
+  for (let i = 0; i < N; i++) if (out[i]) { dist[i] = 0; q.push(i); }
+  for (let n = 0; n < q.length; n++) {
+    const i = q[n], d = dist[i] + 1; if (d > BAND) continue;
+    const col = i % w, row = (i - col) / w;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const cx = col + dx, cy = row + dy, m = cy * w + cx;
+      if ((dx || dy) && cx >= 0 && cx < w && cy >= 0 && cy < h && dist[m] > d) { dist[m] = d; q.push(m); }
+    }
+  }
+  for (let i = 0, o = 0; i < N; i++, o += 4) {
+    if (out[i]) { p[o + 3] = 0; continue; }
+    if (dist[i] > BAND) continue;
+    const a = Math.max(255 - p[o], 255 - p[o + 1], 255 - p[o + 2]) / 255;
+    if (a < 0.03) { p[o + 3] = 0; continue; }
+    for (let ch = 0; ch < 3; ch++) p[o + ch] = Math.round(255 - (255 - p[o + ch]) / a);
+    p[o + 3] = Math.round(p[o + 3] * a);
   }
   x.putImageData(id, 0, 0);
   return c;
@@ -1517,8 +2018,8 @@ const safeLogo = s => /^data:image\//.test(s || '') ? s : '';
 const safeSite = s => /^https?:\/\//i.test(s || '') ? s : '';
 function renderSponsors() {
   const el = $('#p-sponsors'), add = S.canPost && addBtn('addSponsor', 'Sponsor toevoegen');
-  if (!S.sponsors.length) { el.innerHTML = ptool('', add) + emptyState('Nog geen sponsors', 'Voeg sponsors toe met naam, website en logo. Daarna kun je ze onder je Instagram-posts zetten.'); return; }
-  el.innerHTML = `${ptool('<p class="note">Sleep de tegels om de volgorde te veranderen. Deze volgorde staat ook onder de Instagram-posts.</p>', add)}<ul class="sponsors">${S.sponsors.map(s => `<li class="sponsor click" tabindex="0" data-sponsor="${esc(s.id)}">
+  if (!S.sponsors.length) { el.innerHTML = phead('Sponsors') + ptool('', add) + emptyState('Nog geen sponsors', 'Voeg sponsors toe met naam, website en logo. Daarna kun je ze onder je Instagram-posts zetten.'); return; }
+  el.innerHTML = `${phead('Sponsors', S.sponsors.length + ' partners')}${ptool('<p class="note">Sleep de tegels om de volgorde te veranderen. Deze volgorde staat ook onder de Instagram-posts.</p>', add)}<ul class="sponsors">${S.sponsors.map(s => `<li class="sponsor click" tabindex="0" data-sponsor="${esc(s.id)}">
       <div class="sp-logo">${safeLogo(s.logo) ? `<img src="${esc(s.logo)}" alt="Logo ${esc(s.name)}">` : `<span>${esc(s.name)}</span>`}</div>
       <div class="sp-name">${esc(s.name)}</div>
       ${safeSite(s.website) ? `<a href="${esc(s.website)}" target="_blank" rel="noopener">${esc(s.website.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, ''))}</a>` : ''}
@@ -1577,6 +2078,7 @@ $('#formSponsor').addEventListener('submit', async e => {
   if (!editSponsor && S.sponsors.some(s => 'position' in s)) data.position = S.sponsors.length + 1;
   const from = editSponsor ? S.sponsors.findIndex(s => s.id === editSponsor.id) : -1, to = +$('#spPos').value;
   const ref = editSponsor ? S.db.doc('sponsors/' + editSponsor.id) : S.db.collection('sponsors').doc();
+  S.saved = ref.id;
   if (await save(() => ref.set(data), data.name + ' opgeslagen')) { $('#dlgSponsor').close(); if (from >= 0 && from !== to) reorderSponsors(from, to); }
 });
 
@@ -1593,11 +2095,14 @@ function renderLogos() {
 }
 
 let editLogo = null, lgRaw = null, lgLogo = '';
-function showLgLogo() { $('#lgPreview').hidden = !lgLogo; $('#lgPreview').innerHTML = lgLogo ? `<img src="${esc(lgLogo)}" alt="Voorbeeld van het logo">` : ''; }
+// With the background removed the preview turns black, like the Instagram post, so any leftover rim is visible.
+function showLgLogo() { $('#lgPreview').classList.toggle('dark', $('#lgCut').checked); $('#lgPreview').hidden = !lgLogo; $('#lgPreview').innerHTML = lgLogo ? `<img src="${esc(lgLogo)}" alt="Voorbeeld van het logo">` : ''; }
 function openLogo(l) {
   editLogo = l || null; lgRaw = null; lgLogo = safeLogo(l?.logo);
   $('#dlgLogoTitle').textContent = l ? 'Logo bewerken' : 'Logo toevoegen';
   $('#lgClub').value = l?.club || ''; $('#lgTeam').value = l?.team || ''; $('#lgFile').value = ''; $('#lgCut').checked = false; showLgLogo();
+  // A stored logo can be cleaned too: load it as the source, so ticking the checkbox works without a new upload.
+  if (lgLogo) { const img = new Image(), src = lgLogo; img.onload = () => { if (editLogo === l && !lgRaw) lgRaw = img; }; img.src = src; }
   $('#lgDelete').hidden = !l;
   if (l) armDelete($('#lgDelete'), async () => { if (await save(() => S.db.doc('logos/' + l.id).delete(), 'Logo verwijderd')) $('#dlgLogo').close(); });
   $('#dlgLogo').showModal();
@@ -1627,6 +2132,7 @@ $('#formLogo').addEventListener('submit', async e => {
   if (!data.logo) { toast('Kies eerst een logo.'); return; }
   if (S.logos.some(l => l.id !== editLogo?.id && norm(l.club) === norm(data.club) && norm(l.team) === norm(data.team))) { toast('Voor ' + (data.team || data.club) + ' staat al een logo. Klik daarop om het te wijzigen.'); return; }
   const ref = editLogo ? S.db.doc('logos/' + editLogo.id) : S.db.collection('logos').doc();
+  S.saved = ref.id;
   if (await save(() => ref.set(data), 'Logo van ' + (data.team || data.club) + ' opgeslagen')) $('#dlgLogo').close();
 });
 
@@ -1637,7 +2143,8 @@ function teamFull() { const t = team(); return t.team_name + (t.team_number ? ' 
 function showLogo(img, svg, src) { const ok = safeLogo(src); img.hidden = !ok; svg.style.display = ok ? 'none' : ''; if (ok) img.src = src; }
 function applySettings() {
   const t = team();
-  $('#teamName').textContent = teamFull();
+  $('#teamName').textContent = $('#appName').textContent = teamFull();
+  showLogo($('#barLogoImg'), $('#barLogoSvg'), t.logo);
   $('#teamSub').textContent = ['Futsal', t.klasse].filter(Boolean).join(', ') + '.' + (t.home_base ? ' Thuisbasis ' + t.home_base + '.' : '');
   $('#teamTag').textContent = t.hashtag || ''; $('#teamTag').hidden = !t.hashtag;
   document.title = t.team_name + ' Stats';
@@ -1719,25 +2226,33 @@ async function refreshAuth() {
   S.isAdmin = S.user ? !!(await sb.rpc('is_admin')).data : false;
   $('#settingsBtn').hidden = !S.isAdmin;
   ['t-posts', 't-sponsors'].forEach(id => $('#' + id).hidden = !S.canPost);
-  tabArrows();
-  if (!S.canPost && ['posts', 'sponsors'].includes(S.tab)) selectTab('spelers');
-  $('#login').textContent = S.user ? 'Uitloggen' : 'Inloggen';
-  $('#login').title = S.user ? 'Ingelogd als ' + shortName(S.user.email) : 'Inloggen voor coaches en aanvoerders';
+  moveTabInd(true);
+  if (!S.canPost && ['posts', 'sponsors'].includes(S.tab)) selectTab('overzicht');
+  $('#login').setAttribute('aria-label', S.user ? 'Uitloggen' : 'Inloggen');
+  $('#login').setAttribute('aria-pressed', !!S.user);
+  $('#login').title = S.user ? 'Ingelogd als ' + shortName(S.user.email) + '. Tik om uit te loggen.' : 'Inloggen voor coaches en aanvoerders';
   render(); loadMatchLog();
 }
 sb.auth.onAuthStateChange(() => setTimeout(refreshAuth, 0));
 
 $('#login').onclick = async () => {
   if (S.user) { await sb.auth.signOut(); toast('Uitgelogd'); return; }
-  $('#formLogin').reset(); $('#loginError').hidden = true; $('#dlgLogin').showModal();
+  $('#formLogin').reset(); $('#loginError').hidden = $('#capsHint').hidden = true; showPw(false); $('#dlgLogin').showModal();
 };
+// Wrong input: a short sideways shake (like a refused password on macOS).
+const shake = el => anim(el, [{ transform: 'none' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(7px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(2px)' }, { transform: 'none' }], { duration: 360, easing: 'ease-out' });
+// Show password: the eye swaps the field type. pointerdown keeps focus in the field, so the phone keyboard stays open.
+function showPw(on) { $('#lPass').type = on ? 'text' : 'password'; $('#lShow').setAttribute('aria-pressed', on); $('#lShow').setAttribute('aria-label', on ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'); $('#lShow').title = $('#lShow').getAttribute('aria-label'); }
+$('#lShow').addEventListener('pointerdown', e => e.preventDefault());
+$('#lShow').onclick = () => showPw($('#lPass').type === 'password');
+['keydown', 'keyup'].forEach(t => $('#lPass').addEventListener(t, e => { if (e.getModifierState) $('#capsHint').hidden = !e.getModifierState('CapsLock'); }));
 $('#formLogin').addEventListener('submit', async e => {
   e.preventDefault();
   const btn = $('#loginSubmit'), err = $('#loginError');
-  btn.disabled = true; btn.textContent = 'Bezig…'; err.hidden = true;
+  btn.disabled = true; btn.classList.add('busy'); err.hidden = true;
   const { data, error } = await sb.auth.signInWithPassword({ email: toEmail($('#lEmail').value.trim()), password: $('#lPass').value });
-  btn.disabled = false; btn.textContent = 'Inloggen';
-  if (error) { err.textContent = 'Inloggen lukte niet. Controleer je gebruikersnaam en wachtwoord.'; err.hidden = false; return; }
+  btn.disabled = false; btn.classList.remove('busy');
+  if (error) { err.textContent = 'Inloggen lukte niet. Controleer je gebruikersnaam en wachtwoord.'; err.hidden = false; shake($('#formLogin .pw')); return; }
   const ok = (await sb.rpc('is_editor')).data || (await sb.rpc('can_post')).data;
   if (!ok) { err.textContent = 'Je bent ingelogd, maar dit account heeft geen bewerkrechten. Vraag de aanvoerder om je toe te voegen.'; err.hidden = false; return; }
   $('#dlgLogin').close(); toast('Ingelogd als ' + shortName(data.user.email));

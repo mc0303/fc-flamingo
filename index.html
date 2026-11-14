@@ -741,7 +741,7 @@ dialog[open]::backdrop { opacity: 1; }
           <label class="check-row"><input type="checkbox" id="mfGoals" checked> Doelpunten</label>
           <label class="check-row"><input type="checkbox" id="mfAssists" checked> Assists</label>
         </div>
-        <button id="addMatch" class="btn primary addbtn" type="button" aria-label="Wedstrijd toevoegen" title="Wedstrijd toevoegen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lbl">Wedstrijd toevoegen</span></button>
+        <button id="addMatch" class="btn primary addbtn" type="button" aria-label="Wedstrijd Toevoegen" title="Wedstrijd Toevoegen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lbl">Wedstrijd Toevoegen</span></button>
       </div>
       <p class="note" id="mfNote" aria-live="polite" hidden></p>
       <div id="matchList"></div>
@@ -751,15 +751,15 @@ dialog[open]::backdrop { opacity: 1; }
     <div class="panel" id="p-posts" role="tabpanel" aria-labelledby="t-posts" hidden>
       <div class="phead"><h2>Instagram</h2></div>
       <div class="ptool">
-        <div class="subnav" role="group" aria-label="Instagram"><button type="button" class="btn" data-sub="postGrid" aria-pressed="true">Post maken</button><button type="button" class="btn" data-sub="logoPane" aria-pressed="false">Logo's</button></div>
-        <button class="btn primary addbtn" type="button" id="addLogo" data-act="addLogo" aria-label="Logo toevoegen" title="Logo toevoegen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lbl">Logo toevoegen</span></button>
+        <div class="subnav" role="group" aria-label="Instagram"><button type="button" class="btn" data-sub="postGrid" aria-pressed="true">Post Maken</button><button type="button" class="btn" data-sub="logoPane" aria-pressed="false">Logo's</button></div>
+        <button class="btn primary addbtn" type="button" id="addLogo" data-act="addLogo" aria-label="Logo Toevoegen" title="Logo Toevoegen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lbl">Logo Toevoegen</span></button>
       </div>
       <div id="logoPane" hidden></div>
       <div class="post-grid" id="postGrid">
         <form id="postForm" class="post-form">
-          <h2>Post maken</h2>
+          <h2>Post Maken</h2>
           <div class="fields">
-            <div class="field"><label for="poType">Soort post</label><select id="poType"><option value="matchday">Matchday</option><option value="uitslag">Uitslag</option></select></div>
+            <div class="field"><label for="poType">Soort Post</label><select id="poType"><option value="matchday">Matchday</option><option value="uitslag">Uitslag</option></select></div>
             <div class="field"><label for="poSize">Formaat</label><select id="poSize"><option value="story">Story, 1080 x 1920</option><option value="post">Post, 1080 x 1350</option></select></div>
           </div>
           <div class="field" data-for="uitslag" hidden><label for="poMatch">Wedstrijd</label><select id="poMatch"></select></div>
@@ -769,7 +769,7 @@ dialog[open]::backdrop { opacity: 1; }
           </div>
           <div class="fields" data-for="matchday">
             <div class="field"><label for="poOpp">Tegenstander</label><input id="poOpp" list="poOpps" maxlength="40" autocomplete="off"><datalist id="poOpps"></datalist></div>
-            <div class="field"><label for="poHome">Thuis of uit</label><select id="poHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
+            <div class="field"><label for="poHome">Thuis of Uit</label><select id="poHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
             <div class="field"><label for="poDate">Datum</label><input id="poDate" type="date"></div>
             <div class="field"><label for="poTime">Aftrap</label><input id="poTime" type="time" value="19:00"></div>
             <div class="field"><label for="poPlace">Locatie</label><input id="poPlace" maxlength="30"></div>
@@ -780,7 +780,7 @@ dialog[open]::backdrop { opacity: 1; }
           <label class="check-row"><input type="checkbox" id="poSponsors" checked> Sponsors onder de post zetten</label>
           <div class="actions">
             <button type="button" class="btn" id="poShare" hidden>Delen</button>
-            <button type="button" class="btn primary" id="poDownload">Afbeelding downloaden</button>
+            <button type="button" class="btn primary" id="poDownload">Afbeelding Downloaden</button>
           </div>
         </form>
         <div class="post-preview"><canvas id="poCanvas" width="1080" height="1920" role="img" aria-label="Voorbeeld van de Instagram-post"></canvas></div>
@@ -798,10 +798,10 @@ dialog[open]::backdrop { opacity: 1; }
     <fieldset class="plain"><legend class="lbl">Rollen</legend>
       <div class="checks"><label class="check-row"><input type="checkbox" id="pKeeper"> Keeper</label><label class="check-row"><input type="checkbox" id="pCaptain"> Captain</label><label class="check-row"><input type="checkbox" id="pManager"> Manager</label></div>
     </fieldset>
-    <fieldset class="plain"><legend class="lbl">Soort speler</legend>
-      <div class="seg" id="pType"><label><input type="radio" name="pType" value="vast" checked><span>Vaste speler</span></label><label><input type="radio" name="pType" value="gast"><span>Gastspeler</span></label><label><input type="radio" name="pType" value="invaller"><span>Invaller</span></label></div>
+    <fieldset class="plain"><legend class="lbl">Soort Speler</legend>
+      <div class="seg" id="pType"><label><input type="radio" name="pType" value="vast" checked><span>Vaste Speler</span></label><label><input type="radio" name="pType" value="gast"><span>Gastspeler</span></label><label><input type="radio" name="pType" value="invaller"><span>Invaller</span></label></div>
     </fieldset>
-    <fieldset class="plain"><legend class="lbl">Fit of geblesseerd?</legend>
+    <fieldset class="plain"><legend class="lbl">Fit of Geblesseerd?</legend>
       <label class="check-row"><input type="checkbox" id="pInj"> Geblesseerd <span class="inj-ic" aria-hidden="true"></span></label>
       <div class="field" id="pInjRow" hidden><label for="pInjNote">Wat is er en hoe lang ongeveer? (optioneel)</label><input id="pInjNote" maxlength="60" autocomplete="off" placeholder="Bijv. enkel, 2 weken"></div>
     </fieldset>
@@ -829,7 +829,7 @@ dialog[open]::backdrop { opacity: 1; }
     <div class="st-logo">
       <img id="stLogoImg" alt="Huidig logo" hidden><svg id="stLogoSvg" style="color: var(--pink)" aria-hidden="true"><use href="#fcf"/></svg>
       <div class="field"><label for="stFile">Eigen logo (gaat voor de logo's in de lijst)</label><input id="stFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
-        <button type="button" class="linkbtn" id="stLogoReset">Standaard FCF-logo gebruiken</button></div>
+        <button type="button" class="linkbtn" id="stLogoReset">Standaard FCF-logo Gebruiken</button></div>
     </div>
     <details class="log" id="stLog" hidden></details>
     <div class="actions">
@@ -841,7 +841,7 @@ dialog[open]::backdrop { opacity: 1; }
 
 <dialog id="dlgSeason" aria-labelledby="dlgSeasonTitle">
   <form id="formSeason">
-    <div class="dhead"><h2 id="dlgSeasonTitle">Nieuw seizoen</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
+    <div class="dhead"><h2 id="dlgSeasonTitle">Nieuw Seizoen</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div class="field"><label for="sName">Naam</label><input id="sName" required maxlength="20" placeholder="2026/27" autocomplete="off"></div>
     <div class="actions">
       <button type="button" class="btn" data-close>Annuleren</button>
@@ -855,12 +855,12 @@ dialog[open]::backdrop { opacity: 1; }
     <div class="dhead"><h2 id="dlgSponsorTitle">Sponsor</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div class="fields">
       <div class="field"><label for="spName">Naam</label><input id="spName" required maxlength="60" autocomplete="off"></div>
-      <div class="field" id="spPosField"><label for="spPos">Plek in de volgorde</label><select id="spPos"></select></div>
+      <div class="field" id="spPosField"><label for="spPos">Plek in de Volgorde</label><select id="spPos"></select></div>
       <div class="field"><label for="spSite">Website</label><input id="spSite" inputmode="url" maxlength="200" placeholder="www.voorbeeld.nl" autocomplete="off"></div>
     </div>
     <div class="field">
       <label for="spLogo">Logo</label>
-      <div class="logo-row"><input id="spLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><button type="button" class="btn danger" id="spLogoClear" hidden>Logo verwijderen</button></div>
+      <div class="logo-row"><input id="spLogo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml"><button type="button" class="btn danger" id="spLogoClear" hidden>Logo Verwijderen</button></div>
       <div class="sp-logo" id="spPreview" hidden></div>
     </div>
     <div class="actions">
@@ -942,13 +942,13 @@ dialog[open]::backdrop { opacity: 1; }
         <div class="fields">
           <div class="field"><label for="mDate">Datum</label><input id="mDate" type="date" required></div>
           <div class="field"><label for="mOpp">Tegenstander</label><input id="mOpp" required maxlength="40" autocomplete="off"></div>
-          <div class="field"><label for="mHome">Thuis of uit</label><select id="mHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
+          <div class="field"><label for="mHome">Thuis of Uit</label><select id="mHome"><option value="1">Thuis</option><option value="0">Uit</option></select></div>
         </div>
         <div class="scores">
           <div class="field"><label for="mGF">Goals FC Flamingo</label><span class="step"><button type="button" data-step="-1" aria-label="Min 1">−</button><input id="mGF" type="number" min="0" max="99" required inputmode="numeric"><button type="button" data-step="1" aria-label="Plus 1">+</button></span></div>
-          <div class="field"><label for="mGA">Goals tegenstander</label><span class="step"><button type="button" data-step="-1" aria-label="Min 1">−</button><input id="mGA" type="number" min="0" max="99" required inputmode="numeric"><button type="button" data-step="1" aria-label="Plus 1">+</button></span></div>
+          <div class="field"><label for="mGA">Goals Tegenstander</label><span class="step"><button type="button" data-step="-1" aria-label="Min 1">−</button><input id="mGA" type="number" min="0" max="99" required inputmode="numeric"><button type="button" data-step="1" aria-label="Plus 1">+</button></span></div>
         </div>
-        <button type="button" class="btn danger" id="mDelete" hidden>Wedstrijd verwijderen</button>
+        <button type="button" class="btn danger" id="mDelete" hidden>Wedstrijd Verwijderen</button>
         <details class="log" id="mLog" hidden></details>
       </section>
       <section class="wstep" hidden>
@@ -957,7 +957,7 @@ dialog[open]::backdrop { opacity: 1; }
       </section>
       <section class="wstep" hidden>
         <div class="wstick" id="mCheckBar" hidden><p class="check off" id="mCheck" aria-live="polite"></p></div>
-        <div class="srow"><span class="nm">Eigen goal tegenstander</span><div class="fld">Aantal<span class="step"><button type="button" data-step="-1" aria-label="Eigen goals min 1">−</button><input id="mOwn" type="number" min="0" max="30" inputmode="numeric" value="0" aria-label="Eigen goals tegenstander"><button type="button" data-step="1" aria-label="Eigen goals plus 1">+</button></span></div></div>
+        <div class="srow"><span class="nm">Eigen Goal Tegenstander</span><div class="fld">Aantal<span class="step"><button type="button" data-step="-1" aria-label="Eigen goals min 1">−</button><input id="mOwn" type="number" min="0" max="30" inputmode="numeric" value="0" aria-label="Eigen goals tegenstander"><button type="button" data-step="1" aria-label="Eigen goals plus 1">+</button></span></div></div>
         <div class="plist wide" id="mStats"></div>
         <p class="wempty" data-empty>Kies eerst in stap 2 wie er speelden.</p>
       </section>
@@ -966,8 +966,8 @@ dialog[open]::backdrop { opacity: 1; }
         <div class="field"><label for="mKeeper">Keeper</label><select id="mKeeper"></select></div>
         <label class="prow"><input type="checkbox" id="mHas2"><span class="nm">Tweede keeper ingevallen<br><small>Blessure of rode kaart</small></span></label>
         <div class="fields" id="mKeeper2Row" hidden>
-          <div class="field"><label for="mKeeper2">Tweede keeper</label><select id="mKeeper2"></select></div>
-          <div class="field"><label for="mKeeper2GA">Tegendoelpunten bij tweede keeper</label><span class="step"><button type="button" data-step="-1" aria-label="Min 1">−</button><input id="mKeeper2GA" type="number" min="0" max="99" inputmode="numeric" value="0"><button type="button" data-step="1" aria-label="Plus 1">+</button></span></div>
+          <div class="field"><label for="mKeeper2">Tweede Keeper</label><select id="mKeeper2"></select></div>
+          <div class="field"><label for="mKeeper2GA">Tegendoelpunten bij Tweede Keeper</label><span class="step"><button type="button" data-step="-1" aria-label="Min 1">−</button><input id="mKeeper2GA" type="number" min="0" max="99" inputmode="numeric" value="0"><button type="button" data-step="1" aria-label="Plus 1">+</button></span></div>
         </div>
         <p class="check" id="mKeeperCheck" aria-live="polite" hidden></p>
       </section>
@@ -976,7 +976,7 @@ dialog[open]::backdrop { opacity: 1; }
           <div class="field"><label for="mCaptain">Captain</label><select id="mCaptain"></select></div>
           <div class="field"><label for="mManager">Manager</label><select id="mManager"></select></div>
         </div>
-        <div class="field"><label for="mMvp">Man of the match</label><select id="mMvp"></select></div>
+        <div class="field"><label for="mMvp">Man of the Match</label><select id="mMvp"></select></div>
         <p class="note">Kaarten</p>
         <div class="plist wide" id="mCards"></div>
         <p class="wempty" data-empty>Kies eerst in stap 2 wie er speelden.</p>
@@ -1025,10 +1025,10 @@ const seasonMatches = () => S.matches.filter(m => S.season === 'all' || m.season
 
 // Player roles (captain, manager) live in players.roles; keeper stays players.position.
 // Soort speler: 'vast' is the default and gets no badge; guests and substitutes do.
-const PTYPE = { gast: 'gastspeler', invaller: 'invaller' };
+const PTYPE = { gast: 'Gastspeler', invaller: 'Invaller' };
 const ptype = p => PTYPE[p?.player_type] ? p.player_type : 'vast';
 // Spelers filter: which types are shown (all on by default). The dashboard always uses vaste spelers only.
-const PTYPES = [['vast', 'Vaste spelers'], ['gast', 'Gastspelers'], ['invaller', 'Invallers']];
+const PTYPES = [['vast', 'Vaste Spelers'], ['gast', 'Gastspelers'], ['invaller', 'Invallers']];
 const FILTER_IC = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 5h18l-7 8.2V19l-4 2v-7.8z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>';
 const hasRole = (p, r) => !!p && (p.roles || []).includes(r);
 // A plaster icon next to injured players; the note shows on hover and in the injury strip on Spelers.
@@ -1064,7 +1064,7 @@ function renderSeasons() {
   const sel = $('#season');
   const seasons = [...S.seasons].sort((a, b) => (b.name || '').localeCompare(a.name || ''));
   if (seasons.length && (!S.season || (S.season !== 'all' && !seasons.some(s => s.id === S.season)))) S.season = seasons[0].id;
-  sel.innerHTML = seasons.map(s => `<option value="${esc(s.id)}">Seizoen ${esc(s.name)}</option>`).join('') + '<option value="all">Alle seizoenen</option>' + (S.canEdit ? '<option value="__new">+ Nieuw seizoen…</option>' : '');
+  sel.innerHTML = seasons.map(s => `<option value="${esc(s.id)}">Seizoen ${esc(s.name)}</option>`).join('') + '<option value="all">Alle Seizoenen</option>' + (S.canEdit ? '<option value="__new">+ Nieuw Seizoen…</option>' : '');
   sel.value = S.season || 'all';
 }
 
@@ -1083,7 +1083,7 @@ function renderSummary(matches, stats) {
   const kb = Object.entries(S.kp?.byId || {}).map(([id, k]) => ({ id, ...k })).filter(k => ptype(k.s.p) === 'vast').sort((a, b) => b.s.cs - a.s.cs || a.s.conc / a.s.kgp - b.s.conc / b.s.kgp)[0];
   const hurt = S.players.filter(p => p.injury && ptype(p) === 'vast').length;
   const last = matches[0];
-  $('#heroLast').innerHTML = last ? `<button type="button" class="last ${result(last)}" data-show="${esc(last.id)}"><span class="res ${result(last)}" aria-hidden="true">${result(last)}</span><span class="lbl">Laatste wedstrijd</span><strong>${esc(last.opponent)}</strong><span class="when">${last.home ? 'Thuis' : 'Uit'} · ${esc(fmtDate(last.date))}</span><span class="score" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(last)]} ${last.gf} tegen ${last.ga}">${last.gf}-${last.ga}</span></button>` : '';
+  $('#heroLast').innerHTML = last ? `<button type="button" class="last ${result(last)}" data-show="${esc(last.id)}"><span class="res ${result(last)}" aria-hidden="true">${result(last)}</span><span class="lbl">Laatste Wedstrijd</span><strong>${esc(last.opponent)}</strong><span class="when">${last.home ? 'Thuis' : 'Uit'} · ${esc(fmtDate(last.date))}</span><span class="score" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(last)]} ${last.gf} tegen ${last.ga}">${last.gf}-${last.ga}</span></button>` : '';
   let i = 0; const I = () => `style="--i:${i++}"`;
   $('#summary').innerHTML = `
     <button type="button" class="tile wide" data-go="wedstrijden" ${I()}><span class="k">${n} ${n === 1 ? 'wedstrijd' : 'wedstrijden'}${go}</span>
@@ -1091,19 +1091,19 @@ function renderSummary(matches, stats) {
       <span class="ratio" role="img" aria-label="${pct(w)}% gewonnen, ${pct(d)}% gelijk, ${pct(l)}% verloren"><span class="W" style="width:${bar(w)}%"></span><span class="G" style="width:${bar(d)}%"></span><span class="V" style="width:${bar(l)}%"></span></span>
       <span class="k">${pct(w)}% gewonnen · ${pct(d)}% gelijk · ${pct(l)}% verloren<br><strong class="hi">${ppg}</strong> punten per wedstrijd</span></button>
     <button type="button" class="tile" data-go="wedstrijden" ${I()}><span class="k">Doelsaldo${go}</span><span class="v">${diff > 0 ? '+' : ''}${diff}</span><span class="k">${gf} voor · ${ga} tegen</span></button>
-    <div class="tile" ${I()}><span class="k">Vorm, laatste 5</span>${form.length ? `<div class="form">${form.map(m => `<button type="button" class="res ${result(m)}" data-show="${esc(m.id)}" title="${esc(m.opponent)} ${m.gf}-${m.ga}" aria-label="${esc(m.opponent)} ${m.gf}-${m.ga}">${result(m)}</button>`).join('')}</div><span class="k">Tik voor de wedstrijd</span>` : none('Nog geen wedstrijden')}</div>
+    <div class="tile" ${I()}><span class="k">Vorm, Laatste 5</span>${form.length ? `<div class="form">${form.map(m => `<button type="button" class="res ${result(m)}" data-show="${esc(m.id)}" title="${esc(m.opponent)} ${m.gf}-${m.ga}" aria-label="${esc(m.opponent)} ${m.gf}-${m.ga}">${result(m)}</button>`).join('')}</div><span class="k">Tik voor de wedstrijd</span>` : none('Nog geen wedstrijden')}</div>
     ${ts ? `<button type="button" class="tile" data-pinfo="${esc(ts.p.id)}" ${I()}><span class="k">Topscorer${go}</span><span class="v name">${esc(ts.p.name)}</span><span class="k">${ts.g} goals</span></button>` : `<div class="tile" ${I()}><span class="k">Topscorer</span>${none('Nog niemand')}</div>`}
-    ${ta ? `<button type="button" class="tile" data-pinfo="${esc(ta.p.id)}" ${I()}><span class="k">Meeste assists${go}</span><span class="v name">${esc(ta.p.name)}</span><span class="k">${ta.a} assists</span></button>` : `<div class="tile" ${I()}><span class="k">Meeste assists</span>${none('Nog niemand')}</div>`}
+    ${ta ? `<button type="button" class="tile" data-pinfo="${esc(ta.p.id)}" ${I()}><span class="k">Meeste Assists${go}</span><span class="v name">${esc(ta.p.name)}</span><span class="k">${ta.a} assists</span></button>` : `<div class="tile" ${I()}><span class="k">Meeste Assists</span>${none('Nog niemand')}</div>`}
     ${kb ? `<button type="button" class="tile" data-act="keeperList" data-keeper="${esc(kb.id)}" ${I()}><span class="k">Keeper${go}</span><span class="v name">${esc(kb.name)}</span><span class="k">${kb.s.cs}x de nul · ${dec(kb.s.conc / kb.s.kgp)} tegen gem.</span></button>` : ''}
     ${hurt ? `<button type="button" class="tile" data-go="spelers" ${I()}><span class="k">Geblesseerd${go}</span><span class="v">${hurt}<span class="inj-ic" aria-hidden="true"></span></span><span class="k">${hurt === 1 ? 'speler' : 'spelers'} uit de roulatie</span></button>` : ''}`;
   // Leaders (top 5 G+A) and the season in bars: both tap through to the detail.
   const lead = vast.filter(s => s.pts > 0).sort(byStat('pts')).slice(0, 5), max = lead[0]?.pts || 1;
   $('#dash').innerHTML = !n ? '' : `<section class="dcol">
-    <div class="sect"><h2>Toppers</h2><button type="button" class="linkbtn" data-go="spelers">Alle spelers</button></div>
+    <div class="sect"><h2>Toppers</h2><button type="button" class="linkbtn" data-go="spelers">Alle Spelers</button></div>
     ${lead.length ? `<ol class="lead dcard" style="--i:${i++}">${lead.map((s, r) => `<li><button type="button" data-pinfo="${esc(s.p.id)}"><span class="rk">${r + 1}</span><span class="nm">${esc(s.p.name)}</span><span class="lbar" aria-hidden="true"><span class="g" style="width:${(s.g / max * 100).toFixed(1)}%"></span><span class="a" style="width:${(s.a / max * 100).toFixed(1)}%"></span></span><span class="pt">${s.pts}<small> G+A</small></span></button></li>`).join('')}</ol>
     <p class="note legend"><i class="dot g"></i>Goals <i class="dot a"></i>Assists</p>` : '<p class="note">Nog geen goals of assists.</p>'}</section>
-    <section class="dcol"><div class="sect"><h2>Seizoen in beeld</h2><button type="button" class="linkbtn" data-go="wedstrijden">Alle wedstrijden</button></div>
-    <div class="kchart dcard" style="--i:${i++}"><h3>Goals voor en tegen per wedstrijd</h3>${seasonChart(matches)}<p class="kcap note" aria-live="polite">Tik op een wedstrijd.</p></div></section>`;
+    <section class="dcol"><div class="sect"><h2>Seizoen in Beeld</h2><button type="button" class="linkbtn" data-go="wedstrijden">Alle Wedstrijden</button></div>
+    <div class="kchart dcard" style="--i:${i++}"><h3>Goals Voor en Tegen per Wedstrijd</h3>${seasonChart(matches)}<p class="kcap note" aria-live="polite">Tik op een wedstrijd.</p></div></section>`;
 }
 
 // Bars per match, oldest left: goals for up (pink), against down. Same tap-to-read caption as the keeper chart.
@@ -1114,7 +1114,7 @@ function seasonChart(ms) {
     <text class="axis" x="0" y="${mid - h + 8}">voor</text><text class="axis" x="0" y="${mid + h}">tegen</text>
     <line class="grid" x1="${L}" x2="${W - R}" y1="${mid}" y2="${mid}"/>
     ${list.map((m, i) => { const x = L + i * bw, bx = x + bw * .18, w = Math.max(2, bw * .64), gf = (+m.gf || 0) * s, ga = (+m.ga || 0) * s;
-      const cap = `<strong>${esc(m.opponent)}</strong> · ${esc(fmtDate(m.date))}<br><span class="res ${result(m)}">${result(m)}</span> ${m.gf} - ${m.ga} · <button type="button" class="linkbtn" data-show="${esc(m.id)}">Bekijk wedstrijd</button>`;
+      const cap = `<strong>${esc(m.opponent)}</strong> · ${esc(fmtDate(m.date))}<br><span class="res ${result(m)}">${result(m)}</span> ${m.gf} - ${m.ga} · <button type="button" class="linkbtn" data-show="${esc(m.id)}">Bekijk Wedstrijd</button>`;
       return `<g class="kpt" tabindex="0" data-cap="${esc(cap)}"><rect class="hit" x="${x}" y="0" width="${bw}" height="${H}"/><rect class="bf" x="${bx}" y="${mid - gf}" width="${w}" height="${gf}" rx="1.5"/><rect class="ba" x="${bx}" y="${mid + 1}" width="${w}" height="${ga}" rx="1.5"/></g>`; }).join('')}
   </svg>`;
 }
@@ -1127,8 +1127,8 @@ const COLS = [
   { key: 'g', label: 'Goals' },
   { key: 'a', label: 'Assists' },
   { key: 'pts', label: 'G+A', title: 'Goals plus assists' },
-  { key: 'gpg', label: '<span>G+A<br>p. wedstr.</span>', title: 'Goals plus assists per wedstrijd' },
-  { key: 'mvp', label: 'MVP', title: 'Man of the match' },
+  { key: 'gpg', label: '<span>G+A<br>p. Wedstr.</span>', title: 'Goals plus assists per wedstrijd' },
+  { key: 'mvp', label: 'MVP', title: 'Man of the Match' },
   { key: 'y', label: '<span class="cardglyph y"></span>Geel' },
   { key: 'r', label: '<span class="cardglyph r"></span>Rood' },
 ];
@@ -1160,13 +1160,13 @@ function card({ attrs, rank, p, badges = '', stats = '', foot = '', idle }) {
 
 function renderPlayers(stats) {
   const el = $('#p-spelers');
-  const bar = note => ptool((note ? `<p class="note">${note}</p>` : ''), S.isAdmin && addBtn('addPlayer', 'Speler toevoegen'));
+  const bar = note => ptool((note ? `<p class="note">${note}</p>` : ''), S.isAdmin && addBtn('addPlayer', 'Speler Toevoegen'));
   if (!S.players.length) { el.innerHTML = phead('Spelers') + bar('') + emptyState('Nog geen spelers', S.isAdmin ? 'Voeg eerst de selectie toe. Daarna kun je wedstrijden invoeren.' : 'De selectie is nog niet ingevoerd.'); return; }
   const { key, dir } = S.sort;
   const rows = [...stats].sort(byStat(key, dir));
   const hurt = sortedPlayers().filter(p => p.injury);
   const injBar = hurt.length ? `<div class="injbar"><span class="inj-ic" aria-hidden="true"></span><div><strong>Geblesseerd</strong><ul>${hurt.map(p => `<li>${esc(p.name)}${p.injury !== 'geblesseerd' ? ` <span class="note">· ${esc(p.injury)}</span>` : ''}</li>`).join('')}</ul></div></div>` : '';
-  const badges = s => `${injuryIcon(s.p)}${hasRole(s.p, 'captain') || s.cap ? `<span class="cap" title="Captain${s.cap ? ', ' + s.cap + 'x deze periode' : ''}">C</span>` : ''}${s.p.position === 'keeper' ? '<span class="pos">keeper</span>' : ''}${PTYPE[s.p.player_type] ? `<span class="ptype">${PTYPE[s.p.player_type]}</span>` : ''}${hasRole(s.p, 'manager') || s.mgr ? `<span class="pos" title="Manager${s.mgr ? ', ' + s.mgr + 'x deze periode' : ''}">manager</span>` : ''}`;
+  const badges = s => `${injuryIcon(s.p)}${hasRole(s.p, 'captain') ? '<span class="cap" title="Captain">C</span>' : ''}${s.p.position === 'keeper' ? '<span class="pos">Keeper</span>' : ''}${PTYPE[s.p.player_type] ? `<span class="ptype">${PTYPE[s.p.player_type]}</span>` : ''}${hasRole(s.p, 'manager') ? '<span class="pos">Manager</span>' : ''}`;
   // Phones get cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
   // Phones: keeper-style cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
   // Labels: full name, or the abbreviation when the card is narrow (container query; the full name stays for screen readers).
@@ -1177,13 +1177,13 @@ function renderPlayers(stats) {
   const share = (n, s) => (s.pts ? n / s.pts * 100 : 0).toFixed(1);
   // Phones sort with the same dropdown as the Keepers tab (desktop: the column headers); highest first, name A-Z.
   const PSORT = ['pts', 'g', 'a', 'gpg', 'gp', 'att'].map(k => [k, LBL[k][0]]).concat([['name', 'Naam']]);
-  const psort = `<label class="sortsel psort"><span>Sorteren op</span><select id="pSort" class="select">${PSORT.some(([k]) => k === key) ? '' : '<option value="" selected hidden>Kolom in de tabel</option>'}${PSORT.map(([k, l]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
+  const psort = `<label class="sortsel psort"><span>Sorteren Op</span><select id="pSort" class="select">${PSORT.some(([k]) => k === key) ? '' : '<option value="" selected hidden>Kolom in de Tabel</option>'}${PSORT.map(([k, l]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
   // Same toolbar as Wedstrijden: search icon (opens the field), sort (phones), "+" on the right.
   const tbar = `<div class="mfbar"><button type="button" class="btn icon" id="pToggle" aria-expanded="${!!S.psOpen}" aria-controls="pPanel" title="Zoek speler">${SEARCH_IC}<span class="sr-only">Zoek speler</span></button>
     <div class="mfpanel" id="pPanel"${S.psOpen ? '' : ' hidden'}><div class="mfsearch"><input id="pSearch" type="search" placeholder="Naam of rugnummer" autocomplete="off" enterkeyhint="search" aria-label="Zoek speler" value="${esc(S.pq || '')}"><button type="button" id="pClear" title="Wissen" hidden><span aria-hidden="true">×</span><span class="sr-only">Wissen</span></button></div></div>
     <button type="button" class="btn icon${S.ptypes.size < 3 ? ' on' : ''}" id="pfToggle" aria-expanded="${!!S.pfOpen}" aria-controls="pfPanel" title="Filter op soort speler">${FILTER_IC}<span class="sr-only">Filter op soort speler</span></button>
     <div class="mfpanel pfpanel" id="pfPanel"${S.pfOpen ? '' : ' hidden'} role="group" aria-label="Soort speler">${PTYPES.map(([v, l]) => `<label class="check-row"><input type="checkbox" class="pft" value="${v}"${S.ptypes.has(v) ? ' checked' : ''}> ${l}</label>`).join('')}</div>
-    ${S.psOpen || S.pfOpen ? '' : '<p class="note desk">Tik op een kolomkop om te sorteren, op een speler voor de details.</p>'}${psort}${S.isAdmin ? addBtn('addPlayer', 'Speler toevoegen') : ''}</div><p class="note" id="pNone" aria-live="polite" hidden></p>`;
+    ${S.psOpen || S.pfOpen ? '' : '<p class="note desk">Tik op een kolomkop om te sorteren, op een speler voor de details.</p>'}${psort}${S.isAdmin ? addBtn('addPlayer', 'Speler Toevoegen') : ''}</div><p class="note" id="pNone" aria-live="polite" hidden></p>`;
   const cards = `<ol class="cards pcards">${rows.map((s, i) => card({ attrs: `data-pinfo="${esc(s.p.id)}" aria-label="Details van ${esc(s.p.name)}"`, rank: i + 1, p: s.p, badges: badges(s), idle: !s.gp,
       stats: stat('gp', s.gp) + stat('att', Math.round(s.att) + '%') + stat('pts', s.pts) + stat('gpg', pw(s)),
       foot: `<span class="pbox">
@@ -1279,16 +1279,16 @@ const signed = n => (n > 0 ? '+' : '') + dec(n);
 function keeperScore(m, id, avg) {
   const g = +(m.goals?.[id] || 0), a = +(m.assists?.[id] || 0), ga = conceded(m, id);
   const parts = [['Tegendoelpunten', `${ga} tegen, gemiddeld ${dec(avg)}`, avg - ga]];
-  if (+m.ga === 0) parts.push(['De nul gehouden', 'ja', 3]);
+  if (+m.ga === 0) parts.push(['De Nul Gehouden', 'ja', 3]);
   if (g) parts.push(['Doelpunten', g, 3 * g]);
   if (a) parts.push(['Assists', a, 2 * a]);
-  if (m.mvp === id) parts.push(['Man of the match', 'ja', 2]);
+  if (m.mvp === id) parts.push(['Man of the Match', 'ja', 2]);
   if (result(m) === 'W') parts.push(['Gewonnen', `${m.gf} - ${m.ga}`, 1]);
   const why = [ga ? `${ga} tegen` : 'De nul', ...(g ? [g > 1 ? g + ' goals' : '1 goal'] : []), ...(a ? [a > 1 ? a + ' assists' : '1 assist'] : []), ...(m.mvp === id ? ['MOTM'] : [])];
   return { m, pts: parts.reduce((t, p) => t + p[2], 0), parts, why };
 }
 
-const RULES = [['Tegendoelpunten', 'Seizoensgemiddelde min de tegendoelpunten', '+1 per goal minder, -1 per goal meer'], ['De nul gehouden', '0 tegen', '+3'], ['Doelpunt', 'Per goal van de keeper', '+3'], ['Assist', 'Per assist van de keeper', '+2'], ['Man of the match', 'Keeper is MOTM', '+2'], ['Gewonnen', 'Wedstrijd gewonnen', '+1']];
+const RULES = [['Tegendoelpunten', 'Seizoensgemiddelde min de tegendoelpunten', '+1 per goal minder, -1 per goal meer'], ['De Nul Gehouden', '0 tegen', '+3'], ['Doelpunt', 'Per goal van de keeper', '+3'], ['Assist', 'Per assist van de keeper', '+2'], ['Man of the Match', 'Keeper is MOTM', '+2'], ['Gewonnen', 'Wedstrijd gewonnen', '+1']];
 const table = (head, rows) => `<div class="tablewrap"><table class="rules"><thead><tr>${head.map(h => `<th scope="col">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 const vs = m => (m.home ? '' : '@ ') + m.opponent;
 const calcTable = sc => `<h3>${esc(vs(sc.m))}</h3><p class="note">${esc(fmtDate(sc.m.date))} · <span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga}</p>
@@ -1301,7 +1301,7 @@ function openKeeperRules(keeper) {
   $('#krBody').innerHTML = `<p class="note">Per wedstrijd krijgt de keeper Keepers-punten. De wedstrijd met de meeste Keepers-punten is zijn beste wedstrijd; bij gelijke stand telt de wedstrijd met de minste tegendoelpunten.</p>
     ${table(['Onderdeel', 'Wanneer', 'Keepers-punten'], RULES.map(r => r.map(esc)))}
     <p class="note">Het seizoensgemiddelde is nu <strong>${dec(k.avg)}</strong> tegen per wedstrijd. Het wordt na elke wedstrijd opnieuw berekend, dus de Keepers-punten kunnen een beetje verschuiven. Welke wedstrijd de beste is verandert daardoor niet.</p>
-    ${kp ? `<p class="k">Beste wedstrijd van ${esc(kp.name)}</p>${calcTable(kp.best)}` : ''}`;
+    ${kp ? `<p class="k">Beste Wedstrijd van ${esc(kp.name)}</p>${calcTable(kp.best)}` : ''}`;
   $('#dlgKeeperRules').showModal();
 }
 
@@ -1341,14 +1341,14 @@ function openKeeperList(keeper) {
   const pts = [...scores].reverse().map(sc => ({ m: sc.m, v: conceded(sc.m, id),
     cap: `<strong>${esc(vs(sc.m))}</strong> · ${esc(fmtDate(sc.m.date))}<br><span class="res ${result(sc.m)}">${result(sc.m)}</span> ${sc.m.gf} - ${sc.m.ga} · ${conceded(sc.m, id)} tegen · ${dec(sc.pts)} keepers-punten` }));
   const stat = (v, k) => `<div><span class="v">${v}</span><p class="k">${k}</p></div>`;
-  const mrow = (label, sc) => `<div class="kb r3"><span class="res ${result(sc.m)}">${result(sc.m)}</span><span class="lbl">${label}</span><strong>${esc(vs(sc.m))}</strong><span class="when">${esc(fmtDate(sc.m.date))} · ${sc.m.gf} - ${sc.m.ga} · ${conceded(sc.m, id)} tegen</span><span class="pts">${dec(sc.pts)}<small>keepers-punten</small></span></div>`;
+  const mrow = (label, sc) => `<div class="kb r3"><span class="res ${result(sc.m)}">${result(sc.m)}</span><span class="lbl">${label}</span><strong>${esc(vs(sc.m))}</strong><span class="when">${esc(fmtDate(sc.m.date))} · ${sc.m.gf} - ${sc.m.ga} · ${conceded(sc.m, id)} tegen</span><span class="pts">${dec(sc.pts)}<small>Keepers-punten</small></span></div>`;
   $('#dlgKeeperListTitle').textContent = kp.name;
   $('#klBody').innerHTML = `<div class="kgrid">
-      ${stat(s.kgp, 'Wedstrijden')}${stat(dec(s.conc / s.kgp), 'Gemiddeld tegen per wedstrijd')}${stat(s.cs + 'x', 'De nul gehouden')}${stat(dec(best.pts), 'Hoogste keepers-punten')}
-      ${stat(dec(ppm), 'Keepers-punten per wedstrijd')}${stat(s.conc, 'Tegendoelpunten totaal')}${stat(`${n('W')}-${n('G')}-${n('V')}`, 'Winst - gelijk - verlies')}${stat(`${g} / ${a}`, 'Goals / assists')}${motm ? stat(motm + 'x', 'Man of the match') : ''}${subs ? stat(subs + 'x', 'Met tweede keeper') : ''}
+      ${stat(s.kgp, 'Wedstrijden')}${stat(dec(s.conc / s.kgp), 'Gemiddeld Tegen per Wedstrijd')}${stat(s.cs + 'x', 'De Nul Gehouden')}${stat(dec(best.pts), 'Hoogste Keepers-punten')}
+      ${stat(dec(ppm), 'Keepers-punten per Wedstrijd')}${stat(s.conc, 'Tegendoelpunten Totaal')}${stat(`${n('W')}-${n('G')}-${n('V')}`, 'Winst - Gelijk - Verlies')}${stat(`${g} / ${a}`, 'Goals / Assists')}${motm ? stat(motm + 'x', 'Man of the Match') : ''}${subs ? stat(subs + 'x', 'Met Tweede Keeper') : ''}
     </div>
-    <div class="kchart"><h3>Tegendoelpunten per wedstrijd</h3>${lineChart(pts, S.kp.avg, 'gem. team', 'Tegendoelpunten per wedstrijd')}<p class="kcap note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
-    ${mrow('Beste wedstrijd', best)}${scores.length > 1 ? mrow('Minste wedstrijd', worst) : ''}
+    <div class="kchart"><h3>Tegendoelpunten per Wedstrijd</h3>${lineChart(pts, S.kp.avg, 'Gem. Team', 'Tegendoelpunten per wedstrijd')}<p class="kcap note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
+    ${mrow('Beste Wedstrijd', best)}${scores.length > 1 ? mrow('Minste Wedstrijd', worst) : ''}
     <p class="note">Alle wedstrijden. Tik op een wedstrijd voor de berekening.</p>
     ${table(['Wedstrijd', 'Uitslag', 'Keepers-<br>punten'], scores.map(sc => [
       `<button type="button" class="linkbtn" data-act="keeperCalc" data-keeper="${esc(keeper)}" data-match="${esc(sc.m.id)}">${esc(vs(sc.m))}</button><br><span class="note">${esc(fmtDate(sc.m.date))}</span>`,
@@ -1369,10 +1369,10 @@ function openPlayerInfo(id) {
   $('#piEdit').hidden = !S.isAdmin; $('#piEdit').dataset.player = id;
   $('#piBody').innerHTML = !ms.length ? `<p class="note">${esc(p.name)} heeft in deze periode nog niet gespeeld.</p>${p.injury ? `<p class="note">Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}.</p>` : ''}` : `
     ${p.injury ? `<p class="note"><span class="inj-ic" aria-hidden="true"></span> Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}</p>` : ''}
-    <div class="kgrid">${stat(s.gp, 'Wedstrijden')}${stat(Math.round(s.att) + '%', 'Aanwezigheid')}${stat(s.g, 'Goals')}${stat(s.a, 'Assists')}${stat(s.pts, 'Goals + assists')}${stat(dec(s.gpg), 'G+A per wedstrijd')}${s.mvp ? stat(s.mvp + 'x', 'Man of the match') : ''}${s.y || s.r ? stat(`${s.y} / ${s.r}`, 'Geel / rood') : ''}${s.kgp ? stat(s.kgp + 'x', 'Gekeept') : ''}</div>
-    <div class="kchart"><h3>Goals + assists per wedstrijd</h3>${lineChart(pts, s.gpg, 'gem.', 'Goals plus assists per wedstrijd')}<p class="kcap note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
-    ${ga(best) ? `<div class="kb r3"><span class="res ${result(best)}">${result(best)}</span><span class="lbl">Beste wedstrijd</span><strong>${esc(vs(best))}</strong><span class="when">${esc(fmtDate(best.date))} · ${best.gf} - ${best.ga}</span><span class="pts">${ga(best)}<small>G+A</small></span></div>` : ''}
-    <p class="note">Alle wedstrijden</p>
+    <div class="kgrid">${stat(s.gp, 'Wedstrijden')}${stat(Math.round(s.att) + '%', 'Aanwezigheid')}${stat(s.g, 'Goals')}${stat(s.a, 'Assists')}${stat(s.pts, 'Goals + Assists')}${stat(dec(s.gpg), 'G+A per Wedstrijd')}${s.mvp ? stat(s.mvp + 'x', 'Man of the Match') : ''}${s.y || s.r ? stat(`${s.y} / ${s.r}`, 'Geel / Rood') : ''}${s.kgp ? stat(s.kgp + 'x', 'Gekeept') : ''}</div>
+    <div class="kchart"><h3>Goals + Assists per Wedstrijd</h3>${lineChart(pts, s.gpg, 'Gem.', 'Goals plus assists per wedstrijd')}<p class="kcap note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
+    ${ga(best) ? `<div class="kb r3"><span class="res ${result(best)}">${result(best)}</span><span class="lbl">Beste Wedstrijd</span><strong>${esc(vs(best))}</strong><span class="when">${esc(fmtDate(best.date))} · ${best.gf} - ${best.ga}</span><span class="pts">${ga(best)}<small>G+A</small></span></div>` : ''}
+    <p class="note">Alle Wedstrijden</p>
     ${table(['Wedstrijd', 'Uitslag', 'G+A'], ms.map(m => [`<button type="button" class="linkbtn" data-show="${esc(m.id)}">${esc(vs(m))}</button><br><span class="note">${esc(fmtDate(m.date))} · ${esc(line(m))}</span>`, `<span class="nw"><span class="res ${result(m)}">${result(m)}</span> ${m.gf} - ${m.ga}</span>`, `<strong>${ga(m)}</strong>`]))}`;
   $('#dlgPlayerInfo').showModal();
 }
@@ -1392,12 +1392,12 @@ function openMatchInfo(id) {
   const who = pid => `<button type="button" class="mi-who" data-pinfo="${esc(pid)}"><span class="shirt sm" aria-hidden="true">${P(pid).number ?? esc(initials(P(pid).name))}</span><span class="nm">${esc(P(pid).name)}</span>`;
   // Highlights: the small facts worth a cheer.
   const tags = [
-    r === 'W' && (m.gf - m.ga >= 5 ? 'Ruime zege' : m.home ? 'Thuiszege' : 'Uitzege'),
-    +m.ga === 0 && 'De nul gehouden',
-    ...scorers.filter(id => g(id) >= 3).map(id => g(id) === 3 ? `Hattrick ${P(id).name}` : `${g(id)} goals van ${P(id).name}`),
-    m.gf >= 8 && `${m.gf} goals gemaakt`,
+    r === 'W' && (m.gf - m.ga >= 5 ? 'Ruime Zege' : m.home ? 'Thuiszege' : 'Uitzege'),
+    +m.ga === 0 && 'De Nul Gehouden',
+    ...scorers.filter(id => g(id) >= 3).map(id => g(id) === 3 ? `Hattrick ${P(id).name}` : `${g(id)} Goals van ${P(id).name}`),
+    m.gf >= 8 && `${m.gf} Goals Gemaakt`,
   ].filter(Boolean);
-  $('#dlgMatchInfoTitle').innerHTML = `Uitslag <span class="sub">${m.home ? 'thuis' : 'uit'} · ${esc(new Date(m.date + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }))}</span>`;
+  $('#dlgMatchInfoTitle').innerHTML = `Uitslag <span class="sub">${m.home ? 'Thuis' : 'Uit'} · ${esc(new Date(m.date + 'T12:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }))}</span>`;
   $('#miEdit').hidden = !S.canEdit; $('#miEdit').dataset.match = id;
   $('#miBody').innerHTML = `
     <div class="mi-board ${r}">
@@ -1406,10 +1406,10 @@ function openMatchInfo(id) {
       <div class="mi-team">${rr}</div>
     </div>
     ${tags.length ? `<p class="mi-tags">${tags.map(x => `<span class="pill tag">${esc(x)}</span>`).join('')}</p>` : ''}
-    ${mvp ? `<button type="button" class="mi-mvp" data-pinfo="${esc(mvp.id)}"><span class="shirt" aria-hidden="true">${mvp.number ?? esc(initials(mvp.name))}</span><span><span class="lbl">Man of the match</span><strong>${esc(mvp.name)}</strong><span class="note">${[g(mvp.id) && `${g(mvp.id)} ${g(mvp.id) === 1 ? 'goal' : 'goals'}`, a(mvp.id) && `${a(mvp.id)} ${a(mvp.id) === 1 ? 'assist' : 'assists'}`, keepers.includes(mvp.id) && 'in het doel'].filter(Boolean).join(' · ')}</span></span><span class="go" aria-hidden="true">›</span></button>` : ''}
-    <h3>Goals en assists</h3>
-    ${scorers.length || og ? `<ul class="mi-list">${scorers.map(id => `<li>${who(id)}<span class="pills">${pill(g(id), 'goal', 'goals', 'g')}${pill(a(id), 'assist', 'assists', 'a')}</span></button></li>`).join('')}${og ? `<li><span class="mi-who"><span class="shirt sm" aria-hidden="true">EG</span><span class="nm">Eigen goal tegenstander</span><span class="pills">${pill(og, 'goal', 'goals', 'g')}</span></span></li>` : ''}</ul>` : `<p class="note">${m.gf ? 'Geen doelpuntenmakers ingevuld.' : 'Geen goals voor ons deze keer.'}</p>`}
-    ${keepers.length ? `<h3>Keeper</h3><ul class="mi-list">${keepers.map(k => `<li>${who(k)}<span class="pills"><span class="pill${conceded(m, k) ? '' : ' tag'}">${conceded(m, k) ? conceded(m, k) + ' tegen' : 'De nul'}</span></span></button></li>`).join('')}</ul>` : ''}
+    ${mvp ? `<button type="button" class="mi-mvp" data-pinfo="${esc(mvp.id)}"><span class="shirt" aria-hidden="true">${mvp.number ?? esc(initials(mvp.name))}</span><span><span class="lbl">Man of the Match</span><strong>${esc(mvp.name)}</strong><span class="note">${[g(mvp.id) && `${g(mvp.id)} ${g(mvp.id) === 1 ? 'goal' : 'goals'}`, a(mvp.id) && `${a(mvp.id)} ${a(mvp.id) === 1 ? 'assist' : 'assists'}`, keepers.includes(mvp.id) && 'in het doel'].filter(Boolean).join(' · ')}</span></span><span class="go" aria-hidden="true">›</span></button>` : ''}
+    <h3>Goals en Assists</h3>
+    ${scorers.length || og ? `<ul class="mi-list">${scorers.map(id => `<li>${who(id)}<span class="pills">${pill(g(id), 'Goal', 'Goals', 'g')}${pill(a(id), 'Assist', 'Assists', 'a')}</span></button></li>`).join('')}${og ? `<li><span class="mi-who"><span class="shirt sm" aria-hidden="true">EG</span><span class="nm">Eigen Goal Tegenstander</span><span class="pills">${pill(og, 'Goal', 'Goals', 'g')}</span></span></li>` : ''}</ul>` : `<p class="note">${m.gf ? 'Geen doelpuntenmakers ingevuld.' : 'Geen goals voor ons deze keer.'}</p>`}
+    ${keepers.length ? `<h3>Keeper</h3><ul class="mi-list">${keepers.map(k => `<li>${who(k)}<span class="pills"><span class="pill${conceded(m, k) ? '' : ' tag'}">${conceded(m, k) ? conceded(m, k) + ' Tegen' : 'De Nul'}</span></span></button></li>`).join('')}</ul>` : ''}
     ${(m.yellow || []).length || (m.red || []).length ? `<h3>Kaarten</h3><ul class="mi-list">${[...(m.yellow || []).map(k => [k, 'y', 'Geel']), ...(m.red || []).map(k => [k, 'r', 'Rood'])].map(([k, c, lbl]) => `<li>${who(k)}<span class="pills"><span class="pill"><span class="cardglyph ${c}"></span>${lbl}</span></span></button></li>`).join('')}</ul>` : ''}
     ${(m.played || []).length ? `<h3>Opstelling <span class="note">${m.played.length} spelers</span></h3><p class="mi-chips">${sortedPlayers().filter(p => m.played.includes(p.id)).map(p => `<button type="button" class="pill chip" data-pinfo="${esc(p.id)}">${p.number != null ? `<b>${p.number}</b>` : ''}${esc(p.name)}${p.id === m.captain ? ' <span class="cap" title="Captain">C</span>' : ''}</button>`).join('')}</p>` : ''}
     ${m.manager ? `<p class="note">Manager: ${esc(playerName(m.manager))}</p>` : ''}`;
@@ -1425,7 +1425,7 @@ function openKeeperCalc(keeper, match) {
 }
 
 // Sort options for the keeper cards; keepers without matches always go last (except by name).
-const KSORT = { kgp: ['Wedstrijden', (a, b) => b.s.kgp - a.s.kgp], name: ['Naam', (a, b) => a.s.p.name.localeCompare(b.s.p.name)], avg: ['Minste tegen per wedstrijd', (a, b) => a.avg - b.avg], cs: ['Vaakst de nul', (a, b) => b.s.cs - a.s.cs], pts: ['Hoogste keepers-punten', (a, b) => b.top - a.top] };
+const KSORT = { kgp: ['Wedstrijden', (a, b) => b.s.kgp - a.s.kgp], name: ['Naam', (a, b) => a.s.p.name.localeCompare(b.s.p.name)], avg: ['Minste Tegen per Wedstrijd', (a, b) => a.avg - b.avg], cs: ['Vaakst de Nul', (a, b) => b.s.cs - a.s.cs], pts: ['Hoogste Keepers-punten', (a, b) => b.top - a.top] };
 function renderKeepers(stats, matches) {
   const el = $('#p-keepers');
   const avg = matches.length ? matches.reduce((t, m) => t + (+m.ga || 0), 0) / matches.length : 0;
@@ -1440,9 +1440,9 @@ function renderKeepers(stats, matches) {
   if (!ks.length) { el.innerHTML = phead('Keepers') + emptyState('Nog geen keepers', 'Geef een speler de rol keeper, of kies de keeper bij een wedstrijd.'); return; }
   const key = KSORT[S.ksort] ? S.ksort : 'kgp';
   ks.sort((a, b) => (key !== 'name' && (!a.km.length - !b.km.length)) || KSORT[key][1](a, b) || b.s.kgp - a.s.kgp);
-  const sortSel = `<p class="note desk">Tik op een kolomkop om te sorteren, op een keeper voor de details.</p><label class="sortsel psort"><span>Sorteren op</span><select id="kSort" class="select">${Object.entries(KSORT).map(([k, [l]]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
+  const sortSel = `<p class="note desk">Tik op een kolomkop om te sorteren, op een keeper voor de details.</p><label class="sortsel psort"><span>Sorteren Op</span><select id="kSort" class="select">${Object.entries(KSORT).map(([k, [l]]) => `<option value="${k}"${k === key ? ' selected' : ''}>${l}</option>`).join('')}</select></label>`;
   // Desktop: the same table as Spelers (phones get the cards); headers sort with the KSORT rules.
-  const KCOLS = [['', '#'], ['name', 'Keeper'], ['kgp', 'Wedstr.'], ['avg', 'Gem. tegen'], ['cs', 'De nul'], ['', 'Tegen totaal'], ['', 'Punten p. wedstr.'], ['pts', 'Hoogste punten'], ['', 'Beste wedstrijd']];
+  const KCOLS = [['', '#'], ['name', 'Keeper'], ['kgp', 'Wedstr.'], ['avg', 'Gem. Tegen'], ['cs', 'De Nul'], ['', 'Tegen Totaal'], ['', 'Punten p. Wedstr.'], ['pts', 'Hoogste Punten'], ['', 'Beste Wedstrijd']];
   const ktable = `<div class="tablewrap ptable"><table><thead><tr>${KCOLS.map(([k, l]) => `<th scope="col"${k === key ? ` aria-sort="${k === 'name' || k === 'avg' ? 'ascending' : 'descending'}"` : ''}>${k ? `<button type="button" data-ksort="${k}" title="${KSORT[k][0]}">${l}<span class="arrow" aria-hidden="true">${k === key ? (k === 'name' || k === 'avg' ? '▲' : '▼') : ''}</span></button>` : l}</th>`).join('')}</tr></thead>
     <tbody>${ks.map(({ s, id, km, best }) => { const c = k => k === key ? ' class="sorted"' : '';
       if (!km.length) return `<tr class="idle"><td class="num">${s.p.number ?? ''}</td><td>${esc(s.p.name)}${injuryIcon(s.p)}</td><td colspan="7" class="note">Nog niet in het doel gestaan</td></tr>`;
@@ -1454,8 +1454,8 @@ function renderKeepers(stats, matches) {
   el.innerHTML = `${phead('Keepers', `${ks.length} ${ks.length === 1 ? 'keeper' : 'keepers'} · gemiddeld ${dec(avg)} tegen per wedstrijd`)}${ptool(sortSel)}${ktable}<ol class="cards pcards">${ks.map(({ s, id, km, best }, i) => {
     if (!km.length) return card({ p: s.p, badges: injuryIcon(s.p), idle: true, foot: '<span class="note">Nog niet in het doel gestaan.</span>' });
     return card({ attrs: `data-act="keeperList" data-keeper="${esc(id)}" aria-label="Details van ${esc(s.p.name)}"`, rank: i + 1, p: s.p, badges: injuryIcon(s.p),
-      stats: kstat(s.kgp, 'Wedstrijden', key === 'kgp') + kstat(dec(s.conc / s.kgp), 'Gem. tegen', key === 'avg') + kstat(s.cs + 'x', 'De nul', key === 'cs') + kstat(dec(best.pts), 'Hoogste punten', key === 'pts'),
-      foot: `<span class="kb"><span class="res ${result(best.m)}">${result(best.m)}</span><strong>${esc(vs(best.m))}</strong><span class="when">Beste · ${esc(fmtDate(best.m.date))} · ${best.m.gf} - ${best.m.ga}</span><span class="pts">${dec(best.pts)}<small>punten</small></span></span>` }); }).join('')}</ol>${rulesLink}`;
+      stats: kstat(s.kgp, 'Wedstrijden', key === 'kgp') + kstat(dec(s.conc / s.kgp), 'Gem. Tegen', key === 'avg') + kstat(s.cs + 'x', 'De Nul', key === 'cs') + kstat(dec(best.pts), 'Hoogste Punten', key === 'pts'),
+      foot: `<span class="kb"><span class="res ${result(best.m)}">${result(best.m)}</span><strong>${esc(vs(best.m))}</strong><span class="when">Beste · ${esc(fmtDate(best.m.date))} · ${best.m.gf} - ${best.m.ga}</span><span class="pts">${dec(best.pts)}<small>Punten</small></span></span>` }); }).join('')}</ol>${rulesLink}`;
 }
 $('#p-keepers').addEventListener('change', e => { if (e.target.id === 'kSort') { S.ksort = e.target.value; render(); } });
 $('#p-spelers').addEventListener('change', e => { if (e.target.id === 'pSort' && e.target.value) { const k = e.target.value; S.sort = { key: k, dir: k === 'name' ? 'asc' : 'desc' }; render(); } });
@@ -1546,7 +1546,7 @@ function moveTabInd(instant) {
 addEventListener('resize', () => moveTabInd(true));
 selectTab('overzicht'); moveTabInd(true);
 
-// "+ Nieuw seizoen…" lives in the season picker; it opens the dialog and keeps the current season selected.
+// "+ Nieuw Seizoen…" lives in the season picker; it opens the dialog and keeps the current season selected.
 $('#season').addEventListener('change', e => {
   if (e.target.value === '__new') { e.target.value = S.season || 'all'; $('#formSeason').reset(); $('#dlgSeason').showModal(); return; }
   S.season = e.target.value; render();
@@ -1627,7 +1627,7 @@ $('#pInj').addEventListener('input', () => { $('#pInjRow').hidden = !$('#pInj').
 function openPlayer(p) {
   if (!S.isAdmin) return;
   editPlayer = p || null;
-  $('#dlgPlayerTitle').textContent = p ? 'Speler bewerken' : 'Speler toevoegen';
+  $('#dlgPlayerTitle').textContent = p ? 'Speler Bewerken' : 'Speler Toevoegen';
   $('#pName').value = p?.name || ''; $('#pNum').value = p?.number ?? '';
   $('#pKeeper').checked = p?.position === 'keeper'; $('#pCaptain').checked = hasRole(p, 'captain'); $('#pManager').checked = hasRole(p, 'manager');
   document.querySelector(`#pType input[value="${PTYPE[p?.player_type] ? p.player_type : 'vast'}"]`).checked = true;
@@ -1662,7 +1662,7 @@ $('#formSeason').addEventListener('submit', async e => {
 /* match dialog */
 let editMatch = null;
 const sortedPlayers = () => [...S.players].sort((a, b) => (a.number ?? 999) - (b.number ?? 999) || a.name.localeCompare(b.name));
-const MSTEPS = ['Wedstrijd', 'Wie speelde?', 'Goals en assists', 'Keeper', 'Captain, manager en kaarten'];
+const MSTEPS = ['Wedstrijd', 'Wie Speelde?', 'Goals en Assists', 'Keeper', 'Captain, Manager en Kaarten'];
 // Default captain/manager = the player with that role (set in Speler bewerken).
 const roleHolder = r => sortedPlayers().find(p => hasRole(p, r))?.id ?? '';
 const wsteps = () => [...document.querySelectorAll('#formMatch .wstep')];
@@ -1671,7 +1671,7 @@ const pname = p => `<span class="nm">${p.number != null ? `<small>${p.number}</s
 let mStep = 0;
 function openMatch(m) {
   editMatch = m || null;
-  $('#dlgMatchTitle').textContent = m ? 'Wedstrijd bewerken' : 'Wedstrijd toevoegen';
+  $('#dlgMatchTitle').textContent = m ? 'Wedstrijd Bewerken' : 'Wedstrijd Toevoegen';
   $('#mDate').value = m?.date || new Date().toISOString().slice(0, 10);
   $('#mOpp').value = m?.opponent || ''; $('#mHome').value = m ? (m.home ? '1' : '0') : '1';
   $('#mGF').value = m?.gf ?? 0; $('#mGA').value = m?.ga ?? 0; $('#mOwn').value = +m?.own_goals || 0;
@@ -2086,7 +2086,7 @@ Promise.all(['600', '800'].map(w => document.fonts.load(`${w} 100px "Barlow Cond
 const safeLogo = s => /^data:image\//.test(s || '') ? s : '';
 const safeSite = s => /^https?:\/\//i.test(s || '') ? s : '';
 function renderSponsors() {
-  const el = $('#p-sponsors'), add = S.canPost && addBtn('addSponsor', 'Sponsor toevoegen');
+  const el = $('#p-sponsors'), add = S.canPost && addBtn('addSponsor', 'Sponsor Toevoegen');
   if (!S.sponsors.length) { el.innerHTML = phead('Sponsors') + ptool('', add) + emptyState('Nog geen sponsors', 'Voeg sponsors toe met naam, website en logo. Daarna kun je ze onder je Instagram-posts zetten.'); return; }
   el.innerHTML = `${phead('Sponsors', S.sponsors.length + ' partners')}${ptool('<p class="note">Sleep de tegels om de volgorde te veranderen. Deze volgorde staat ook onder de Instagram-posts.</p>', add)}<ul class="sponsors">${S.sponsors.map(s => `<li class="sponsor click" tabindex="0" data-sponsor="${esc(s.id)}">
       <div class="sp-logo">${safeLogo(s.logo) ? `<img src="${esc(s.logo)}" alt="Logo ${esc(s.name)}">` : `<span>${esc(s.name)}</span>`}</div>
@@ -2119,7 +2119,7 @@ function showSpLogo() {
 }
 function openSponsor(s) {
   editSponsor = s || null; spLogo = safeLogo(s?.logo);
-  $('#dlgSponsorTitle').textContent = s ? 'Sponsor bewerken' : 'Sponsor toevoegen';
+  $('#dlgSponsorTitle').textContent = s ? 'Sponsor Bewerken' : 'Sponsor Toevoegen';
   $('#spName').value = s?.name || ''; $('#spSite').value = s?.website || ''; $('#spLogo').value = ''; showSpLogo();
   const idx = s ? S.sponsors.indexOf(s) : -1;
   $('#spPosField').hidden = !s;
@@ -2169,7 +2169,7 @@ let editLogo = null, lgRaw = null, lgLogo = '';
 function showLgLogo() { $('#lgPreview').classList.toggle('dark', $('#lgCut').checked); $('#lgPreview').hidden = !lgLogo; $('#lgPreview').innerHTML = lgLogo ? `<img src="${esc(lgLogo)}" alt="Voorbeeld van het logo">` : ''; }
 function openLogo(l) {
   editLogo = l || null; lgRaw = null; lgLogo = safeLogo(l?.logo);
-  $('#dlgLogoTitle').textContent = l ? 'Logo bewerken' : 'Logo toevoegen';
+  $('#dlgLogoTitle').textContent = l ? 'Logo Bewerken' : 'Logo Toevoegen';
   $('#lgClub').value = l?.club || ''; $('#lgTeam').value = l?.team || ''; $('#lgFile').value = ''; $('#lgCut').checked = false; showLgLogo();
   // A stored logo can be cleaned too: load it as the source, so ticking the checkbox works without a new upload.
   if (lgLogo) { const img = new Image(), src = lgLogo; img.onload = () => { if (editLogo === l && !lgRaw) lgRaw = img; }; img.src = src; }

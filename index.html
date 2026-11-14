@@ -560,6 +560,9 @@ dialog h2 .sub { color: var(--muted); font-weight: 600; }
 .dhead .btn.sm { flex: none; min-height: 40px; padding: 0 14px; font-size: .9375rem; border-color: var(--pink); color: var(--pink); background: transparent; }
 .dhead .btn.sm:active { background: var(--glow); }
 .mfbar > .note.desk { flex: 1 1 auto; margin: 0; }
+.btn.icon.on::after { content: ""; position: absolute; top: 7px; right: 7px; width: 8px; height: 8px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 0 2px var(--panel-2); }
+.pfpanel { flex: 0 1 auto; flex-wrap: wrap; gap: 0 16px; }
+@media (max-width: 639px) { .mfpanel.pfpanel { flex-direction: row; align-items: center; } }
 .mfbar .sortsel.psort { margin-left: auto; flex: 1 1 0; min-width: 0; justify-content: flex-end; }
 .mfbar .sortsel.psort .select { width: 100%; max-width: 260px; }
 .mfbar .sortsel.psort + .addbtn { margin-left: 0; }
@@ -1014,7 +1017,7 @@ const store = { get(k) { try { return localStorage.getItem(k); } catch { return 
 // Motion helper (WAAPI): skipped entirely for people who asked for reduced motion.
 const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const anim = (el, frames, opts) => el && !calm() ? el.animate(frames, { easing: 'cubic-bezier(0.23, 1, 0.32, 1)', ...opts }) : null;
-const S = { db: null, canEdit: false, canPost: false, seasons: [], players: [], matches: [], sponsors: [], logos: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'overzicht', loaded: new Set() };
+const S = { db: null, canEdit: false, canPost: false, seasons: [], players: [], matches: [], sponsors: [], logos: [], ready: false, season: null, sort: { key: 'pts', dir: 'desc' }, tab: 'overzicht', ptypes: new Set(['vast', 'gast', 'invaller']), loaded: new Set() };
 
 /* ---------- stats ---------- */
 const result = m => m.gf > m.ga ? 'W' : m.gf === m.ga ? 'G' : 'V';
@@ -1023,6 +1026,10 @@ const seasonMatches = () => S.matches.filter(m => S.season === 'all' || m.season
 // Player roles (captain, manager) live in players.roles; keeper stays players.position.
 // Soort speler: 'vast' is the default and gets no badge; guests and substitutes do.
 const PTYPE = { gast: 'gastspeler', invaller: 'invaller' };
+const ptype = p => PTYPE[p?.player_type] ? p.player_type : 'vast';
+// Spelers filter: which types are shown (all on by default). The dashboard always uses vaste spelers only.
+const PTYPES = [['vast', 'Vaste spelers'], ['gast', 'Gastspelers'], ['invaller', 'Invallers']];
+const FILTER_IC = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 5h18l-7 8.2V19l-4 2v-7.8z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>';
 const hasRole = (p, r) => !!p && (p.roles || []).includes(r);
 // A plaster icon next to injured players; the note shows on hover and in the injury strip on Spelers.
 const injuryIcon = p => p?.injury ? `<span class="inj-ic" role="img" aria-label="Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}" title="Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}"></span>` : '';
@@ -1066,14 +1073,15 @@ function renderSummary(matches, stats) {
   const gf = matches.reduce((t, m) => t + (+m.gf || 0), 0), ga = matches.reduce((t, m) => t + (+m.ga || 0), 0), diff = gf - ga;
   const pct = x => n ? Math.round(x / n * 100) : 0, bar = x => n ? (x / n * 100).toFixed(2) : 0;
   const ppg = n ? ((w * 3 + d) / n).toFixed(2).replace('.', ',') : '0';
-  const top = key => { const best = [...stats].sort(byStat(key))[0]; return best && best[key] > 0 ? best : null; };
+  const vast = stats.filter(s => ptype(s.p) === 'vast'); // gastspelers and invallers don't appear on the dashboard
+  const top = key => { const best = [...vast].sort(byStat(key))[0]; return best && best[key] > 0 ? best : null; };
   const ts = top('g'), ta = top('a');
   const form = matches.slice(0, 5).reverse();
   const none = t => `<span class="v"><small>${t}</small></span>`;
   const go = '<span class="go" aria-hidden="true">›</span>';
   // Best keeper = most clean sheets, then fewest conceded per match (S.kp is filled by renderKeepers first).
-  const kb = Object.entries(S.kp?.byId || {}).map(([id, k]) => ({ id, ...k })).sort((a, b) => b.s.cs - a.s.cs || a.s.conc / a.s.kgp - b.s.conc / b.s.kgp)[0];
-  const hurt = S.players.filter(p => p.injury).length;
+  const kb = Object.entries(S.kp?.byId || {}).map(([id, k]) => ({ id, ...k })).filter(k => ptype(k.s.p) === 'vast').sort((a, b) => b.s.cs - a.s.cs || a.s.conc / a.s.kgp - b.s.conc / b.s.kgp)[0];
+  const hurt = S.players.filter(p => p.injury && ptype(p) === 'vast').length;
   const last = matches[0];
   $('#heroLast').innerHTML = last ? `<button type="button" class="last ${result(last)}" data-show="${esc(last.id)}"><span class="res ${result(last)}" aria-hidden="true">${result(last)}</span><span class="lbl">Laatste wedstrijd</span><strong>${esc(last.opponent)}</strong><span class="when">${last.home ? 'Thuis' : 'Uit'} · ${esc(fmtDate(last.date))}</span><span class="score" aria-label="${{ W: 'Gewonnen', G: 'Gelijk', V: 'Verloren' }[result(last)]} ${last.gf} tegen ${last.ga}">${last.gf}-${last.ga}</span></button>` : '';
   let i = 0; const I = () => `style="--i:${i++}"`;
@@ -1089,7 +1097,7 @@ function renderSummary(matches, stats) {
     ${kb ? `<button type="button" class="tile" data-act="keeperList" data-keeper="${esc(kb.id)}" ${I()}><span class="k">Keeper${go}</span><span class="v name">${esc(kb.name)}</span><span class="k">${kb.s.cs}x de nul · ${dec(kb.s.conc / kb.s.kgp)} tegen gem.</span></button>` : ''}
     ${hurt ? `<button type="button" class="tile" data-go="spelers" ${I()}><span class="k">Geblesseerd${go}</span><span class="v">${hurt}<span class="inj-ic" aria-hidden="true"></span></span><span class="k">${hurt === 1 ? 'speler' : 'spelers'} uit de roulatie</span></button>` : ''}`;
   // Leaders (top 5 G+A) and the season in bars: both tap through to the detail.
-  const lead = stats.filter(s => s.pts > 0).sort(byStat('pts')).slice(0, 5), max = lead[0]?.pts || 1;
+  const lead = vast.filter(s => s.pts > 0).sort(byStat('pts')).slice(0, 5), max = lead[0]?.pts || 1;
   $('#dash').innerHTML = !n ? '' : `<section class="dcol">
     <div class="sect"><h2>Toppers</h2><button type="button" class="linkbtn" data-go="spelers">Alle spelers</button></div>
     ${lead.length ? `<ol class="lead dcard" style="--i:${i++}">${lead.map((s, r) => `<li><button type="button" data-pinfo="${esc(s.p.id)}"><span class="rk">${r + 1}</span><span class="nm">${esc(s.p.name)}</span><span class="lbar" aria-hidden="true"><span class="g" style="width:${(s.g / max * 100).toFixed(1)}%"></span><span class="a" style="width:${(s.a / max * 100).toFixed(1)}%"></span></span><span class="pt">${s.pts}<small> G+A</small></span></button></li>`).join('')}</ol>
@@ -1173,7 +1181,9 @@ function renderPlayers(stats) {
   // Same toolbar as Wedstrijden: search icon (opens the field), sort (phones), "+" on the right.
   const tbar = `<div class="mfbar"><button type="button" class="btn icon" id="pToggle" aria-expanded="${!!S.psOpen}" aria-controls="pPanel" title="Zoek speler">${SEARCH_IC}<span class="sr-only">Zoek speler</span></button>
     <div class="mfpanel" id="pPanel"${S.psOpen ? '' : ' hidden'}><div class="mfsearch"><input id="pSearch" type="search" placeholder="Naam of rugnummer" autocomplete="off" enterkeyhint="search" aria-label="Zoek speler" value="${esc(S.pq || '')}"><button type="button" id="pClear" title="Wissen" hidden><span aria-hidden="true">×</span><span class="sr-only">Wissen</span></button></div></div>
-    ${S.psOpen ? '' : '<p class="note desk">Tik op een kolomkop om te sorteren, op een speler voor de details.</p>'}${psort}${S.isAdmin ? addBtn('addPlayer', 'Speler toevoegen') : ''}</div><p class="note" id="pNone" aria-live="polite" hidden></p>`;
+    <button type="button" class="btn icon${S.ptypes.size < 3 ? ' on' : ''}" id="pfToggle" aria-expanded="${!!S.pfOpen}" aria-controls="pfPanel" title="Filter op soort speler">${FILTER_IC}<span class="sr-only">Filter op soort speler</span></button>
+    <div class="mfpanel pfpanel" id="pfPanel"${S.pfOpen ? '' : ' hidden'} role="group" aria-label="Soort speler">${PTYPES.map(([v, l]) => `<label class="check-row"><input type="checkbox" class="pft" value="${v}"${S.ptypes.has(v) ? ' checked' : ''}> ${l}</label>`).join('')}</div>
+    ${S.psOpen || S.pfOpen ? '' : '<p class="note desk">Tik op een kolomkop om te sorteren, op een speler voor de details.</p>'}${psort}${S.isAdmin ? addBtn('addPlayer', 'Speler toevoegen') : ''}</div><p class="note" id="pNone" aria-live="polite" hidden></p>`;
   const cards = `<ol class="cards pcards">${rows.map((s, i) => card({ attrs: `data-pinfo="${esc(s.p.id)}" aria-label="Details van ${esc(s.p.name)}"`, rank: i + 1, p: s.p, badges: badges(s), idle: !s.gp,
       stats: stat('gp', s.gp) + stat('att', Math.round(s.att) + '%') + stat('pts', s.pts) + stat('gpg', pw(s)),
       foot: `<span class="pbox">
@@ -1197,17 +1207,23 @@ function renderPlayers(stats) {
 function filterPlayers() {
   const q = norm(S.pq), el = $('#p-spelers'); let n = 0;
   el.querySelectorAll('[data-pinfo]').forEach(x => {
-    const p = S.players.find(p => p.id === x.dataset.pinfo), hit = !q || norm(p?.name).includes(q) || String(p?.number ?? '') === q;
+    const p = S.players.find(p => p.id === x.dataset.pinfo), hit = S.ptypes.has(ptype(p)) && (!q || norm(p?.name).includes(q) || String(p?.number ?? '') === q);
     (x.closest('li') || x).hidden = !hit; if (hit && x.closest('li')) n++;
   });
   if (!$('#pNone')) return;
-  $('#pNone').hidden = !q || n > 0; $('#pNone').textContent = `Geen speler gevonden voor "${S.pq}".`;
+  $('#pNone').hidden = n > 0; $('#pNone').textContent = q ? `Geen speler gevonden voor "${S.pq}".` : 'Geen spelers met dit filter. Zet een soort speler aan.';
+  $('#pfToggle')?.classList.toggle('on', S.ptypes.size < 3);
   $('#pClear').hidden = !q;
 }
-$('#p-spelers').addEventListener('input', e => { if (e.target.id === 'pSearch') { S.pq = e.target.value; filterPlayers(); } });
+$('#p-spelers').addEventListener('input', e => {
+  if (e.target.id === 'pSearch') { S.pq = e.target.value; filterPlayers(); }
+  if (e.target.classList.contains('pft')) { S.ptypes[e.target.checked ? 'add' : 'delete'](e.target.value); filterPlayers(); }
+});
 $('#p-spelers').addEventListener('click', e => {
   if (e.target.closest('#pClear')) { S.pq = ''; $('#pSearch').value = ''; filterPlayers(); $('#pSearch').focus(); return; }
   // Toggle like Wedstrijden: opening focuses the field (you asked to search); closing clears the search.
+  // Filter panel: opening or closing keeps the choice (unlike search, a filter is a setting you look at, not a query).
+  if (e.target.closest('#pfToggle')) { S.pfOpen = !S.pfOpen; render(); return; }
   if (e.target.closest('#pToggle')) { S.psOpen = !S.psOpen; if (!S.psOpen) S.pq = ''; render(); if (S.psOpen) $('#pSearch').focus(); }
 });
 

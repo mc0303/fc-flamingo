@@ -2,15 +2,19 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
+<!-- Clickjacking guard: GitHub Pages can't send X-Frame-Options/CSP headers, so a page loaded inside someone
+     else's frame stays hidden and the browser is sent to the real site instead. -->
+<style id="noframe">html { display: none !important; }</style>
+<script>if (self === top) document.getElementById('noframe').remove(); else top.location = self.location.href;</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>404 · Wedstrijd niet gevonden · FC Flamingo</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#0b090a">
 <script>
   // GitHub Pages serves this page for every missing path, so relative links would break on /fc-flamingo/a/b.
-  // On github.io the site lives under /<repo>/; elsewhere at the root.
-  window.HOME = location.hostname.endsWith('github.io') ? '/' + (location.pathname.split('/')[1] || '') + '/' : '/';
-  document.write('<base href="' + window.HOME + '">');
+  // Fixed paths only (nothing from the address bar ends up in the page): github.io = /fc-flamingo/, own domain = /.
+  window.HOME = location.hostname.endsWith('github.io') ? '/fc-flamingo/' : '/';
+  const base = document.createElement('base'); base.href = window.HOME; document.head.append(base);
 </script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">

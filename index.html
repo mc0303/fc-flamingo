@@ -75,16 +75,16 @@ button, [role="button"], .tab, summary { -webkit-user-select: none; user-select:
 .appbar { max-width: 1120px; margin: 0 auto; box-sizing: border-box; display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
 .appbar .logo { width: 30px; height: 38px; flex: none; object-fit: contain; transition: transform .14s var(--ease-out); }
 /* logo + team name = home (Overzicht); away from home a chevron appears in front, so it reads as "back" */
-.home { all: unset; flex: 1 1 auto; min-width: 0; min-height: 44px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-radius: 10px; }
-.home:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
-.home:active .logo { transform: scale(.9); }
-.home .back { display: none; margin-right: -6px; color: var(--pink); font: 800 2rem/1 var(--font-display); }
-body:not([data-tab="overzicht"]) .home .back { display: block; animation: backin .22s var(--ease-out); }
+.homebtn { all: unset; flex: 1 1 auto; min-width: 0; min-height: 44px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-radius: 10px; }
+.homebtn:focus-visible { outline: 2px solid var(--pink-hi); outline-offset: 2px; }
+.homebtn:active .logo { transform: scale(.9); }
+.homebtn .back { display: none; margin-right: -6px; color: var(--pink); font: 800 2rem/1 var(--font-display); }
+body:not([data-tab="overzicht"]) .homebtn .back { display: block; animation: backin .22s var(--ease-out); }
 @keyframes backin { from { opacity: 0; transform: translateX(6px); } }
 .appname { flex: 1 1 auto; min-width: 0; font: 800 1.375rem/1 var(--font-display); text-transform: uppercase; color: var(--pink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .appbar .tools { display: flex; gap: 8px; align-items: center; min-width: 0; }
 .appbar .select { max-width: 46vw; }
-@media (max-width: 479px) { .home { flex: none; } .appname { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .appbar .tools { flex: 1; justify-content: flex-end; } .appbar .select { flex: 0 1 auto; max-width: none; } }
+@media (max-width: 479px) { .homebtn { flex: none; } .appname { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .appbar .tools { flex: 1; justify-content: flex-end; } .appbar .select { flex: 0 1 auto; max-width: none; } }
 .st-logo { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .st-logo img, .st-logo svg { width: 64px; height: 80px; object-fit: contain; flex: none; }
 .st-logo .field { flex: 1 1 200px; }
@@ -619,10 +619,10 @@ tr.saved td { animation: savedrow 1.3s var(--ease-out) .3s both; }
 .mi-board.V { background: radial-gradient(90% 120% at 50% 0%, rgb(169 154 161 / .14), transparent 70%), var(--panel-2); }
 .mi-team { display: grid; justify-items: center; gap: 8px; text-align: center; min-width: 0; }
 .mi-crest { display: grid; place-items: center; width: 56px; height: 56px; }
-.mi-crest img, .mi-crest svg { width: 100%; height: 100%; object-fit: contain; }
-.mi-crest.logo { background: var(--logo-bg); border-radius: 12px; padding: 6px; box-sizing: border-box; }
+.mi-crest img, .mi-crest svg { display: block; width: 56px; height: 56px; object-fit: contain; } /* fixed square: % heights don't hold in a grid cell, tall crests would spill out */
 .mi-crest > span { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid var(--muted); color: var(--muted); font: 800 1.25rem/1 var(--font-display); }
-.mi-name { font: 800 1rem/1.1 var(--font-display); text-transform: uppercase; overflow-wrap: break-word; max-width: 100%; }
+.mi-name { justify-self: stretch; width: 100%; text-align: center; text-wrap: balance; font: 800 1rem/1.1 var(--font-display); text-transform: uppercase; overflow-wrap: break-word; }
+.mi-crest { justify-self: center; }
 .mi-score { display: grid; justify-items: center; gap: 6px; padding-top: 6px; }
 .mi-score .sc { font: 800 3.25rem/1 var(--font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .mi-score .sc i { font-style: normal; color: var(--muted); margin: 0 4px; }
@@ -696,7 +696,7 @@ dialog[open]::backdrop { opacity: 1; }
 
 <div class="top">
   <header class="appbar">
-    <button type="button" class="home" data-go="overzicht" aria-label="Naar het overzicht" title="Overzicht"><span class="back" aria-hidden="true">‹</span><svg class="logo" id="barLogoSvg" aria-hidden="true" style="color: var(--pink)"><use href="#fcf"/></svg><img class="logo" id="barLogoImg" alt="" hidden><span class="appname" id="appName">FC Flamingo 4</span></button>
+    <button type="button" class="homebtn" data-go="overzicht" aria-label="Naar het overzicht" title="Overzicht"><span class="back" aria-hidden="true">‹</span><svg class="logo" id="barLogoSvg" aria-hidden="true" style="color: var(--pink)"><use href="#fcf"/></svg><img class="logo" id="barLogoImg" alt="" hidden><span class="appname" id="appName">FC Flamingo 4</span></button>
     <div class="tools">
       <select id="season" class="select" aria-label="Seizoen"></select>
       <button id="settingsBtn" class="btn icon" type="button" title="Instellingen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sr-only">Instellingen</span></button>
@@ -1362,9 +1362,9 @@ function openPlayerInfo(id) {
 function openMatchInfo(id) {
   const m = S.matches.find(x => x.id === id); if (!m) return;
   const r = result(m), t = team(), P = pid => S.players.find(p => p.id === pid) || { id: pid, name: playerName(pid) };
-  const us = `<span class="mi-crest">${safeLogo(t.logo) ? `<img src="${esc(t.logo)}" alt="">` : '<svg aria-hidden="true" style="color: var(--pink)"><use href="#fcf"/></svg>'}</span><span class="mi-name">${esc(teamFull())}</span>`;
+  const us = `<span class="mi-crest">${safeLogo(t.logo) ? `<img src="${esc(t.logo)}" alt="" data-trim>` : '<svg aria-hidden="true" style="color: var(--pink)"><use href="#fcf"/></svg>'}</span><span class="mi-name">${esc(teamFull())}</span>`;
   const ol = logoRow(m.opponent)?.logo;
-  const them = `<span class="mi-crest${ol ? ' logo' : ''}">${ol ? `<img src="${esc(ol)}" alt="">` : `<span>${esc(initials(m.opponent))}</span>`}</span><span class="mi-name">${esc(m.opponent).replace(/\//g, '/<wbr>')}</span>`;
+  const them = `<span class="mi-crest">${ol ? `<img src="${esc(ol)}" alt="" data-trim>` : `<span>${esc(initials(m.opponent))}</span>`}</span><span class="mi-name">${esc(m.opponent).replace(/\//g, '/<wbr>')}</span>`;
   const [l, rr] = m.home ? [us, them] : [them, us], [sl, sr] = m.home ? [m.gf, m.ga] : [m.ga, m.gf];
   const g = id => +(m.goals?.[id] || 0), a = id => +(m.assists?.[id] || 0);
   const scorers = (m.played || []).filter(id => g(id) || a(id)).sort((x, y) => g(y) - g(x) || a(y) - a(x));
@@ -1394,6 +1394,7 @@ function openMatchInfo(id) {
     ${(m.yellow || []).length || (m.red || []).length ? `<h3>Kaarten</h3><ul class="mi-list">${[...(m.yellow || []).map(k => [k, 'y', 'Geel']), ...(m.red || []).map(k => [k, 'r', 'Rood'])].map(([k, c, lbl]) => `<li>${who(k)}<span class="pills"><span class="pill"><span class="cardglyph ${c}"></span>${lbl}</span></span></button></li>`).join('')}</ul>` : ''}
     ${(m.played || []).length ? `<h3>Opstelling <span class="note">${m.played.length} spelers</span></h3><p class="mi-chips">${sortedPlayers().filter(p => m.played.includes(p.id)).map(p => `<button type="button" class="pill chip" data-pinfo="${esc(p.id)}">${p.number != null ? `<b>${p.number}</b>` : ''}${esc(p.name)}${p.id === m.captain ? ' <span class="cap" title="Captain">C</span>' : ''}</button>`).join('')}</p>` : ''}
     ${m.manager ? `<p class="note">Manager: ${esc(playerName(m.manager))}</p>` : ''}`;
+  trimImgs($('#miBody'));
   $('#dlgMatchInfo').showModal();
 }
 
@@ -1769,8 +1770,29 @@ function logoRow(name) {
     || withLogo.filter(l => !l.team && (o === norm(l.club) || o.startsWith(norm(l.club) + ' '))).sort((a, b) => b.club.length - a.club.length)[0] || null;
 }
 // Loads an image once; returns null until it's ready, then redraws the post.
+// Logos are shown tight: empty (transparent) margins around the artwork are cut off once per logo (cached), so a
+// logo with more empty space on one side still sits in the middle of its box. Opaque logos come back unchanged.
+const trimCache = {};
+function trimLogo(src) {
+  if (src in trimCache) return trimCache[src];
+  return trimCache[src] = new Promise(done => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight, c = document.createElement('canvas'); c.width = w; c.height = h;
+      const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, w, h).data; let x0 = w, y0 = h, x1 = -1, y1 = -1;
+      for (let y = 0; y < h; y++) for (let i = 0; i < w; i++) if (d[(y * w + i) * 4 + 3] > 16) { if (i < x0) x0 = i; if (i > x1) x1 = i; if (y < y0) y0 = y; y1 = y; }
+      if (x1 < 0 || (x0 === 0 && y0 === 0 && x1 === w - 1 && y1 === h - 1)) return done(src);
+      const t = document.createElement('canvas'); t.width = x1 - x0 + 1; t.height = y1 - y0 + 1;
+      t.getContext('2d').drawImage(c, x0, y0, t.width, t.height, 0, 0, t.width, t.height);
+      done(t.toDataURL('image/png'));
+    };
+    img.onerror = () => done(src); img.src = src;
+  });
+}
+const trimImgs = root => root.querySelectorAll('img[data-trim]').forEach(i => trimLogo(i.getAttribute('src')).then(u => { if (i.isConnected) i.src = u; }));
 function imgFor(src) {
-  if (!(src in logoCache)) { logoCache[src] = null; const img = new Image(); img.onload = () => { logoCache[src] = img; drawPost(); }; img.src = src; }
+  if (!(src in logoCache)) { logoCache[src] = null; const img = new Image(); img.onload = () => { logoCache[src] = img; drawPost(); }; trimLogo(src).then(u => { img.src = u; }); }
   return logoCache[src];
 }
 function oppLogo(name) { const src = logoRow(name)?.logo; return src ? imgFor(src) : null; }
@@ -1860,7 +1882,13 @@ function removeWhite(img) {
     p[o + 3] = Math.round(p[o + 3] * a);
   }
   x.putImageData(id, 0, 0);
-  return c;
+  // crop to what's left, so the stored logo has no empty margins (it centres properly everywhere)
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let i = 0; i < N; i++) if (p[i * 4 + 3] > 16) { const cx = i % w, cy = (i - cx) / w; if (cx < x0) x0 = cx; if (cx > x1) x1 = cx; if (cy < y0) y0 = cy; y1 = cy; }
+  if (x1 < 0) return c;
+  const t = document.createElement('canvas'); t.width = x1 - x0 + 1; t.height = y1 - y0 + 1;
+  t.getContext('2d').drawImage(c, x0, y0, t.width, t.height, 0, 0, t.width, t.height);
+  return t;
 }
 
 function postData() {
@@ -2110,9 +2138,10 @@ function renderLogos() {
   const el = $('#logoPane');
   if (!S.logos.length) { el.innerHTML = emptyState('Nog geen logo\'s', 'Voeg per club een logo toe. Het logo komt dan vanzelf op de Instagram-posts tegen die club.'); return; }
   el.innerHTML = `<p class="note">Een logo met een team erbij gaat voor dat team boven het clublogo.</p><ul class="sponsors">${[...S.logos].sort(byClub).map(l => `<li class="sponsor click" tabindex="0" data-logo="${esc(l.id)}">
-      <div class="sp-logo">${safeLogo(l.logo) ? `<img src="${esc(l.logo)}" alt="Logo ${esc(l.team || l.club)}">` : `<span>${esc(l.club)}</span>`}</div>
+      <div class="sp-logo">${safeLogo(l.logo) ? `<img src="${esc(l.logo)}" alt="Logo ${esc(l.team || l.club)}" data-trim>` : `<span>${esc(l.club)}</span>`}</div>
       <div class="sp-name">${esc(l.club)}</div><div class="note">${l.team ? 'Team: ' + esc(l.team) : 'Hele club'}</div>
     </li>`).join('')}</ul>`;
+  trimImgs(el);
   $('#lgClubs').innerHTML = [...new Set(S.logos.map(l => l.club))].map(c => `<option value="${esc(c)}"></option>`).join('');
 }
 

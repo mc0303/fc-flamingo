@@ -397,6 +397,27 @@ fieldset.plain legend { padding: 0; margin-bottom: 4px; font-size: 0.875rem; col
 .sp-name { font-weight: 600; }
 .sponsor a { color: var(--pink); font-size: 0.875rem; overflow-wrap: anywhere; }
 
+/* footer: sponsors first (they pay for the shirts), then club info */
+.foot { border-top: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 0.875rem; }
+.foot-in { max-width: 1120px; margin: 0 auto; box-sizing: border-box; padding: 32px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); display: grid; gap: 28px; }
+.foot h2 { margin: 0 0 12px; color: var(--text); font: 800 1rem/1.1 var(--font-display); letter-spacing: .06em; text-transform: uppercase; }
+.foot-sp { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 0; color: var(--pink); font: 800 1.125rem/1.2 var(--font-display); text-transform: uppercase; letter-spacing: .02em; }
+.foot .foot-sp a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.foot-sp li:not(:last-child)::after { content: '\2022'; margin: 0 12px; text-decoration: none; }
+.foot .foot-sp a:hover, .foot .foot-sp a:focus-visible { color: var(--pink-hi); }
+.foot-ig { display: inline-grid; place-items: center; width: 44px; height: 44px; margin: -10px 0 0 -10px; border-radius: 50%; }
+.foot-ig:hover, .foot-ig:focus-visible { background: var(--glow); }
+.foot-cols { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.foot p { margin: 0; line-height: 1.6; }
+.foot a { color: var(--pink); }
+.foot-club { display: flex; align-items: center; gap: 10px; color: var(--text); font: 800 1.25rem/1 var(--font-display); text-transform: uppercase; }
+.foot-club svg { width: 28px; height: 34px; color: var(--pink); }
+.foot-bot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 0.8125rem; }
+@media (max-width: 767px) {
+  .wrap { padding-bottom: 32px; }
+  .foot-in { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+}
+
 /* dialogs */
 /* While a dialog is open the page behind stays put; swipes scroll the dialog, not the table under it.
    html, not body: html's overflow-x clip makes html the page scroller. dvh = visible height with the phone toolbar. */
@@ -787,6 +808,18 @@ dialog[open]::backdrop { opacity: 1; }
       </div>
     </div>
 </main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <section id="footSponsors" aria-labelledby="footSpTitle" hidden><h2 id="footSpTitle">Mogelijk gemaakt door</h2><ul class="foot-sp" id="footSpList"></ul></section>
+    <div class="foot-cols">
+      <div><p class="foot-club"><svg aria-hidden="true"><use href="#fcf"/></svg><span id="footName">FC Flamingo 4</span></p></div>
+      <div><h2>Club</h2><p id="footInfo">Futsal, 3e klasse KNVB.<br>Thuisbasis De Kannebuis.</p></div>
+      <div><h2>Volg Ons</h2><p><a class="foot-ig" href="https://www.instagram.com/fc_flamingo_4/" target="_blank" rel="noopener" aria-label="FC Flamingo 4 op Instagram" title="Instagram"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg></a></p><p>Sponsor worden? Neem contact op met de spelers van het team of stuur een berichtje via Instagram.</p></div>
+    </div>
+    <div class="foot-bot"><span id="footCopy"></span><span>Statistieken worden bijgehouden door de spelers</span></div>
+  </div>
+</footer>
 
 <dialog id="dlgPlayer" aria-labelledby="dlgPlayerTitle">
   <form id="formPlayer">
@@ -2085,7 +2118,19 @@ Promise.all(['600', '800'].map(w => document.fonts.load(`${w} 100px "Barlow Cond
 /* ---------- Sponsors ---------- */
 const safeLogo = s => /^data:image\//.test(s || '') ? s : '';
 const safeSite = s => /^https?:\/\//i.test(s || '') ? s : '';
+function renderFooter() {
+  const t = team(), list = S.sponsors;
+  $('#footName').textContent = teamFull();
+  $('#footInfo').innerHTML = esc(['Futsal', t.klasse].filter(Boolean).join(', ')) + '.' + (t.home_base ? '<br>Thuisbasis ' + esc(t.home_base) + '.' : '');
+  $('#footCopy').textContent = '© ' + new Date().getFullYear() + ' ' + teamFull();
+  $('#footSponsors').hidden = !list.length;
+  $('#footSpList').innerHTML = list.map(s => {
+    const site = safeSite(s.website);
+    return `<li>${site ? `<a href="${esc(site)}" target="_blank" rel="noopener">${esc(s.name)}</a>` : esc(s.name)}</li>`;
+  }).join('');
+}
 function renderSponsors() {
+  renderFooter();
   const el = $('#p-sponsors'), add = S.canPost && addBtn('addSponsor', 'Sponsor Toevoegen');
   if (!S.sponsors.length) { el.innerHTML = phead('Sponsors') + ptool('', add) + emptyState('Nog geen sponsors', 'Voeg sponsors toe met naam, website en logo. Daarna kun je ze onder je Instagram-posts zetten.'); return; }
   el.innerHTML = `${phead('Sponsors', S.sponsors.length + ' partners')}${ptool('<p class="note">Sleep de tegels om de volgorde te veranderen. Deze volgorde staat ook onder de Instagram-posts.</p>', add)}<ul class="sponsors">${S.sponsors.map(s => `<li class="sponsor click" tabindex="0" data-sponsor="${esc(s.id)}">
@@ -2222,6 +2267,7 @@ function applySettings() {
   $('label[for="mGF"]').textContent = 'Goals ' + t.team_name;
   if (!$('#poPlace').value) $('#poPlace').value = t.home_base || '';
   if (!$('#poKlasse').value) $('#poKlasse').value = t.klasse || '';
+  renderFooter();
 }
 let stLogo = '';
 $('#settingsBtn').onclick = () => {

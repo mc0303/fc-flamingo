@@ -489,8 +489,19 @@ label.prow:has(input:checked) { border-color: var(--pink); background: var(--glo
 .match .by { grid-column: 2 / -1; order: 9; font-size: 0.8125rem; color: var(--muted); }
 dialog { box-shadow: 0 24px 64px -12px rgb(0 0 0 / .8); }
 /* Stays at the top of the scrolling body while you fill in step 3. */
-.wstick { position: sticky; top: -16px; z-index: 1; margin: -16px -20px 0; padding: 12px 20px; background: var(--panel-2); border-bottom: 1px solid var(--yellow); }
-@media (max-width: 639px) { .wstick { margin-inline: -16px; padding-inline: 16px; } }
+.wstick, .pcount { position: sticky; top: -16px; z-index: 1; margin: -16px -20px 0; padding: 12px 20px; background: var(--panel-2); border-bottom: 1px solid var(--yellow); }
+@media (max-width: 639px) { .wstick, .pcount { margin-inline: -16px; padding-inline: 16px; } }
+/* step 2: how many players are ticked, big enough to read at a glance while you scroll the list */
+.pcount { display: flex; align-items: center; gap: 14px; border-bottom-color: var(--line); }
+.pcount strong { min-width: 2ch; font: 800 2.75rem/1 var(--font-num, var(--font-display)); font-variant-numeric: tabular-nums; color: var(--muted); text-align: right; }
+.pcount.has strong { color: var(--pink); }
+.pcount span { display: grid; gap: 2px; font-weight: 600; }
+.pcount small { color: var(--muted); font-weight: 400; font-size: .875rem; }
+/* two-option segmented control (theme picker: Donker / Licht) */
+.seg.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.seg.two::before { width: calc((100% - 12px) / 2); }
+/* light mode basics shared by every theme (each theme file sets its own light colours) */
+:root[data-mode="light"] { color-scheme: light; --scrim: rgb(20 16 18 / .45); }
 .wempty { margin: 0; padding: 24px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: var(--r-sm); }
 @media (max-width: 639px) {
   #dlgMatch { width: 100%; max-width: 100%; height: 100dvh; margin: 0; border: 0; border-radius: 0; }
@@ -713,6 +724,17 @@ dialog[open]::backdrop { opacity: 1; }
   dialog, dialog[open] { transform: none !important; }
 }
 </style>
+<!-- Theme (Scheidsrechter default, Teletekst, Crouwel) and light/dark mode, chosen per viewer under Weergave.
+     Set before first paint so the page never flashes the wrong look. -->
+<link id="themeCss" rel="stylesheet" href="themes/scheidsrechter.css">
+<script>
+(function () {
+  var t = null, m = null;
+  try { t = localStorage.getItem('fcf-theme'); m = localStorage.getItem('fcf-mode'); } catch (e) {}
+  if (t === 'teletekst' || t === 'crouwel') document.getElementById('themeCss').href = 'themes/' + t + '.css';
+  if (m === 'light') document.documentElement.dataset.mode = 'light';
+})();
+</script>
 
 </head>
 <body>
@@ -724,6 +746,7 @@ dialog[open]::backdrop { opacity: 1; }
     <div class="tools">
       <select id="season" class="select" aria-label="Seizoen"></select>
       <button id="settingsBtn" class="btn icon" type="button" title="Instellingen" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sr-only">Instellingen</span></button>
+      <button id="themeBtn" class="btn icon" type="button" aria-label="Weergave" title="Weergave: thema en licht/donker"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
       <button id="login" class="btn icon" type="button" aria-label="Inloggen" title="Inloggen voor coaches en aanvoerders"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>
     </div>
   </header>
@@ -883,6 +906,19 @@ dialog[open]::backdrop { opacity: 1; }
   </form>
 </dialog>
 
+<dialog id="dlgTheme" aria-labelledby="dlgThemeTitle">
+  <form method="dialog" id="formTheme">
+    <div class="dhead"><h2 id="dlgThemeTitle">Weergave</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
+    <fieldset class="plain"><legend class="lbl">Thema</legend>
+      <div class="seg" id="thTheme"><label><input type="radio" name="thTheme" value="scheidsrechter"><span>Scheids&shy;rechter</span></label><label><input type="radio" name="thTheme" value="teletekst"><span>Teletekst</span></label><label><input type="radio" name="thTheme" value="crouwel"><span>Crouwel</span></label></div>
+    </fieldset>
+    <fieldset class="plain"><legend class="lbl">Licht of Donker</legend>
+      <div class="seg two" id="thMode"><label><input type="radio" name="thMode" value="dark"><span>Donker</span></label><label><input type="radio" name="thMode" value="light"><span>Licht</span></label></div>
+    </fieldset>
+    <p class="note">Alleen voor dit apparaat. De standaard is Scheidsrechter, donker.</p>
+  </form>
+</dialog>
+
 <dialog id="dlgSponsor" aria-labelledby="dlgSponsorTitle">
   <form id="formSponsor">
     <div class="dhead"><h2 id="dlgSponsorTitle">Sponsor</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
@@ -985,7 +1021,7 @@ dialog[open]::backdrop { opacity: 1; }
         <details class="log" id="mLog" hidden></details>
       </section>
       <section class="wstep" hidden>
-        <p class="note">Tik op iedereen die speelde, ook de keeper.</p>
+        <p class="pcount" aria-live="polite"><strong id="mPlayedN">0</strong><span><span id="mPlayedTxt">spelers geselecteerd</span><small>Tik op iedereen die speelde, ook de keeper.</small></span></p>
         <div class="plist" id="mPlayed"></div>
       </section>
       <section class="wstep" hidden>
@@ -1702,6 +1738,14 @@ const wsteps = () => [...document.querySelectorAll('#formMatch .wstep')];
 const stepper = (cls, v, label) => `<span class="step"><button type="button" data-step="-1" aria-label="${esc(label)} min 1">−</button><input type="number" class="${cls}" min="0" max="30" inputmode="numeric" value="${+v || 0}" aria-label="${esc(label)}"><button type="button" data-step="1" aria-label="${esc(label)} plus 1">+</button></span>`;
 const pname = p => `<span class="nm">${p.number != null ? `<small>${p.number}</small>` : ''}${esc(p.name)}${injuryIcon(p)}</span>`;
 let mStep = 0;
+// Step 2: live count of ticked players.
+function countPlayed() {
+  const n = document.querySelectorAll('#mPlayed .pl:checked').length;
+  $('#mPlayedN').textContent = n;
+  $('#mPlayedTxt').textContent = n === 1 ? 'speler geselecteerd' : 'spelers geselecteerd';
+  $('#mPlayedN').parentElement.classList.toggle('has', n > 0);
+}
+$('#mPlayed').addEventListener('change', countPlayed);
 function openMatch(m) {
   editMatch = m || null;
   $('#dlgMatchTitle').textContent = m ? 'Wedstrijd Bewerken' : 'Wedstrijd Toevoegen';
@@ -1710,6 +1754,7 @@ function openMatch(m) {
   $('#mGF').value = m?.gf ?? 0; $('#mGA').value = m?.ga ?? 0; $('#mOwn').value = +m?.own_goals || 0;
   const ps = sortedPlayers(), has = (k, id) => (m?.[k] || []).includes(id);
   $('#mPlayed').innerHTML = ps.map(p => `<label class="prow"><input type="checkbox" class="pl" value="${esc(p.id)}"${has('played', p.id) ? ' checked' : ''}>${pname(p)}</label>`).join('');
+  countPlayed();
   $('#mStats').innerHTML = ps.map(p => `<div class="srow" data-id="${esc(p.id)}">${pname(p)}<div class="fld">Goals${stepper('g', m?.goals?.[p.id], 'Goals ' + p.name)}</div><div class="fld">Assists${stepper('a', m?.assists?.[p.id], 'Assists ' + p.name)}</div></div>`).join('');
   $('#mCards').innerHTML = ps.map(p => `<div class="prow" data-id="${esc(p.id)}">${pname(p)}<label class="tog y"><input type="checkbox" class="y"${has('yellow', p.id) ? ' checked' : ''}><span class="cardglyph y"></span>Geel</label><label class="tog r"><input type="checkbox" class="r"${has('red', p.id) ? ' checked' : ''}><span class="cardglyph r"></span>Rood</label></div>`).join('');
   const opts = '<option value="">Geen</option>' + ps.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
@@ -2269,6 +2314,29 @@ function applySettings() {
   if (!$('#poKlasse').value) $('#poKlasse').value = t.klasse || '';
   renderFooter();
 }
+// Weergave: theme + light/dark, per viewer (localStorage via store). The head script applies it before paint.
+const THEMES = ['scheidsrechter', 'teletekst', 'crouwel'];
+function syncThemeColor() { document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0d0d0e'; }
+function applyLook(theme, mode) {
+  const link = $('#themeCss'), href = 'themes/' + theme + '.css';
+  if (!link.getAttribute('href').endsWith(href)) link.href = href;
+  if (mode === 'light') document.documentElement.dataset.mode = 'light'; else delete document.documentElement.dataset.mode;
+  store.set('fcf-theme', theme); store.set('fcf-mode', mode);
+  syncThemeColor();
+}
+$('#themeBtn').onclick = () => {
+  const theme = THEMES.find(t => $('#themeCss').getAttribute('href').endsWith(t + '.css')) || THEMES[0];
+  const mode = document.documentElement.dataset.mode === 'light' ? 'light' : 'dark';
+  document.querySelector(`#thTheme input[value="${theme}"]`).checked = true;
+  document.querySelector(`#thMode input[value="${mode}"]`).checked = true;
+  $('#dlgTheme').showModal();
+};
+$('#formTheme').addEventListener('change', () => applyLook(
+  document.querySelector('#thTheme input:checked').value,
+  document.querySelector('#thMode input:checked').value));
+$('#themeCss').addEventListener('load', syncThemeColor);
+syncThemeColor();
+
 let stLogo = '';
 $('#settingsBtn').onclick = () => {
   const t = team();

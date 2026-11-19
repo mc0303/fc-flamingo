@@ -1,0 +1,154 @@
+/* Theme: Teletekst Sport. Every screen a NOS Teletekst sport page: block letters, coloured header bands, page numbers. */
+@import url("https://fonts.googleapis.com/css2?family=VT323&family=Red+Hat+Mono:wght@400;500;700&display=swap");
+
+:root {
+  --bg: #000000;
+  --panel: #000000;
+  --panel-2: #121212;
+  --line: #262626;
+  --text: #ffffff;
+  --muted: #b5b5b5;
+  --pink: #ef6fa6;            /* club pink, nudged brighter to sit like Teletekst magenta */
+  --pink-hi: #ff8fbe;
+  --pink-ink: #000000;
+  --cyan: #4fd1e8;
+  --tt-yellow: #f2e94e;
+  --tt-num: #f2e94e;
+  --band-ink: #000000;
+  --line-2: #444444;
+  --yellow: #f2c443;
+  --red: #ff5a5f;
+  --loss: #3a3a3a;
+  --glow: rgb(239 111 166 / .16);
+  --font-display: "VT323", ui-monospace, monospace;
+  --font-body: "Red Hat Mono", ui-monospace, monospace;
+  --r-sm: 0;
+  --r-md: 0;
+  --shadow: none;
+  --shine: none;
+  --edge: none;
+  --select: inset 0 0 0 2px var(--pink);
+}
+body { background: var(--bg); font-size: 15px; }
+::selection { background: var(--cyan); color: var(--band-ink); }
+* { scrollbar-color: var(--line-2) var(--bg); }
+
+/* headings in block letters, larger because VT323 runs small */
+h1, h2, h3 { font-weight: 400; letter-spacing: 0; }
+.hero h1 { font-size: clamp(3rem, 14vw, 4.5rem); line-height: .85; transform: scaleY(1.15); transform-origin: left top; margin-bottom: 6px; }
+.appname { font: 400 1.875rem/1 var(--font-display); }
+.phead h2 { font-size: 2.75rem; }
+dialog h2, .post-form h2 { font-size: 2.25rem; }
+
+/* page-number line on every screen: the Teletekst header */
+.panel::before { display: block; font: 400 1.375rem/1 var(--font-display); color: var(--text); white-space: pre; overflow: hidden; }
+.panel::before { content: "P801  SPORT"; }
+#p-overzicht::before { content: "P801  SPORT  OVERZICHT"; }
+#p-spelers::before { content: "P802  SPORT  SPELERS"; }
+#p-wedstrijden::before { content: "P803  SPORT  WEDSTRIJDEN"; }
+#p-keepers::before { content: "P804  SPORT  KEEPERS"; }
+#p-posts::before { content: "P888  INSTAGRAM"; }
+#p-sponsors::before { content: "P899  SPONSORS"; }
+
+/* section heads become full-width colour bands */
+.sect { margin-top: 12px; padding: 4px 10px; background: var(--cyan); align-items: center; }
+.sect h2 { font-size: 1.625rem; color: var(--band-ink); }
+.sect .linkbtn { color: var(--band-ink); font-weight: 700; }
+.tile > .k:first-child { margin: -16px -16px 4px; padding: 6px 12px; background: var(--pink); color: var(--band-ink); font: 400 1.25rem/1 var(--font-display); letter-spacing: .02em; text-transform: uppercase; }
+.tile > .k:first-child .go { color: var(--band-ink); }
+.tile:nth-child(3n+2) > .k:first-child { background: var(--cyan); }
+.tile:nth-child(3n) > .k:first-child { background: var(--tt-yellow); }
+
+/* no boxes: Teletekst has no cards, only rows on black */
+.tile, .match, .kcard, .sponsor, .tablewrap, .injbar, .post-form, .empty, .lead, .kchart, .kb, .hero, .last, .mi-board, .mi-list, .pbox { border: 0; border-radius: 0; background: var(--bg); box-shadow: none; }
+.tile { border-bottom: 1px solid var(--line); }
+.tile.wide { background: var(--bg); }
+.summary { gap: 16px 12px; }
+
+/* numbers: yellow block figures, ours in pink */
+.tile .v, .last .score, .match .score, .lead .pt, td.num, .kstats .v, .kgrid .v, .kb .pts, .mi-score .sc, .lead .rk { font-family: var(--font-display); font-weight: 400; color: var(--tt-num); }
+.tile .v { font-size: 3rem; }
+.tile.wide .v { font-size: 4rem; }
+.tile .v small { font-family: var(--font-display); font-size: 1.5rem; color: var(--cyan); }
+.tile .v.name { color: var(--pink); font-size: 2.25rem; }
+.last.W .score, .match.W .score, .mi-board.W .sc, .tile .hi, .lead li:first-child .rk { color: var(--pink); }
+
+/* hero: club name double-height, last result as a results row */
+.hero { padding: 8px 0 0; }
+.hero p { color: var(--cyan); font-size: .875rem; }
+.hero .tag { font: 400 1.5rem/1 var(--font-display); }
+.last { padding: 10px 0 0; border-top: 2px solid var(--pink); }
+.last .lbl { color: var(--cyan); font-weight: 500; }
+.last strong { font: 400 1.75rem/1 var(--font-display); }
+.last .score { font-size: 3.25rem; }
+
+/* result badges as Teletekst letters on colour */
+.res { border-radius: 0; font: 400 1.375rem/1 var(--font-display); }
+.res.W { background: var(--pink); color: var(--band-ink); }
+.res.G { border: 0; background: var(--cyan); color: var(--band-ink); }
+.res.V { border: 0; background: var(--panel-2); color: var(--muted); }
+.tile .form .res { font-size: 1.25rem; }
+.tile .v.rec small { font-size: 1.75rem; }
+.shirt { border-radius: 0; background: var(--bg); font: 400 1.5rem/1 var(--font-display); }
+.cap { border-radius: 0; }
+.venue.home { border-radius: 0; }
+.ratio, .gabar, .lbar { border-radius: 0; }
+
+/* lists and tables: strict rows */
+.lead { padding: 0; }
+.lead button { border-radius: 0; padding: 8px 4px; }
+.lead li + li { border-top: 1px dashed var(--line); }
+.lead .nm, .kname strong, .match .opp, .mi-name { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; text-transform: uppercase; }
+th { background: var(--bg); color: var(--cyan); font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--cyan); }
+td { border-bottom: 1px dashed var(--line); }
+td:nth-child(2), th:nth-child(2) { background: var(--bg); }
+.match { border-bottom: 1px dashed var(--line); padding: 12px 0; }
+.kchart { padding: 8px 0; border-top: 2px solid var(--tt-yellow); }
+
+/* controls: inverse video blocks */
+.btn, .select { border-radius: 0; border-color: var(--line-2); background-color: var(--bg); font-family: var(--font-body); font-weight: 700; }
+.btn.primary { background: var(--pink); border-color: var(--pink); color: var(--band-ink); box-shadow: none; }
+.btn.primary:hover { background: var(--pink-hi); }
+.field input, .field select, .mfsearch input { border-radius: 0; background: var(--bg); border-color: var(--line-2); }
+.pill, .seg, .seg::before, .seg label, .tog, .prow, .srow { border-radius: 0; }
+dialog { border-radius: 0; border: 2px solid var(--cyan); background: var(--bg); }
+.dhead { background: var(--bg); }
+
+/* nav: cyan labels, current page in inverse pink */
+.tab { font: 400 1.75rem/1 var(--font-display); color: var(--cyan); }
+.tab[aria-selected="true"] { color: var(--pink); }
+.tabind { border-radius: 0; height: 4px; }
+@media (max-width: 767px) {
+  .tabs { background: var(--bg); border-top: 2px solid var(--cyan); }
+  .tab { font: 400 1.125rem/1 var(--font-display); border-radius: 0; }
+  .tab.main .ic { border-radius: 0; background: var(--bg); border: 2px solid var(--pink); box-shadow: none; }
+  .tab.main[aria-selected="true"] .ic { background: var(--pink); }
+}
+.foot { background: var(--bg); border-top: 2px solid var(--pink); }
+.foot h2 { font: 400 1.5rem/1 var(--font-display); color: var(--cyan); }
+.foot-sp { font: 400 1.5rem/1.2 var(--font-display); }
+.foot-club { font: 400 1.75rem/1 var(--font-display); }
+.sk { background: var(--panel-2); animation: none; }
+
+/* ---------- light: Teletekst printed on white; bands keep their colours, figures turn Teletekst blue ---------- */
+:root[data-mode="light"] {
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --panel-2: #ececec;
+  --line: #cfcfcf;
+  --line-2: #9a9a9a;
+  --text: #000000;
+  --muted: #555555;
+  --pink: #d0407f;
+  --pink-hi: #b8326c;
+  --pink-ink: #000000;
+  --cyan: #0a8fa8;
+  --tt-yellow: #f2e94e;
+  --tt-num: #1b3bb5;
+  --red: #d42f35;
+  --loss: #c4c4c4;
+  --glow: rgb(208 64 127 / .14);
+}
+:root[data-mode="light"] .tile > .k:first-child, :root[data-mode="light"] .sect h2, :root[data-mode="light"] .sect .linkbtn { color: #000; }
+:root[data-mode="light"] .hero p, :root[data-mode="light"] .tab, :root[data-mode="light"] th, :root[data-mode="light"] .foot h2, :root[data-mode="light"] .last .lbl { color: #076a7d; }
+:root[data-mode="light"] .tab[aria-selected="true"] { color: var(--pink); }

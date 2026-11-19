@@ -1,0 +1,130 @@
+/* Theme: Crouwel Grid. A visible 24px construction grid; scores drawn big and wide on its cells; one pink plane for a win. */
+@import url("https://fonts.googleapis.com/css2?family=Lexend+Exa:wght@600;800&family=Lexend:wght@400;500;600&display=swap");
+
+:root {
+  --bg: #0a0a0a;
+  --panel: rgb(10 10 10 / .94);
+  --panel-2: #17171b;
+  --line: #2c2c33;
+  --grid: #1e1e24;
+  --text: #f2f2f2;
+  --muted: #a2a2aa;
+  --pink: #e8679b;
+  --pink-hi: #f384b1;
+  --pink-ink: #1c0611;
+  --yellow: #f2c443;
+  --red: #e5484d;
+  --loss: #3a3a42;
+  --glow: rgb(232 103 155 / .14);
+  --font-display: "Lexend Exa", "Lexend", system-ui, sans-serif;
+  --font-body: "Lexend", system-ui, sans-serif;
+  --r-sm: 0;
+  --r-md: 0;
+  --shadow: none;
+  --shine: none;
+  --edge: none;
+  --select: inset 0 0 0 1px var(--text);
+}
+/* the construction grid is the page: 24px cells, every block snaps to it */
+body {
+  background-color: var(--bg);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-repeat: repeat;
+}
+::selection { background: var(--text); color: var(--bg); }
+.wrap { gap: 48px; }
+.panel { gap: 24px; }
+.summary { gap: 24px; }
+#dash { gap: 24px; }
+
+/* type: wide, heavy display for names and numbers; everything else small and neutral */
+h1, h2, h3 { font-weight: 800; letter-spacing: -.03em; }
+.hero h1 { font-size: clamp(1.625rem, 7.4vw, 3.25rem); letter-spacing: -.04em; }
+.phead h2 { font-size: 1.75rem; }
+.sect h2 { font-size: .875rem; letter-spacing: .02em; color: var(--text); }
+.appname { font: 800 1.125rem/1 var(--font-display); letter-spacing: -.02em; }
+
+/* blocks: no boxes, no radius; a 1px white rule on top is the only frame (the poster's grid line) */
+.tile, .match, .kcard, .sponsor, .tablewrap, .injbar, .post-form, .empty, .lead, .kchart, .kb, .hero, .mi-board, .mi-list, .pbox {
+  border: 0; border-top: 1px solid var(--text); border-radius: 0; box-shadow: none; background: var(--panel);
+}
+.tile { padding: 12px 0 16px; }
+.tile.wide { background: var(--panel); border-color: var(--text); }
+.tile > .k:first-child { font-size: .6875rem; letter-spacing: .06em; }
+.tile .v { font: 800 2.5rem/1 var(--font-display); letter-spacing: -.04em; }
+.tile.wide .v { font-size: 4.5rem; }
+.tile .v.rec { gap: 24px; }
+.tile .v small { font: 500 .75rem/1 var(--font-body); letter-spacing: .04em; }
+.tile .v.name { font-size: 1.375rem; letter-spacing: -.03em; }
+.ratio, .gabar, .lbar { border-radius: 0; height: 6px; }
+
+/* hero: name on the grid, no plate; the last result sits in its own cell, pink plane only when we won */
+.hero { padding: 16px 0 0; background: transparent; }
+.hero p { font-size: .875rem; }
+.hero .tag { font: 600 .875rem/1 var(--font-body); }
+.last { border: 1px solid var(--text); border-radius: 0; background: var(--bg); padding: 12px; }
+.last strong { font: 800 1.125rem/1.1 var(--font-display); letter-spacing: -.03em; }
+.last .score { font: 800 2.75rem/1 var(--font-display); letter-spacing: -.04em; }
+.last.W { background: var(--pink); border-color: var(--pink); color: var(--pink-ink); }
+.last.W .score, .last.W .lbl, .last.W .when { color: var(--pink-ink); }
+
+/* numbers everywhere in the wide display */
+.match .score, .lead .pt, td.num, .kstats .v, .kgrid .v, .kb .pts, .mi-score .sc, .lead .rk, .shirt, .res, .tile .hi { font-family: var(--font-display); letter-spacing: -.04em; }
+.match .score { font-size: 1.75rem; }
+.lead .nm, .kname strong, .match .opp, .mi-name, .kb strong { font-family: var(--font-display); font-weight: 600; letter-spacing: -.03em; }
+.kname strong { font-size: 1.125rem; }
+
+/* badges: square cells */
+.res { border-radius: 0; font-size: .875rem; }
+.res.G { border-width: 1px; }
+.shirt, .cap, .pill, .ptype, .venue, .seg, .seg::before, .seg label, .tog, .prow, .srow, .mi-res, .mi-crest > span { border-radius: 0; }
+.shirt { border-width: 1px; border-color: var(--text); color: var(--text); font-size: .9375rem; }
+
+/* lists: rows on hairlines */
+.lead { padding: 0; }
+.lead button { border-radius: 0; padding: 12px 0; }
+.lead li + li { border-top: 1px solid var(--line); }
+th { background: var(--bg); font-family: var(--font-body); font-weight: 600; font-size: .75rem; color: var(--muted); border-bottom: 1px solid var(--text); }
+td:nth-child(2), th:nth-child(2) { background: var(--bg); }
+.tablewrap { background: var(--bg); }
+.match { padding: 12px 0; }
+
+/* controls: outlined rectangles, filled white when primary */
+.btn, .select { border-radius: 0; border-color: var(--text); background-color: transparent; }
+.btn.primary { background: var(--text); border-color: var(--text); color: var(--bg); box-shadow: none; }
+.btn.primary:hover { background: var(--pink); border-color: var(--pink); color: var(--pink-ink); }
+.field input, .field select, .mfsearch input { border-radius: 0; border-color: var(--line); background: var(--bg); }
+dialog { border-radius: 0; border: 1px solid var(--text); background: var(--bg); }
+.dhead { background: var(--bg); }
+
+/* nav: grid cells */
+.top { background: var(--bg); }
+.tab { font: 800 .9375rem/1 var(--font-display); letter-spacing: -.02em; }
+.tabind { border-radius: 0; height: 2px; background: var(--text); }
+.tab[aria-selected="true"] { color: var(--text); }
+@media (max-width: 767px) {
+  .tabs { background: var(--bg); border-top: 1px solid var(--text); }
+  .tab { font: 500 .6875rem/1 var(--font-body); border-radius: 0; }
+  .tab.main .ic { border-radius: 0; background: var(--bg); border: 1px solid var(--text); box-shadow: none; }
+  .tab.main[aria-selected="true"] .ic { background: var(--pink); border-color: var(--pink); }
+}
+.foot { background: var(--bg); border-top: 1px solid var(--text); }
+.foot-sp, .foot-club, .foot h2 { font-family: var(--font-display); letter-spacing: -.02em; }
+.sk { border-radius: 0; }
+
+/* ---------- light: the Crouwel poster's white sheet with a pale construction grid ---------- */
+:root[data-mode="light"] {
+  --bg: #f3f3ef;
+  --panel: rgb(243 243 239 / .94);
+  --panel-2: #e7e7e2;
+  --line: #cfcfc8;
+  --grid: #e0e0d9;
+  --text: #0a0a0a;
+  --muted: #5c5c63;
+  --pink: #c8417f;
+  --pink-hi: #b0346c;
+  --pink-ink: #ffffff;
+  --loss: #c8c8c2;
+  --glow: rgb(200 65 127 / .12);
+}

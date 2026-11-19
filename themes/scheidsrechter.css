@@ -1,0 +1,196 @@
+/* Theme: Scheidsrechtersboekje (default). Ruled notebook pages for the record, cards held up for the moments. */
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;800&family=Atkinson+Hyperlegible+Mono:wght@500;800&display=swap");
+
+:root {
+  --bg: #0d0d0e;
+  --panel: #161618;
+  --panel-2: #1f1f22;
+  --line: #2b2b30;
+  --text: #f1efe9;
+  --muted: #a3a0a6;
+  --pink: #e8679b;
+  --pink-hi: #f384b1;
+  --pink-ink: #1c0611;
+  --yellow: #f2c443;
+  --red: #e5484d;
+  --loss: #3c3a3f;
+  --glow: rgb(232 103 155 / .14);
+  --font-display: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+  --font-num: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+  --r-sm: 4px;
+  --r-md: 6px;
+  /* flat notebook pages: no shine, no lift; only held-up cards cast a shadow */
+  --shadow: none;
+  --shine: none;
+  --edge: none;
+  --held: 0 2px 4px rgb(0 0 0 / .5), 0 14px 28px -10px rgb(0 0 0 / .8);
+}
+body { background: var(--bg); }
+::selection { background: var(--pink); color: var(--pink-ink); }
+
+/* headings: heavy, uppercase, a little tracking instead of condensing */
+h1, h2, h3, .appname, .tab, .kname strong, .last strong, .kb strong, .mi-name, .mi-mvp strong, .foot h2, .foot-club, .foot-sp { letter-spacing: .02em; }
+.phead h2 { font-size: 1.75rem; }
+.sect h2 { font-size: 1rem; letter-spacing: .1em; }
+
+/* every number in the notebook's mono, so columns line up like pencil entries */
+.tile .v, .last .score, .match .score, .lead .pt, .lead .rk, td.num, .kstats .v, .kgrid .v, .kb .pts, .mi-score .sc,
+.shirt, .res, .cap, .score-in input, .step input, .step button, .tile .hi, .tile .form .res, .kname .rk { font-family: var(--font-num); }
+.tile .v { font-size: 2rem; letter-spacing: -.02em; }
+.tile.wide .v { font-size: 2.75rem; }
+.tile .v.name { font-family: var(--font-display); font-size: 1.375rem; letter-spacing: .02em; }
+
+/* notebook pages: flat panels, full hairline border, ruled rows inside */
+.tile, .match, .kcard, .sponsor, .tablewrap, .injbar, .post-form, .empty, .lead, .kchart, .kb, .pbox { border-radius: var(--r-md); }
+.tile { border-radius: var(--r-md); background-image: repeating-linear-gradient(180deg, transparent 0 31px, rgb(255 255 255 / .035) 31px 32px); }
+.tile.wide { background: var(--panel); border-color: var(--line); background-image: repeating-linear-gradient(180deg, transparent 0 31px, rgb(255 255 255 / .035) 31px 32px); }
+.tile > .k:first-child { padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.lead { padding: 0; border-radius: var(--r-md); }
+.lead button { border-radius: 0; padding: 12px 14px; }
+.lead li:first-child .rk { color: var(--pink); }
+th { background: var(--panel-2); text-transform: uppercase; font-size: .75rem; letter-spacing: .08em; font-family: var(--font-body); font-weight: 600; }
+td, th { border-bottom-color: var(--line); }
+
+/* one notebook page per list: entries sit on shared ruled lines instead of floating as separate cards
+   (1px gap + outline on each entry draws a single hairline between them) */
+.summary, .cards, .matches, .sponsors { gap: 1px; }
+.summary > .tile, .cards > li > .kcard, .matches > li > .match, .matches > .match, .sponsor { border: 0; border-radius: 0; outline: 1px solid var(--line); }
+.tile:focus-visible, .kcard:focus-visible, .match:focus-visible { outline: 1px solid var(--line); }
+.cards { margin-bottom: 16px; }
+/* no boxes inside entries: the G/A split and best match sit on the page under a dashed rule */
+.pbox, .kb { background: transparent; border: 0; border-top: 1px dashed var(--line); border-radius: 0; padding: 10px 0 0; }
+.injbar { border: 1px solid rgb(242 196 67 / .45); border-radius: var(--r-md); }
+table { font-variant-numeric: tabular-nums; }
+td.num, td.sorted { font-family: var(--font-num); }
+.match .detail, .match .when { font-size: .875rem; }
+
+/* the hero: club identity plain on the page, the last result held up as a card */
+.hero { border-radius: var(--r-md); border-color: var(--line); background: var(--panel); }
+.hero h1 { font-size: clamp(1.75rem, 7.5vw, 2.75rem); letter-spacing: .01em; }
+.hero .tag { font: 600 1rem/1 var(--font-body); }
+.last { border: 0; border-radius: 8px; background: var(--card-loss); color: var(--card-loss-ink); transform: rotate(-1.5deg); box-shadow: var(--held); padding: 16px 18px; }
+.last .lbl, .last .when { color: var(--card-loss-mut); }
+.last .res { background: rgb(0 0 0 / .25); border-color: transparent; color: var(--card-loss-ink); }
+.last.W { background: var(--pink); color: var(--pink-ink); }
+.last.W .score, .last.W strong { color: var(--pink-ink); }
+.last.W .lbl, .last.W .when { color: rgb(28 6 17 / .75); }
+.last.W .res { background: var(--pink-ink); color: var(--pink); }
+.last:active { transform: rotate(-1.5deg) scale(.98); }
+
+/* Man of the Match is the yellow card held up */
+.mi-mvp { border: 0; border-radius: 8px; background: var(--yellow); color: #1a1405; box-shadow: var(--held); transform: rotate(-1deg); }
+.mi-mvp .lbl, .mi-mvp .note { color: rgb(26 20 5 / .75); }
+.mi-mvp .shirt { background: #1a1405; border-color: #1a1405; color: var(--yellow); }
+.mi-mvp:hover { border-color: transparent; }
+
+/* match summary board: the score sheet */
+.mi-board { border-radius: var(--r-md); background: var(--panel-2); }
+.mi-board.W { background: var(--panel-2); border-color: var(--pink); }
+.mi-board.V { background: var(--panel-2); }
+
+/* results: W is our pink card, G an outlined card, V a dark card */
+.res { border-radius: 3px; }
+.shirt { border-width: 2px; }
+
+/* buttons: plain and firm */
+.btn.primary { background: var(--pink); box-shadow: none; }
+.btn.primary:hover { background: var(--pink-hi); }
+.select, .btn { border-radius: var(--r-sm); }
+
+/* tabs: hard steps instead of glides (a card is shown, not floated) */
+.tabind, .seg::before { transition-timing-function: steps(2, end); transition-duration: .12s; }
+.tab { font-weight: 800; letter-spacing: .04em; font-size: 1.0625rem; }
+@media (max-width: 767px) {
+  .tabs { background: var(--panel); }
+  .tab { font: 600 .6875rem/1 var(--font-body); letter-spacing: .02em; }
+  .tab.main .ic { border-radius: 10px; }
+  .tab.main[aria-selected="true"] .ic { background: var(--pink); box-shadow: var(--held); }
+}
+dialog { border-radius: var(--r-md); }
+@media (max-width: 639px) { dialog:not(#dlgMatch) { border-radius: 12px 12px 0 0; } }
+.foot { background: var(--panel); }
+.login-id { background: var(--panel-2); border-radius: var(--r-md); }
+
+/* ---------- review fixes ---------- */
+/* pink is ours or selected, nothing else */
+:root { --assist: #c9c6cc; --card-loss: #3c3a3f; --card-loss-ink: var(--text); --card-loss-mut: #d2ced4; --card-edge: rgb(255 255 255 / .06); }
+.tile .v.name, .kstats .v.hot, dialog h2, .post-form h2 { color: var(--text); }
+.shirt { border-color: var(--line); color: var(--text); }
+.kdlg td .linkbtn, .kcap .linkbtn { color: var(--text); text-decoration-color: var(--line); }
+.venue.home { background: transparent; border: 1px solid var(--muted); color: var(--text); line-height: calc(1.5rem - 2px); }
+.pill.g { border-color: var(--line); color: var(--text); }
+.pill.tag { background: var(--panel-2); border-color: var(--line); color: var(--text); }
+/* yellow is the referee's card only: assists, guest badges and the injury strip move to the neutral ramp */
+.gabar .a, .lbar .a, .dot.a { background: var(--assist); }
+.pill.a { border-color: var(--line); color: var(--assist); }
+.ptype { border-color: var(--line); color: var(--muted); }
+.injbar { border-color: var(--line); }
+/* drawn icons, not text glyphs: the whole tile/card is the tap target, so the › goes; ‹ becomes a stroked chevron */
+.tile .go, .kcard .go, .mi-mvp .go { display: none; }
+.homebtn .back { width: 10px; height: 18px; margin-right: 2px; font-size: 0; background: var(--pink);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 18'%3E%3Cpath d='M8 2 2 9l6 7' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 18'%3E%3Cpath d='M8 2 2 9l6 7' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; }
+/* the plaster: one-colour stroke icon in the same weight as the tab icons */
+.inj-ic { background: var(--muted);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23000' stroke-width='2' stroke-linejoin='round'%3E%3Crect x='2' y='8' width='20' height='8' rx='4' transform='rotate(-45 12 12)'/%3E%3Crect x='9' y='9' width='6' height='6' rx='1' transform='rotate(-45 12 12)'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23000' stroke-width='2' stroke-linejoin='round'%3E%3Crect x='2' y='8' width='20' height='8' rx='4' transform='rotate(-45 12 12)'/%3E%3Crect x='9' y='9' width='6' height='6' rx='1' transform='rotate(-45 12 12)'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat; }
+/* no eyebrow above a heading: kept for screen readers only */
+.last .lbl, .kb .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* the held card is a card: upright proportion with a printed inner edge, tilted like it's shown */
+.last { transform: rotate(-2.5deg); box-shadow: var(--held), inset 0 0 0 5px var(--card-edge); padding: 18px 18px; }
+.last:active { transform: rotate(-2.5deg) scale(.98); }
+.last.W { box-shadow: var(--held), inset 0 0 0 5px rgb(28 6 17 / .12); }
+@media (min-width: 860px) { .lastwrap { justify-self: end; width: 260px; } .last { grid-template-columns: auto minmax(0, 1fr); } .last .score { grid-column: 1 / -1; grid-row: auto; font-size: 3.25rem; } }
+.mi-mvp { transform: rotate(-2deg); box-shadow: var(--held), inset 0 0 0 5px rgb(26 20 5 / .12); }
+/* rules at the row rhythm or not at all: background ruling removed */
+.tile, .tile.wide { background-image: none; }
+/* desktop: the record page spans three rows so the six small tiles fill the grid */
+@media (min-width: 960px) { .tile.wide { grid-row: span 3; } }
+/* keepers: the best-match cell wraps instead of clipping */
+#p-keepers td:last-child { white-space: normal; min-width: 220px; }
+/* hard short steps on state changes, not just the tab indicator */
+.btn, .select, th button, .res, .pill.chip, .lead button, .match.click, button.kcard, button.tile, .last { transition-duration: .1s; transition-timing-function: steps(2, end); }
+
+/* ---------- verdict-pass fixes ---------- */
+/* held card: score on its own line at every width, so opponent and date get the full width */
+.last { grid-template-columns: auto minmax(0, 1fr); }
+.last .score { grid-column: 1 / -1; grid-row: auto; font-size: 3rem; margin-top: 4px; }
+/* desktop record page: back to 2 rows; the trailing tiles stretch to fill the last row */
+@media (min-width: 960px) {
+  .tile.wide { grid-row: span 2; }
+  .summary:has(> .tile:nth-child(7):last-child) > .tile:nth-child(n+6) { grid-column: span 2; }
+  .summary:has(> .tile:nth-child(6):last-child) > .tile.wide { grid-row: span 3; }
+}
+/* keepers: nothing inside the best-match cell may refuse to wrap */
+#p-keepers td:last-child, #p-keepers td:last-child * { white-space: normal; }
+/* the plaster, drawn as a plaster: band, pad, four perforation dots */
+.inj-ic {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(-45 12 12)'%3E%3Crect x='1.5' y='7.5' width='21' height='9' rx='4.5' fill='none' stroke='%23000' stroke-width='2'/%3E%3Crect x='8.5' y='7.5' width='7' height='9' fill='%23000'/%3E%3Ccircle cx='4.8' cy='10.4' r='.9'/%3E%3Ccircle cx='4.8' cy='13.6' r='.9'/%3E%3Ccircle cx='19.2' cy='10.4' r='.9'/%3E%3Ccircle cx='19.2' cy='13.6' r='.9'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg transform='rotate(-45 12 12)'%3E%3Crect x='1.5' y='7.5' width='21' height='9' rx='4.5' fill='none' stroke='%23000' stroke-width='2'/%3E%3Crect x='8.5' y='7.5' width='7' height='9' fill='%23000'/%3E%3Ccircle cx='4.8' cy='10.4' r='.9'/%3E%3Ccircle cx='4.8' cy='13.6' r='.9'/%3E%3Ccircle cx='19.2' cy='10.4' r='.9'/%3E%3Ccircle cx='19.2' cy='13.6' r='.9'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ---------- light: the notebook in daylight; white pages on a pale desk, same rules ---------- */
+:root[data-mode="light"] {
+  --bg: #ecebe7;
+  --panel: #fbfaf8;
+  --panel-2: #f2f0ec;
+  --line: #d8d5cf;
+  --text: #19181a;
+  --muted: #625e66;
+  --pink: #c8417f;
+  --pink-hi: #b0346c;
+  --pink-ink: #ffffff;
+  --loss: #c9c5c0;
+  --assist: #8d8892;
+  --glow: rgb(200 65 127 / .12);
+  --card-loss: #d6d2cc;
+  --card-loss-ink: #19181a;
+  --card-loss-mut: #4f4b52;
+  --card-edge: rgb(255 255 255 / .55);
+  --held: 0 2px 4px rgb(40 30 20 / .18), 0 14px 28px -10px rgb(40 30 20 / .35);
+}
+:root[data-mode="light"] .last.W .lbl, :root[data-mode="light"] .last.W .when { color: rgb(255 255 255 / .85); }
+:root[data-mode="light"] .last.W .res { background: #ffffff; color: var(--pink); }
+:root[data-mode="light"] .last .res { background: rgb(0 0 0 / .1); }
+:root[data-mode="light"] .last.W { box-shadow: var(--held), inset 0 0 0 5px rgb(255 255 255 / .18); }

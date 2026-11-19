@@ -1063,7 +1063,7 @@ dialog[open]::backdrop { opacity: 1; }
   <form id="formLogin">
     <div class="dhead"><h2 id="dlgLoginTitle">Inloggen</h2><button type="button" class="btn icon" data-close autofocus aria-label="Sluiten"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div>
     <div class="login-id"><svg aria-hidden="true" style="color: var(--pink)"><use href="#fcf"/></svg><p>Voor coaches, aanvoerders en socials. Ingelogd kun je wedstrijden, spelers en posts bijwerken.</p></div>
-    <div class="field"><label for="lEmail">Gebruikersnaam</label><input id="lEmail" type="text" required autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="bijv. coach"></div>
+    <div class="field"><label for="lEmail">Gebruikersnaam</label><input id="lEmail" type="text" required autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="next"></div>
     <div class="field"><label for="lPass">Wachtwoord</label>
       <div class="pw"><input id="lPass" type="password" required autocomplete="current-password" enterkeyhint="go"><button type="button" id="lShow" class="pw-eye" aria-pressed="false" aria-label="Wachtwoord tonen" title="Wachtwoord tonen"><svg class="eye-on" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-off" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.6 5.1A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-2.6 3.4M6.6 6.6C3.7 8.4 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6M9.9 9.9a3 3 0 0 0 4.2 4.2M3 3l18 18"/></svg></button></div>
       <p class="check off" id="capsHint" hidden>Caps Lock staat aan.</p>
@@ -1101,7 +1101,10 @@ const PTYPES = [['vast', 'Vaste Spelers'], ['gast', 'Gastspelers'], ['invaller',
 const FILTER_IC = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 5h18l-7 8.2V19l-4 2v-7.8z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>';
 const hasRole = (p, r) => !!p && (p.roles || []).includes(r);
 // A plaster icon next to injured players; the note shows on hover and in the injury strip on Spelers.
-const injuryIcon = p => p?.injury ? `<span class="inj-ic" role="img" aria-label="Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}" title="Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}"></span>` : '';
+// The note (e.g. "enkel, 2 weken") is health info: after injury-privacy.sql only logged-in accounts can read
+// injury_note; visitors just see injury = 'geblesseerd'. Older rows may still hold the note in injury itself.
+const injNote = p => p?.injury_note || (p?.injury && p.injury !== 'geblesseerd' ? p.injury : '');
+const injuryIcon = p => p?.injury ? `<span class="inj-ic" role="img" aria-label="Geblesseerd${injNote(p) ? ': ' + esc(injNote(p)) : ''}" title="Geblesseerd${injNote(p) ? ': ' + esc(injNote(p)) : ''}"></span>` : '';
 // A match can have a second keeper (injury, red card): keeper2 conceded keeper2_ga, keeper the rest.
 const keepersOf = m => [m.keeper, m.keeper2].filter(Boolean);
 const conceded = (m, id) => id === m.keeper2 ? +m.keeper2_ga || 0 : id === m.keeper ? Math.max(0, (+m.ga || 0) - (m.keeper2 ? +m.keeper2_ga || 0 : 0)) : 0;
@@ -1234,7 +1237,7 @@ function renderPlayers(stats) {
   const { key, dir } = S.sort;
   const rows = [...stats].sort(byStat(key, dir));
   const hurt = sortedPlayers().filter(p => p.injury);
-  const injBar = hurt.length ? `<div class="injbar"><span class="inj-ic" aria-hidden="true"></span><div><strong>Geblesseerd</strong><ul>${hurt.map(p => `<li>${esc(p.name)}${p.injury !== 'geblesseerd' ? ` <span class="note">· ${esc(p.injury)}</span>` : ''}</li>`).join('')}</ul></div></div>` : '';
+  const injBar = hurt.length ? `<div class="injbar"><span class="inj-ic" aria-hidden="true"></span><div><strong>Geblesseerd</strong><ul>${hurt.map(p => `<li>${esc(p.name)}${injNote(p) ? ` <span class="note">· ${esc(injNote(p))}</span>` : ''}</li>`).join('')}</ul></div></div>` : '';
   const badges = s => `${injuryIcon(s.p)}${hasRole(s.p, 'captain') ? '<span class="cap" title="Captain">C</span>' : ''}${s.p.position === 'keeper' ? '<span class="pos">Keeper</span>' : ''}${PTYPE[s.p.player_type] ? `<span class="ptype">${PTYPE[s.p.player_type]}</span>` : ''}${hasRole(s.p, 'manager') ? '<span class="pos">Manager</span>' : ''}`;
   // Phones get cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
   // Phones: keeper-style cards instead of the wide table (CSS swaps them); chips sort, same S.sort as the column headers.
@@ -1436,8 +1439,8 @@ function openPlayerInfo(id) {
   const stat = (v, k) => `<div><span class="v">${v}</span><p class="k">${k}</p></div>`;
   $('#dlgPlayerInfoTitle').innerHTML = `${esc(p.name)}${p.number != null ? ` <span class="sub">#${p.number}</span>` : ''}${PTYPE[p.player_type] ? ` <span class="ptype">${PTYPE[p.player_type]}</span>` : ''}`;
   $('#piEdit').hidden = !S.isAdmin; $('#piEdit').dataset.player = id;
-  $('#piBody').innerHTML = !ms.length ? `<p class="note">${esc(p.name)} heeft in deze periode nog niet gespeeld.</p>${p.injury ? `<p class="note">Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}.</p>` : ''}` : `
-    ${p.injury ? `<p class="note"><span class="inj-ic" aria-hidden="true"></span> Geblesseerd${p.injury !== 'geblesseerd' ? ': ' + esc(p.injury) : ''}</p>` : ''}
+  $('#piBody').innerHTML = !ms.length ? `<p class="note">${esc(p.name)} heeft in deze periode nog niet gespeeld.</p>${p.injury ? `<p class="note">Geblesseerd${injNote(p) ? ': ' + esc(injNote(p)) : ''}.</p>` : ''}` : `
+    ${p.injury ? `<p class="note"><span class="inj-ic" aria-hidden="true"></span> Geblesseerd${injNote(p) ? ': ' + esc(injNote(p)) : ''}</p>` : ''}
     <div class="kgrid">${stat(s.gp, 'Wedstrijden')}${stat(Math.round(s.att) + '%', 'Aanwezigheid')}${stat(s.g, 'Goals')}${stat(s.a, 'Assists')}${stat(s.pts, 'Goals + Assists')}${stat(dec(s.gpg), 'G+A per Wedstrijd')}${s.mvp ? stat(s.mvp + 'x', 'Man of the Match') : ''}${s.y || s.r ? stat(`${s.y} / ${s.r}`, 'Geel / Rood') : ''}${s.kgp ? stat(s.kgp + 'x', 'Gekeept') : ''}</div>
     <div class="kchart"><h3>Goals + Assists per Wedstrijd</h3>${lineChart(pts, s.gpg, 'Gem.', 'Goals plus assists per wedstrijd')}<p class="kcap note" aria-live="polite">Tik op een punt voor de wedstrijd.</p></div>
     ${ga(best) ? `<div class="kb r3"><span class="res ${result(best)}">${result(best)}</span><span class="lbl">Beste Wedstrijd</span><strong>${esc(vs(best))}</strong><span class="when">${esc(fmtDate(best.date))} · ${best.gf} - ${best.ga}</span><span class="pts">${ga(best)}<small>G+A</small></span></div>` : ''}
@@ -1662,7 +1665,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.ma
 $('#addMatch').onclick = () => openMatch();
 
 /* who added / changed what: audit_log is filled by a database trigger (audit.sql) and only editors can read it */
-const LOG_FIELDS = { played: 'opstelling', goals: 'goals', assists: 'assists', own_goals: 'eigen goals', gf: 'uitslag', ga: 'uitslag', date: 'datum', opponent: 'tegenstander', home: 'thuis/uit', yellow: 'kaarten', red: 'kaarten', mvp: 'man of the match', keeper: 'keeper', keeper2: 'tweede keeper', keeper2_ga: 'tweede keeper', captain: 'captain', manager: 'manager', season: 'seizoen', name: 'naam', number: 'rugnummer', position: 'rollen', roles: 'rollen', injury: 'blessure', player_type: 'soort speler' };
+const LOG_FIELDS = { played: 'opstelling', goals: 'goals', assists: 'assists', own_goals: 'eigen goals', gf: 'uitslag', ga: 'uitslag', date: 'datum', opponent: 'tegenstander', home: 'thuis/uit', yellow: 'kaarten', red: 'kaarten', mvp: 'man of the match', keeper: 'keeper', keeper2: 'tweede keeper', keeper2_ga: 'tweede keeper', captain: 'captain', manager: 'manager', season: 'seizoen', name: 'naam', number: 'rugnummer', position: 'rollen', roles: 'rollen', injury: 'blessure', injury_note: 'blessure', player_type: 'soort speler' };
 // Who made a change: the account's role (audit-roles.sql); no account = a change made directly in SQL = Beheerder.
 const ROLE_LABEL = { captain: 'Captain', manager: 'Manager', coach: 'Coach', socials: 'Socials', beheerder: 'Beheerder' };
 const who = r => ROLE_LABEL[r.role] || (r.email ? shortName(r.email) : 'Beheerder');
@@ -1700,7 +1703,7 @@ function openPlayer(p) {
   $('#pName').value = p?.name || ''; $('#pNum').value = p?.number ?? '';
   $('#pKeeper').checked = p?.position === 'keeper'; $('#pCaptain').checked = hasRole(p, 'captain'); $('#pManager').checked = hasRole(p, 'manager');
   document.querySelector(`#pType input[value="${PTYPE[p?.player_type] ? p.player_type : 'vast'}"]`).checked = true;
-  $('#pInj').checked = !!p?.injury; $('#pInjNote').value = p?.injury && p.injury !== 'geblesseerd' ? p.injury : ''; $('#pInjRow').hidden = !p?.injury;
+  $('#pInj').checked = !!p?.injury; $('#pInjNote').value = injNote(p); $('#pInjRow').hidden = !p?.injury;
   $('#pDelete').hidden = !p; showLog($('#pLog'), 'players', p?.id);
   if (p) armDelete($('#pDelete'), async () => { if (await save(() => S.db.doc('players/' + p.id).delete(), p.name + ' verwijderd')) $('#dlgPlayer').close(); });
   $('#dlgPlayer').showModal();
@@ -1711,6 +1714,7 @@ $('#formPlayer').addEventListener('submit', async e => {
   const data = { name: $('#pName').value.trim(), number: num, position: $('#pKeeper').checked ? 'keeper' : 'veld',
     roles: ['captain', 'manager'].filter(r => $('#p' + r[0].toUpperCase() + r.slice(1)).checked),
     injury: $('#pInj').checked ? ($('#pInjNote').value.trim() || 'geblesseerd') : null };
+  if (S.players.some(x => 'injury_note' in x)) { data.injury_note = data.injury === 'geblesseerd' ? null : data.injury; if (data.injury) data.injury = 'geblesseerd'; }
   if (!data.name) return;
   // Soort speler needs player-type.sql; until that ran, rows have no player_type and 'vast' is simply not sent.
   const type = document.querySelector('#pType input:checked').value;
@@ -2376,6 +2380,8 @@ const USER_DOMAIN = 'fcflamingo.local';
 const toEmail = u => u.includes('@') ? u : u.toLowerCase() + '@' + USER_DOMAIN;
 const shortName = e => (e || '').replace('@' + USER_DOMAIN, '');
 const TABLES = ['seasons', 'players', 'matches'];
+// Visitors may only read these player columns (injury-privacy.sql); logged-in accounts read everything.
+const PUBLIC_PLAYER_COLS = 'id,name,number,position,roles,injury,player_type';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function run(req) { const { error } = await req; if (error) throw error; await loadAll(); }
@@ -2389,7 +2395,9 @@ S.db = {
 };
 
 async function loadAll() {
-  const [st, sp, lg, ...res] = await Promise.all([sb.from('settings').select('*').eq('id', 'team').maybeSingle(), sb.from('sponsors').select('*').order('created_at'), sb.from('logos').select('*'), ...TABLES.map(t => sb.from(t).select('*'))]);
+  const { data: { session } } = await sb.auth.getSession();
+  const cols = t => t === 'players' && !session ? PUBLIC_PLAYER_COLS : '*';
+  const [st, sp, lg, ...res] = await Promise.all([sb.from('settings').select('*').eq('id', 'team').maybeSingle(), sb.from('sponsors').select('*').order('created_at'), sb.from('logos').select('*'), ...TABLES.map(t => sb.from(t).select(cols(t)))]);
   S.settings = st.error ? null : st.data; applySettings();
   S.sponsors = sp.error ? [] : sp.data.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   S.logos = lg.error ? [] : lg.data;

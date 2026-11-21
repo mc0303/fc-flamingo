@@ -2170,6 +2170,15 @@ Promise.all(['600', '800'].map(w => document.fonts.load(`${w} 100px "Barlow Cond
 
 /* ---------- Sponsors ---------- */
 const safeLogo = s => /^data:image\//.test(s || '') ? s : '';
+// Uploads: only image types, at most 5 MB, and the file must really decode as an image. The handlers then redraw it
+// on a canvas and store that PNG/JPEG, never the original file, so scripts in an SVG or hidden data don't survive.
+const IMG_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'], MAX_UPLOAD = 5 * 1024 * 1024;
+async function readImg(f) {
+  if (!IMG_TYPES.includes(f.type)) throw 'Dit bestandstype kan niet. Kies een PNG, JPG, WebP of SVG.';
+  if (f.size > MAX_UPLOAD) throw 'Dit bestand is te groot. Kies een logo van maximaal 5 MB.';
+  const img = new Image(); img.src = URL.createObjectURL(f); await img.decode(); return img;
+}
+const upErr = e => toast(typeof e === 'string' ? e : 'Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.');
 const safeSite = s => /^https?:\/\//i.test(s || '') ? s : '';
 function renderFooter() {
   const t = team(), list = S.sponsors;
@@ -2229,12 +2238,12 @@ function openSponsor(s) {
 $('#spLogo').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
   try {
-    const img = new Image(); img.src = URL.createObjectURL(f); await img.decode();
+    const img = await readImg(f);
     const w0 = img.naturalWidth || 500, h0 = img.naturalHeight || 500, r = Math.min(1, 500 / Math.max(w0, h0)), c = document.createElement('canvas');
     c.width = Math.round(w0 * r); c.height = Math.round(h0 * r); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(img.src);
     let url = c.toDataURL('image/png'); if (url.length > 250000) url = c.toDataURL('image/jpeg', 0.85);
     spLogo = url; showSpLogo();
-  } catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
+  } catch (err) { upErr(err); }
 });
 $('#spLogoClear').onclick = () => { spLogo = ''; $('#spLogo').value = ''; showSpLogo(); };
 $('#formSponsor').addEventListener('submit', async e => {
@@ -2289,8 +2298,8 @@ function bakeLogo() {
 }
 $('#lgFile').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
-  try { const img = new Image(); img.src = URL.createObjectURL(f); await img.decode(); lgRaw = img; bakeLogo(); }
-  catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
+  try { lgRaw = await readImg(f); bakeLogo(); }
+  catch (err) { upErr(err); }
 });
 $('#lgCut').addEventListener('change', bakeLogo);
 $('#formLogo').addEventListener('submit', async e => {
@@ -2358,14 +2367,14 @@ $('#stLogoReset').onclick = () => { stLogo = ''; $('#stFile').value = ''; showLo
 $('#stFile').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
   try {
-    const img = new Image(); img.src = URL.createObjectURL(f); await img.decode();
+    const img = await readImg(f);
     for (const max of [600, 400, 250]) {
       const w = img.naturalWidth || max, h = img.naturalHeight || max, r = Math.min(1, max / Math.max(w, h)), c = document.createElement('canvas');
       c.width = Math.round(w * r); c.height = Math.round(h * r); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       stLogo = c.toDataURL('image/png'); if (stLogo.length < 390000) break;
     }
     showLogo($('#stLogoImg'), $('#stLogoSvg'), stLogo);
-  } catch { toast('Dit bestand kan niet als logo worden gebruikt. Kies een PNG of JPG.'); }
+  } catch (err) { upErr(err); }
 });
 $('#formSettings').addEventListener('submit', async e => {
   e.preventDefault();

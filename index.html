@@ -2,6 +2,10 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
+<!-- CSP: scripts only from this site and jsDelivr, data only to our Supabase project, so injected code can't load
+     a remote script or send the login token elsewhere. A new CDN, font host or API must be added here first.
+     ponytail: 'unsafe-inline' stays because all code is inline in this file; move it to a .js file to drop it. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://yptfjefhouoiiisuyeyt.supabase.co; base-uri 'self'; form-action 'self'">
 <!-- Clickjacking guard: GitHub Pages can't send X-Frame-Options/CSP headers, so a page loaded inside someone
      else's frame stays hidden and the browser is sent to the real site instead. -->
 <style id="noframe">html { display: none !important; }</style>
